@@ -124,7 +124,7 @@ function M.bookmark(args)
   end
 end
 
-function M.complete(arglead, cmdline, cursorpos)
+function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cmdline cursorpos
   local completions = {
     "status",
     "log",

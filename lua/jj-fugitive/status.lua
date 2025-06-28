@@ -97,7 +97,25 @@ local function format_status_buffer(status_info)
   return lines
 end
 
-local function setup_buffer_keymaps(bufnr, status_info)
+local function reload_status_content(bufnr)
+  local output, err = get_jj_status()
+  if not output then
+    vim.api.nvim_err_writeln(err)
+    return false
+  end
+
+  local status_info = parse_status_output(output)
+  local lines = format_status_buffer(status_info)
+
+  -- Update buffer content
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+
+  return true
+end
+
+local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore status_info
   local opts = { noremap = true, silent = true, buffer = bufnr }
 
   -- Reload status
@@ -169,24 +187,6 @@ local function setup_buffer_highlighting(bufnr)
     vim.cmd("highlight default link JjStatusDeleted DiffDelete")
     vim.cmd("highlight default link JjStatusRenamed DiffChange")
   end)
-end
-
-local function reload_status_content(bufnr)
-  local output, err = get_jj_status()
-  if not output then
-    vim.api.nvim_err_writeln(err)
-    return false
-  end
-
-  local status_info = parse_status_output(output)
-  local lines = format_status_buffer(status_info)
-
-  -- Update buffer content
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-
-  return true
 end
 
 function M.show_status()

@@ -17,7 +17,6 @@ Requirements:
 --]]
 
 local socket_path = "/tmp/nvim_jj_fugitive_test.sock"
-local nvim_pid = nil
 
 -- Helper function to run shell commands and capture output
 local function run_command(cmd)
@@ -138,7 +137,7 @@ local function test_jstatus()
 
   -- Execute :JStatus command
   print("Executing :JStatus...")
-  local output, success = nvim_command("JStatus")
+  local _, success = nvim_command("JStatus")
 
   if not success then
     error("Failed to execute :JStatus command")
@@ -274,7 +273,7 @@ local function run_tests()
 end
 
 -- Signal handler for cleanup
-local function signal_handler()
+local function signal_handler() -- luacheck: ignore
   cleanup()
   os.exit(1)
 end
