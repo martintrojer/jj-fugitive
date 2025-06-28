@@ -130,11 +130,15 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
   end
 
   -- If no subcommand yet, or completing the first argument
-  if #parts == 0 or (#parts == 1 and not cmdline:match("%s$")) then
+  -- We complete commands if:
+  -- 1. No parts yet (just typed ":J ")
+  -- 2. One part and cursor is still on it (":J sta|" where | is cursor)
+  -- 3. One empty part (from ":J " which creates { "" } after removing "J")
+  if #parts == 0 or (#parts == 1 and (not cmdline:match("%s$") or parts[1] == "")) then
     -- Complete jj subcommands
     local commands = parse_jj_commands()
     for _, cmd in ipairs(commands) do
-      if cmd:find("^" .. vim.pesc(arglead)) then
+      if arglead == "" or cmd:find("^" .. vim.pesc(arglead)) then
         table.insert(completions, cmd)
       end
     end
@@ -143,7 +147,7 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
     local custom_commands =
       { "status", "diff", "log", "commit", "new", "next", "prev", "edit", "bookmark" }
     for _, cmd in ipairs(custom_commands) do
-      if cmd:find("^" .. vim.pesc(arglead)) and not vim.tbl_contains(completions, cmd) then
+      if (arglead == "" or cmd:find("^" .. vim.pesc(arglead))) and not vim.tbl_contains(completions, cmd) then
         table.insert(completions, cmd)
       end
     end
@@ -161,7 +165,7 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
     end
 
     for _, flag in ipairs(flags) do
-      if flag:find("^" .. vim.pesc(arglead)) and not used_flags[flag] then
+      if (arglead == "" or flag:find("^" .. vim.pesc(arglead))) and not used_flags[flag] then
         table.insert(completions, flag)
       end
     end
@@ -174,7 +178,7 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
       if prev_arg:match("^%-%-?[br]") or prev_arg == "--bookmark" or prev_arg == "--branch" then
         local bookmarks = M.get_bookmarks()
         for _, bookmark in ipairs(bookmarks) do
-          if bookmark:find("^" .. vim.pesc(arglead)) then
+          if arglead == "" or bookmark:find("^" .. vim.pesc(arglead)) then
             table.insert(completions, bookmark)
           end
         end
@@ -185,7 +189,7 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
         -- Add basic file completion (could be enhanced with actual file listing)
         local files = M.get_changed_files()
         for _, file in ipairs(files) do
-          if file:find("^" .. vim.pesc(arglead)) then
+          if arglead == "" or file:find("^" .. vim.pesc(arglead)) then
             table.insert(completions, file)
           end
         end

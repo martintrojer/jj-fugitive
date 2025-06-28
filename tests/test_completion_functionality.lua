@@ -53,6 +53,21 @@ if completion_module then
     has_log and not has_status_filtered,
     "Should filter commands based on input"
   )
+
+  -- Test space-triggered completion (empty arglead)
+  local space_completions = completion_module.complete("", "J ", 2)
+  assert_test(
+    "Space-triggered completion",
+    #space_completions > 0,
+    "Should show completions after space with empty arglead"
+  )
+
+  local space_has_status = vim.tbl_contains(space_completions, "status")
+  assert_test(
+    "Space completion includes status",
+    space_has_status,
+    "Space-triggered completion should include status command"
+  )
 end
 
 -- Test 3: Test flag completion for a known command
@@ -63,6 +78,21 @@ if completion_module then
   -- Test that help flag is included
   local has_help = vim.tbl_contains(flag_completions, "--help")
   assert_test("Help flag in completions", has_help, "--help should be in flag completions")
+
+  -- Test space-triggered flag completion (empty arglead after subcommand)
+  local space_flag_completions = completion_module.complete("", "J status ", 9)
+  assert_test(
+    "Space-triggered flag completion",
+    #space_flag_completions > 0,
+    "Should show flag completions after space following subcommand"
+  )
+
+  local space_flag_has_help = vim.tbl_contains(space_flag_completions, "--help")
+  assert_test(
+    "Space flag completion includes help",
+    space_flag_has_help,
+    "Space-triggered flag completion should include --help"
+  )
 end
 
 -- Test 4: Test bookmark completion helper
