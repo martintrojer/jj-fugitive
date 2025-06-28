@@ -158,7 +158,7 @@ class JJFugitiveAPITest:
             time.sleep(0.5)
             
             # Find the jj-status buffer
-            buffers = self.nvim.list_bufs()
+            buffers = self.nvim.buffers
             status_buffer = None
             
             for buf in buffers:
@@ -222,7 +222,7 @@ class JJFugitiveAPITest:
             time.sleep(0.5)
             
             # Find status buffer
-            buffers = self.nvim.list_bufs()
+            buffers = self.nvim.buffers
             status_buffer = None
             
             for buf in buffers:
@@ -262,6 +262,123 @@ class JJFugitiveAPITest:
             print(f"❌ FAIL: Error during buffer options test: {e}")
             return False
     
+    def test_jstatus_reload_function(self):
+        """Test the status buffer reload functionality via direct function call"""
+        print("\n=== Testing status buffer reload functionality ===")
+        
+        try:
+            # Execute :JStatus to create buffer
+            self.nvim.command("JStatus")
+            time.sleep(0.5)
+            
+            # Find status buffer
+            buffers = self.nvim.buffers
+            status_buffer = None
+            
+            for buf in buffers:
+                try:
+                    if "jj-status" in buf.name:
+                        status_buffer = buf
+                        break
+                except:
+                    pass
+            
+            if not status_buffer:
+                print("❌ FAIL: Could not find status buffer")
+                return False
+            
+            print(f"✅ Found status buffer {status_buffer.number}")
+            
+            # Get initial buffer content
+            initial_lines = status_buffer[:]
+            print(f"Initial buffer has {len(initial_lines)} lines")
+            
+            # Test reload by calling show_status again
+            print("Testing reload by calling show_status again...")
+            
+            try:
+                # Call show_status again to test reload
+                self.nvim.command("JStatus")
+                time.sleep(0.5)
+                
+                # Check if buffer still exists and has content
+                new_lines = status_buffer[:]
+                new_content = "\n".join(new_lines)
+                
+                print(f"After reload: buffer has {len(new_lines)} lines")
+                
+                # The content should still be valid (contains expected patterns)
+                if "jj-fugitive Status" in new_content and len(new_lines) > 0:
+                    print("✅ PASS: Buffer reloaded successfully, contains expected content")
+                    return True
+                else:
+                    print("❌ FAIL: Buffer content missing after reload")
+                    print("New content:", new_content[:200] + "...")
+                    return False
+                    
+            except Exception as e:
+                print(f"❌ FAIL: Error during reload test: {e}")
+                return False
+            
+        except Exception as e:
+            print(f"❌ FAIL: Error setting up reload test: {e}")
+            return False
+    
+    def test_jstatus_keybinding_setup(self):
+        """Test that status buffer keybindings are properly set up"""
+        print("\n=== Testing status buffer keybinding setup ===")
+        
+        try:
+            # Execute :JStatus to create buffer
+            self.nvim.command("JStatus")
+            time.sleep(0.5)
+            
+            # Find status buffer and switch to it
+            buffers = self.nvim.buffers
+            status_buffer = None
+            
+            for buf in buffers:
+                try:
+                    if "jj-status" in buf.name:
+                        status_buffer = buf
+                        break
+                except:
+                    pass
+            
+            if not status_buffer:
+                print("❌ FAIL: Could not find status buffer")
+                return False
+            
+            # Switch to the status buffer
+            windows = self.nvim.windows
+            for win in windows:
+                if win.buffer == status_buffer:
+                    self.nvim.current.window = win
+                    break
+            
+            # Check if buffer-local keybindings exist
+            expected_keymaps = ['r', 'cc', 'new', 'dd', 'o', 'q']
+            
+            for key in expected_keymaps:
+                try:
+                    # Check if keymap exists for this buffer
+                    keymaps = self.nvim.eval(f"maparg('{key}', 'n', 0, 1)")
+                    if keymaps and keymaps.get('buffer') == 1:
+                        print(f"✅ PASS: Keybinding '{key}' is set up as buffer-local")
+                    else:
+                        print(f"❌ FAIL: Keybinding '{key}' is not properly set up")
+                        print(f"  Keymap info: {keymaps}")
+                        return False
+                except Exception as e:
+                    print(f"❌ FAIL: Error checking keybinding '{key}': {e}")
+                    return False
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ FAIL: Error during keybinding setup test: {e}")
+            return False
+    
     def run_all_tests(self):
         """Run all tests and return success status"""
         print("🚀 === jj-fugitive Remote API Tests ===")
@@ -271,6 +388,8 @@ class JJFugitiveAPITest:
             ("plugin loading", self.test_plugin_loading),
             (":JStatus command", self.test_jstatus_command),
             ("status buffer options", self.test_jstatus_buffer_options),
+            ("status keybinding setup", self.test_jstatus_keybinding_setup),
+            ("status reload functionality", self.test_jstatus_reload_function),
         ]
         
         passed = 0

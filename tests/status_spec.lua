@@ -8,7 +8,7 @@ describe("jj-fugitive status", function()
   it("has show_status function", function()
     assert.is_function(status.show_status)
   end)
-  
+
   -- Note: Testing the full status functionality would require
   -- a jj repository and mocking vim APIs, which is complex
   -- for this basic test setup. Integration tests would be

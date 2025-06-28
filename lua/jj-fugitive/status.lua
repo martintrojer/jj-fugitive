@@ -1,6 +1,17 @@
 local M = {}
 
-local function create_status_buffer()
+local function get_or_create_status_buffer()
+  -- First, check if a jj-status buffer already exists
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(bufnr) then
+      local name = vim.api.nvim_buf_get_name(bufnr)
+      if name:match("jj%-status$") then
+        return bufnr
+      end
+    end
+  end
+
+  -- Create new buffer if none exists
   local bufnr = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
   vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
@@ -25,9 +36,9 @@ local function parse_status_output(output)
     parent = "",
     changes = {},
   }
-  
+
   local in_changes = false
-  
+
   for _, line in ipairs(lines) do
     if line:match("^Working copy changes:") then
       in_changes = true
@@ -47,17 +58,17 @@ local function parse_status_output(output)
       })
     end
   end
-  
+
   return status_info
 end
 
 local function format_status_buffer(status_info)
   local lines = {}
-  
+
   -- Header
   table.insert(lines, "# jj-fugitive Status")
   table.insert(lines, "")
-  
+
   -- Working copy info
   if status_info.working_copy ~= "" then
     table.insert(lines, status_info.working_copy)
@@ -66,7 +77,7 @@ local function format_status_buffer(status_info)
     table.insert(lines, status_info.parent)
   end
   table.insert(lines, "")
-  
+
   -- Changes section
   if #status_info.changes > 0 then
     table.insert(lines, "Working copy changes:")
@@ -76,24 +87,31 @@ local function format_status_buffer(status_info)
   else
     table.insert(lines, "The working copy has no changes.")
   end
-  
+
   table.insert(lines, "")
   table.insert(lines, "# Commands:")
   table.insert(lines, "# cc = commit, new = create new change")
   table.insert(lines, "# dd = diff file, o = open file")
   table.insert(lines, "# r = reload status")
-  
+
   return lines
 end
 
 local function setup_buffer_keymaps(bufnr, status_info)
   local opts = { noremap = true, silent = true, buffer = bufnr }
-  
+
   -- Reload status
   vim.keymap.set("n", "r", function()
-    M.show_status()
+    -- Get current buffer for reload
+    local current_buf = vim.api.nvim_get_current_buf()
+
+    -- Only reload if we're in the status buffer
+    local buf_name = vim.api.nvim_buf_get_name(current_buf)
+    if buf_name:match("jj%-status$") then
+      reload_status_content(current_buf)
+    end
   end, opts)
-  
+
   -- Commit current changes
   vim.keymap.set("n", "cc", function()
     local commit_msg = vim.fn.input("Commit message: ")
@@ -102,13 +120,13 @@ local function setup_buffer_keymaps(bufnr, status_info)
       M.show_status()
     end
   end, opts)
-  
+
   -- Create new change
   vim.keymap.set("n", "new", function()
     vim.fn.system({ "jj", "new" })
     M.show_status()
   end, opts)
-  
+
   -- Diff file under cursor
   vim.keymap.set("n", "dd", function()
     local line = vim.api.nvim_get_current_line()
@@ -121,7 +139,7 @@ local function setup_buffer_keymaps(bufnr, status_info)
       vim.api.nvim_buf_set_option(0, "modifiable", false)
     end
   end, opts)
-  
+
   -- Open file under cursor
   vim.keymap.set("n", "o", function()
     local line = vim.api.nvim_get_current_line()
@@ -130,7 +148,7 @@ local function setup_buffer_keymaps(bufnr, status_info)
       vim.cmd("edit " .. vim.fn.fnameescape(filename))
     end
   end, opts)
-  
+
   -- Close status buffer
   vim.keymap.set("n", "q", function()
     vim.cmd("close")
@@ -144,7 +162,7 @@ local function setup_buffer_highlighting(bufnr)
     vim.cmd("syntax match JjStatusModified '^M .*'")
     vim.cmd("syntax match JjStatusDeleted '^D .*'")
     vim.cmd("syntax match JjStatusRenamed '^R .*'")
-    
+
     vim.cmd("highlight default link JjStatusHeader Comment")
     vim.cmd("highlight default link JjStatusAdded DiffAdd")
     vim.cmd("highlight default link JjStatusModified DiffChange")
@@ -153,30 +171,61 @@ local function setup_buffer_highlighting(bufnr)
   end)
 end
 
+local function reload_status_content(bufnr)
+  local output, err = get_jj_status()
+  if not output then
+    vim.api.nvim_err_writeln(err)
+    return false
+  end
+
+  local status_info = parse_status_output(output)
+  local lines = format_status_buffer(status_info)
+
+  -- Update buffer content
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+
+  return true
+end
+
 function M.show_status()
   local output, err = get_jj_status()
   if not output then
     vim.api.nvim_err_writeln(err)
     return
   end
-  
+
   local status_info = parse_status_output(output)
   local lines = format_status_buffer(status_info)
-  
-  local bufnr = create_status_buffer()
-  
+
+  local bufnr = get_or_create_status_buffer()
+
+  -- Check if keymaps are already set up by looking for the 'r' mapping
+  local existing_keymap = vim.fn.maparg("r", "n", false, true)
+  local is_new_buffer = not existing_keymap or existing_keymap.buffer ~= 1
+
   -- Set buffer content
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  
-  -- Setup keymaps and highlighting
-  setup_buffer_keymaps(bufnr, status_info)
-  setup_buffer_highlighting(bufnr)
-  
+
+  -- Setup keymaps and highlighting only for new buffers
+  if is_new_buffer then
+    setup_buffer_keymaps(bufnr, status_info)
+    setup_buffer_highlighting(bufnr)
+  end
+
   -- Open in current window or split
-  local existing_win = vim.fn.bufwinnr(bufnr)
-  if existing_win ~= -1 then
+  local existing_win = nil
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_buf(win) == bufnr then
+      existing_win = win
+      break
+    end
+  end
+
+  if existing_win then
     vim.api.nvim_set_current_win(existing_win)
   else
     vim.cmd("split")
