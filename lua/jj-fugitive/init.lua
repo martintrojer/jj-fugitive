@@ -33,10 +33,7 @@ function M.jj(args)
 end
 
 function M.status()
-  local result = run_jj_command("status")
-  if result then
-    print(result)
-  end
+  require("jj-fugitive.status").show_status()
 end
 
 function M.log(args)
