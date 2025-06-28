@@ -112,11 +112,16 @@ jj commit -m "Your commit message"
 # Add GitHub remote (first time setup)
 jj git remote add origin https://github.com/username/jj-fugitive.nvim.git
 
+# Create and set main bookmark (required for GitHub pushes)
+jj bookmark create main          # Create main bookmark
+jj bookmark set main             # Update main to current revision
+
 # Fetch latest changes
 jj git fetch
 
 # Push to GitHub
-jj git push
+jj git push --bookmark main      # Push specific bookmark
+jj git push                      # Push all bookmarks
 
 # Create a bookmark (branch) for feature work
 jj bookmark create feature-name
@@ -137,4 +142,14 @@ jj prev    # Move to parent revision
 
 # Edit a specific revision
 jj edit <revision-id>
+
+# Update main bookmark before pushing
+jj bookmark set main    # Move main to current working copy
+jj git push --bookmark main
 ```
+
+### Important Notes
+- jj requires explicit bookmarks for GitHub integration
+- Always update the `main` bookmark before pushing: `jj bookmark set main`
+- Use `--bookmark` flag to push specific branches to GitHub
+- The working copy becomes immutable after pushing, so jj creates a new commit on top

@@ -95,6 +95,68 @@ luacheck .
 stylua .
 ```
 
+### Testing the Plugin in Neovim
+
+For development and testing, you can load the plugin directly from your local directory:
+
+#### Method 1: Using vim.opt.rtp (Quick Testing)
+
+```bash
+# Navigate to your plugin directory
+cd /path/to/jj-fugitive
+
+# Start Neovim with the plugin in runtime path
+nvim --cmd "set rtp+=."
+```
+
+Then in Neovim:
+```vim
+" Source the plugin manually
+:runtime plugin/jj-fugitive.lua
+
+" Test commands
+:JjStatus
+:JjLog
+```
+
+#### Method 2: Temporary Plugin Manager Setup
+
+Create a minimal init file for testing:
+
+```lua
+-- test_init.lua
+vim.opt.rtp:prepend("/path/to/jj-fugitive")
+require("jj-fugitive")
+```
+
+```bash
+nvim -u test_init.lua
+```
+
+#### Method 3: Using Package Manager in Dev Mode
+
+For lazy.nvim:
+```lua
+{
+  dir = "/path/to/jj-fugitive",  -- Use local directory
+  name = "jj-fugitive",
+  dev = true,
+}
+```
+
+#### Testing in a jj Repository
+
+```bash
+# Create a test jj repository
+mkdir test-repo && cd test-repo
+jj init --git
+echo "test content" > file.txt
+jj describe -m "Initial commit"
+
+# Open Neovim and test commands
+nvim --cmd "set rtp+=../jj-fugitive"
+```
+
 ## Contributing
 
 1. Fork the repository
