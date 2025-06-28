@@ -1,6 +1,13 @@
 std = "luajit"
 cache = true
 
+-- Only check our plugin code, not dependencies
+include_files = {
+  "lua/**/*.lua",
+  "plugin/**/*.lua", 
+  "tests/**/*.lua"
+}
+
 read_globals = {
   "vim",
 }

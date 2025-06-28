@@ -9,25 +9,25 @@ jj-fugitive aims to provide seamless jj version control integration within Neovi
 ## Key Features to Implement
 
 ### Core Commands
-- `:Jj` - Main jj status interface (similar to `:Git` in vim-fugitive)
-- `:JjLog` - Show revision history with customizable templates
-- `:JjDiff` - Compare file contents between revisions
-- `:JjStatus` - High-level repository status
-- `:JjCommit` - Create commits with interactive message editing
-- `:JjNew` - Create new changes
+- `:J` - Main jj status interface (similar to `:Git` in vim-fugitive)
+- `:JLog` - Show revision history with customizable templates
+- `:JDiff` - Compare file contents between revisions
+- `:JStatus` - High-level repository status
+- `:JCommit` - Create commits with interactive message editing
+- `:JNew` - Create new changes
 
 ### Navigation Commands
-- `:JjNext` - Move to next child revision
-- `:JjPrev` - Move to parent revision
-- `:JjEdit` - Set specific revision as working copy
+- `:JNext` - Move to next child revision
+- `:JPrev` - Move to parent revision
+- `:JEdit` - Set specific revision as working copy
 
 ### Bookmark Management
-- `:JjBookmark` - List, create, and manage bookmarks
+- `:JBookmark` - List, create, and manage bookmarks
 - Integration with branch-like workflows
 
 ### Git Integration
-- `:JjGitFetch` - Fetch from Git remotes
-- `:JjGitPush` - Push to Git remotes
+- `:JGitFetch` - Fetch from Git remotes
+- `:JGitPush` - Push to Git remotes
 
 ## Development Guidelines
 

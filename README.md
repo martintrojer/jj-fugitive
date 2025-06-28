@@ -37,34 +37,34 @@ use "your-username/jj-fugitive.nvim"
 
 | Command | Description |
 |---------|-------------|
-| `:Jj` | Show jj status (default) or run arbitrary jj command |
-| `:JjStatus` | Show repository status |
-| `:JjLog` | Show revision history |
-| `:JjDiff` | Show diff between revisions |
-| `:JjCommit` | Create a commit |
-| `:JjNew` | Create a new change |
-| `:JjNext` | Move to next child revision |
-| `:JjPrev` | Move to parent revision |
-| `:JjEdit` | Set specific revision as working copy |
-| `:JjBookmark` | List and manage bookmarks |
+| `:J` | Show jj status (default) or run arbitrary jj command |
+| `:JStatus` | Show repository status |
+| `:JLog` | Show revision history |
+| `:JDiff` | Show diff between revisions |
+| `:JCommit` | Create a commit |
+| `:JNew` | Create a new change |
+| `:JNext` | Move to next child revision |
+| `:JPrev` | Move to parent revision |
+| `:JEdit` | Set specific revision as working copy |
+| `:JBookmark` | List and manage bookmarks |
 
 ## Examples
 
 ```vim
 " Show status
-:JjStatus
+:JStatus
 
 " Show log with custom format
-:JjLog -T compact
+:JLog -T compact
 
 " Show diff for current change
-:JjDiff
+:JDiff
 
 " Create a new change
-:JjNew
+:JNew
 
 " Move to parent revision
-:JjPrev
+:JPrev
 ```
 
 ## Development
@@ -115,8 +115,8 @@ Then in Neovim:
 :runtime plugin/jj-fugitive.lua
 
 " Test commands
-:JjStatus
-:JjLog
+:JStatus
+:JLog
 ```
 
 #### Method 2: Temporary Plugin Manager Setup
