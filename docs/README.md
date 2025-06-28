@@ -5,14 +5,17 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 ## Quick Start
 
 1. **Installation**: See the main [README](../README.md) for installation instructions
-2. **Basic usage**: Open a jj repository and run `:JStatus`
-3. **Interactive workflow**: Use keybindings in the status buffer to manage changes
+2. **Basic usage**: Open a jj repository and run `:J` or `:JStatus`
+3. **Smart completion**: Type `:J <space>` to see all available jj commands with tab completion
+4. **Interactive workflow**: Use keybindings in the status buffer to manage changes
 
 ## Documentation Index
 
 ### Core Features
 
-- **[:JStatus](jstatus.md)** - Interactive status buffer with file management
+- **[:J Command](j-command.md)** - Universal jj command with smart completion
+- **[:JStatus](jstatus.md)** - Interactive status buffer with file management  
+- **[:JDiff](jdiff.md)** - Enhanced diff viewer with side-by-side support
 - **[Commands](commands.md)** - Complete command reference (coming soon)
 - **[Keybindings](keybindings.md)** - All available keybindings (coming soon)
 
@@ -33,48 +36,61 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 
 ### ✅ Implemented Features
 
+- **:J Command** - Universal jj interface with smart completion
+  - Intelligent tab completion for all jj commands and flags
+  - Context-aware suggestions (bookmarks, files, etc.)
+  - Automatic status buffer refresh after state changes
+  - Support for all jj operations with full argument passing
+
 - **:JStatus** - Full-featured interactive status buffer
   - File status display with syntax highlighting
-  - Keybindings for common operations (cc, new, dd, o, r, q)
-  - Integration with jj commands
+  - Keybindings for common operations (cc, new, dd, o, r, q/gq)
+  - Integration with diff viewer
   - Real-time status updates
 
-### 🚧 Work in Progress
-
-- **:JLog** - Interactive log browser
 - **:JDiff** - Enhanced diff viewer
-- **:JCommit** - Commit interface
-- **:JBookmark** - Bookmark management
+  - Unified and side-by-side diff formats
+  - Toggle between formats with 's' key
+  - File-specific diffs with syntax highlighting
+  - Seamless integration with status buffer
 
-### 📋 Planned Features
+### 📋 Legacy Features (Use :J instead)
 
-- **:JEdit** - Revision editing
-- **:JNext/:JPrev** - Revision navigation
-- **:JNew** - Change creation
-- Configuration system
-- Custom keybinding support
-- Integration with telescope.nvim
+- **:JLog** - Basic log display (use `:J log` instead)
+- **:JCommit** - Basic commit (use `:J commit` instead)
+- **:JBookmark** - Basic bookmark management (use `:J bookmark` instead)
+- **:JEdit/:JNext/:JPrev/:JNew** - Basic operations (use `:J` equivalents instead)
 
 ## Quick Reference
 
 ### Most Used Commands
 
 ```vim
-:JStatus    " Open interactive status buffer
-:J          " Shorthand for :JStatus (when no args)
-:JLog       " Show revision history (basic)
-:JDiff      " Show diff (basic)
+:J                    " Show status (default) or use smart completion
+:J <space>            " Show all available jj commands
+:J status             " Show status buffer
+:J commit -m "msg"    " Commit with message
+:J log -T compact     " Show log with custom template
+:JStatus              " Open interactive status buffer
+:JDiff [file]         " Show diff (all changes or specific file)
 ```
 
 ### Status Buffer Keybindings
 
 ```
 r    - Reload status
-cc   - Commit changes
+cc   - Commit changes with message prompt
 new  - Create new change
-dd   - Diff file under cursor
+dd   - Show diff for file under cursor
 o    - Open file under cursor
-q    - Quit status buffer
+q/gq - Close status buffer
+```
+
+### Diff Buffer Keybindings
+
+```
+s    - Toggle between unified and side-by-side view
+q    - Close diff buffer
 ```
 
 ## Philosophy
@@ -94,7 +110,23 @@ jj-fugitive follows the same design principles as vim-fugitive:
 
 ## Examples
 
-### Basic Status Workflow
+### Smart Completion Workflow
+
+```vim
+# Basic usage with completion
+:J <space>                    " See all jj commands
+:J st<tab>                    " Complete to 'status'
+:J commit <space>             " See all commit flags
+:J log --template <space>     " See template options
+
+# Common operations
+:J status                     " Interactive status buffer
+:J commit -m "Fix bug"        " Quick commit
+:J new -m "Start feature"     " Create new change
+:J log -T compact -r main..@  " Show recent changes
+```
+
+### Interactive Status Workflow
 
 ```bash
 # In your jj repository
@@ -108,6 +140,7 @@ nvim
 # - Press 'dd' on a file to see its diff  
 # - Press 'cc' to commit your changes
 # - Press 'new' to start a new change
+# - Press 'r' to reload status
 ```
 
 ### Integration with Splits
@@ -123,7 +156,9 @@ nvim
 ## Version History
 
 - **v0.1.0** - Initial release with :JStatus functionality
-- **v0.2.0** - Enhanced status buffer with full keybinding support (current)
+- **v0.2.0** - Enhanced status buffer with full keybinding support  
+- **v0.3.0** - Smart completion system and universal :J command (current)
+- **v0.4.0** - Enhanced diff viewer with side-by-side support (current)
 
 ---
 

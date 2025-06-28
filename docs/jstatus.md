@@ -28,7 +28,7 @@ D old-file.md
 # Commands:
 # cc = commit, new = create new change
 # dd = diff file, o = open file
-# r = reload status
+# r = reload status, q/gq = close
 ```
 
 ## File Status Indicators
@@ -44,11 +44,11 @@ D old-file.md
 
 ### Navigation and Information
 - `r` - **Reload status** - Refresh the status buffer with current repository state
-- `q` - **Quit** - Close the status buffer
+- `q` / `gq` - **Quit** - Close the status buffer (vim-fugitive compatibility)
 
 ### File Operations
 - `o` - **Open file** - Open the file under cursor in a new buffer
-- `dd` - **Diff file** - Show diff for the file under cursor in a new tab
+- `dd` - **Diff file** - Show enhanced diff for the file under cursor (unified/side-by-side)
 
 ### Version Control Operations
 - `cc` - **Commit** - Commit current changes (prompts for commit message)
@@ -69,7 +69,7 @@ The status buffer includes syntax highlighting to make it easier to scan:
 
 1. **Open status**: `:JStatus`
 2. **Review changes**: Navigate through the file list
-3. **View a diff**: Position cursor on a file and press `dd`
+3. **View a diff**: Position cursor on a file and press `dd` to open enhanced diff viewer
 4. **Edit a file**: Position cursor on a file and press `o`
 5. **Commit changes**: Press `cc` and enter commit message
 6. **Create new change**: Press `new` to start working on next change
@@ -80,7 +80,7 @@ The status buffer includes syntax highlighting to make it easier to scan:
 # Position cursor on any changed file line like:
 M lua/jj-fugitive/init.lua
 
-# Press 'dd' to see the diff in a new tab
+# Press 'dd' to see the enhanced diff viewer with side-by-side toggle
 # Press 'o' to open the file for editing
 ```
 
@@ -104,12 +104,13 @@ Commit message: Add interactive status buffer functionality
 
 ## Integration with jj Commands
 
-The status buffer integrates seamlessly with jj commands:
+The status buffer integrates seamlessly with jj commands and the `:J` universal command:
 
-- **Commit**: Uses `jj commit -m "message"`
-- **New change**: Uses `jj new`
-- **Status refresh**: Uses `jj status`
-- **File diff**: Uses `jj diff filename`
+- **Commit**: Uses `jj commit -m "message"` (equivalent to `:J commit -m "message"`)
+- **New change**: Uses `jj new` (equivalent to `:J new`)
+- **Status refresh**: Uses `jj status` (equivalent to `:J status`)
+- **File diff**: Uses enhanced diff viewer with `jj diff filename` and side-by-side support
+- **Auto-refresh**: Status buffer automatically updates when `:J` commands change repository state
 
 ## Tips and Best Practices
 

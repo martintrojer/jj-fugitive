@@ -4,10 +4,12 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 
 ## Features
 
-- Seamless jj integration within Neovim
-- Familiar command interface inspired by vim-fugitive
-- Support for core jj operations: status, log, diff, commit, and more
-- Navigation commands for revision history
+- **Smart completion system** - Intelligent tab completion for all jj commands and flags
+- **Interactive status buffer** - vim-fugitive-style interface with keybindings
+- **Enhanced diff viewer** - Both unified and side-by-side diff formats
+- **Seamless jj integration** - Direct access to all jj functionality
+- **Familiar command interface** - Inspired by vim-fugitive for easy adoption
+- **Auto-refresh** - Status buffer updates automatically after state changes
 
 ## Requirements
 
@@ -35,12 +37,19 @@ use "your-username/jj-fugitive.nvim"
 
 ## Commands
 
+### Primary Commands
+
 | Command | Description |
 |---------|-------------|
-| `:J` | Show jj status (default) or run arbitrary jj command |
-| `:JStatus` | Show repository status |
+| `:J` | Universal jj command with smart completion - shows status by default |
+| `:JStatus` | Interactive status buffer with vim-fugitive-style keybindings |
+| `:JDiff [file]` | Enhanced diff viewer (unified or side-by-side) |
+
+### Legacy Commands (Deprecated - use `:J` instead)
+
+| Command | Description |
+|---------|-------------|
 | `:JLog` | Show revision history |
-| `:JDiff` | Show diff between revisions |
 | `:JCommit` | Create a commit |
 | `:JNew` | Create a new change |
 | `:JNext` | Move to next child revision |
@@ -48,23 +57,57 @@ use "your-username/jj-fugitive.nvim"
 | `:JEdit` | Set specific revision as working copy |
 | `:JBookmark` | List and manage bookmarks |
 
-## Examples
+## Usage Examples
+
+### The `:J` Command with Smart Completion
+
+The `:J` command provides intelligent tab completion for all jj operations:
 
 ```vim
-" Show status
+" Show status (default)
+:J
+
+" Smart completion - press space or tab to see available commands
+:J <space>          " → Shows: abandon, absorb, bookmark, commit, diff, log, status...
+:J s<tab>           " → Shows: show, squash, status...
+:J status <space>   " → Shows: --help, --repository, --at-operation...
+:J commit --<tab>   " → Shows: --message, --author, --help...
+
+" Run any jj command with full argument support
+:J log -T compact
+:J commit -m "Fix bug"
+:J new -m "Start feature"
+:J bookmark set main
+:J abandon
+```
+
+### Interactive Status Buffer (`:JStatus`)
+
+```vim
+" Open interactive status buffer
 :JStatus
 
-" Show log with custom format
-:JLog -T compact
+" Keybindings in status buffer:
+" r        - Reload status
+" cc       - Commit with message
+" new      - Create new change
+" dd       - Show diff for file under cursor
+" o        - Open file under cursor
+" q / gq   - Close status buffer
+```
 
-" Show diff for current change
+### Enhanced Diff Viewer (`:JDiff`)
+
+```vim
+" Show all changes in unified format
 :JDiff
 
-" Create a new change
-:JNew
+" Show specific file diff
+:JDiff src/main.rs
 
-" Move to parent revision
-:JPrev
+" In diff buffer:
+" s        - Toggle between unified and side-by-side view
+" q        - Close diff buffer
 ```
 
 ## Documentation
