@@ -114,7 +114,7 @@ local function reload_status_content(bufnr)
 
   return true
 end
-
+-- foo
 local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore status_info
   local opts = { noremap = true, silent = true, buffer = bufnr }
 

@@ -160,6 +160,30 @@ function M.show_file_diff(filename)
   end)
 end
 
+local function get_or_create_sidebyside_buffer(name_pattern)
+  -- Check if a buffer with this pattern already exists
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(bufnr) then
+      local name = vim.api.nvim_buf_get_name(bufnr)
+      if name:match(vim.pesc(name_pattern)) then
+        return bufnr
+      end
+    end
+  end
+
+  -- Create new buffer if none exists
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+
+  -- Add timestamp to make buffer name unique
+  local timestamp = os.time()
+  local unique_name = name_pattern .. " [" .. timestamp .. "]"
+  vim.api.nvim_buf_set_name(bufnr, unique_name)
+
+  return bufnr
+end
+
 -- Show diff in side-by-side format
 function M.show_file_diff_sidebyside(filename)
   if not filename then
@@ -188,10 +212,8 @@ function M.show_file_diff_sidebyside(filename)
   vim.cmd("tabnew")
 
   -- Left side: original content
-  local original_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(original_buf, "buftype", "nofile")
+  local original_buf = get_or_create_sidebyside_buffer("jj-diff: " .. filename .. " (original)")
   vim.api.nvim_buf_set_option(original_buf, "modifiable", true)
-  vim.api.nvim_buf_set_name(original_buf, "jj-diff: " .. filename .. " (original)")
 
   local original_lines = vim.split(original_content, "\n")
   vim.api.nvim_buf_set_lines(original_buf, 0, -1, false, original_lines)
@@ -209,10 +231,8 @@ function M.show_file_diff_sidebyside(filename)
   vim.cmd("vsplit")
 
   -- Right side: current content
-  local current_buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(current_buf, "buftype", "nofile")
+  local current_buf = get_or_create_sidebyside_buffer("jj-diff: " .. filename .. " (current)")
   vim.api.nvim_buf_set_option(current_buf, "modifiable", true)
-  vim.api.nvim_buf_set_name(current_buf, "jj-diff: " .. filename .. " (current)")
 
   local current_lines = vim.split(current_content, "\n")
   vim.api.nvim_buf_set_lines(current_buf, 0, -1, false, current_lines)
