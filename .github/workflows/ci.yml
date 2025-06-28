@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.1"
+    
+    - name: Install LuaRocks
+      uses: leafo/gh-actions-luarocks@v4
+    
+    - name: Install luacheck
+      run: luarocks install luacheck
+    
+    - name: Run luacheck
+      run: luacheck .
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install stylua
+      uses: JohnnyMorganz/stylua-action@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        version: latest
+        args: --check .
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        neovim_version: ['nightly', 'stable']
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Neovim
+      uses: rhymond/setup-nvim@v1
+      with:
+        version: ${{ matrix.neovim_version }}
+    
+    - name: Install Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.1"
+    
+    - name: Install LuaRocks
+      uses: leafo/gh-actions-luarocks@v4
+    
+    - name: Install busted
+      run: luarocks install busted
+    
+    - name: Clone plenary.nvim
+      run: git clone https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
+    
+    - name: Run tests
+      run: |
+        export PLENARY_DIR=/tmp/plenary.nvim
+        nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"

@@ -59,5 +59,82 @@ jj-fugitive aims to provide seamless jj version control integration within Neovi
 - jj CLI tool installed and accessible in PATH
 
 ## Development Commands
-Run tests: (TBD - determine testing framework)
-Lint: (TBD - determine linting approach for Lua)
+
+### Testing
+```bash
+# Install plenary.nvim for testing
+git clone https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
+
+# Run tests
+export PLENARY_DIR=/tmp/plenary.nvim
+nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+```
+
+### Linting
+```bash
+# Install luacheck
+brew install luacheck  # or luarocks install luacheck
+
+# Run linting
+luacheck .
+```
+
+### Formatting
+```bash
+# Install stylua
+brew install stylua  # or cargo install stylua
+
+# Format code
+stylua .
+
+# Check formatting
+stylua --check .
+```
+
+## Version Control Workflow
+
+This project uses Jujutsu (jj) for version control. Here are the common commands:
+
+### Committing Changes
+```bash
+# Stage and describe your changes
+jj describe -m "Your commit message"
+
+# Create a new working copy for the next change
+jj new
+
+# Or combine both in one step
+jj commit -m "Your commit message"
+```
+
+### Working with GitHub
+```bash
+# Add GitHub remote (first time setup)
+jj git remote add origin https://github.com/username/jj-fugitive.nvim.git
+
+# Fetch latest changes
+jj git fetch
+
+# Push to GitHub
+jj git push
+
+# Create a bookmark (branch) for feature work
+jj bookmark create feature-name
+jj git push --bookmark feature-name
+```
+
+### Common Workflow
+```bash
+# Check status
+jj status
+
+# View history
+jj log
+
+# Move between revisions
+jj next    # Move to child revision
+jj prev    # Move to parent revision
+
+# Edit a specific revision
+jj edit <revision-id>
+```
