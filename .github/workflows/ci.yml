@@ -60,20 +60,19 @@ jobs:
         sudo mv jj /usr/local/bin/
         jj --version
     
-    - name: Set up test repository
+    - name: Set up test repository and run functional tests
       run: |
+        # Set up test repository
         jj git init test-repo
         cd test-repo
         echo "test content" > test.txt
         jj describe -m "Initial commit"
         echo "modified content" > test.txt
         cd ..
-    
-    - name: Run functional tests
-      run: |
-        cd test-repo
+        
+        # Run functional tests from plugin directory
         export CI=true
-        chmod +x ../tests/test_status_functionality.lua
-        chmod +x ../tests/test_diff_functionality.lua
-        ../tests/test_status_functionality.lua
-        ../tests/test_diff_functionality.lua
+        chmod +x tests/test_status_functionality.lua
+        chmod +x tests/test_diff_functionality.lua
+        ./tests/test_status_functionality.lua
+        ./tests/test_diff_functionality.lua
