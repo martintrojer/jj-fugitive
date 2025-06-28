@@ -49,14 +49,16 @@ function M.log(args)
 end
 
 function M.diff(args)
-  local cmd_args = "diff"
-  if args and args ~= "" then
-    cmd_args = cmd_args .. " " .. args
-  end
-
-  local result = run_jj_command(cmd_args)
-  if result then
-    print(result)
+  if not args or args == "" then
+    require("jj-fugitive.diff").show_all_diff()
+  else
+    -- Parse arguments to see if it's a filename
+    local filename = args:match("^%s*(.-)%s*$")
+    if filename and filename ~= "" then
+      require("jj-fugitive.diff").show_file_diff(filename)
+    else
+      require("jj-fugitive.diff").show_all_diff()
+    end
   end
 end
 

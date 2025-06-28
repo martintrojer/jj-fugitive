@@ -129,7 +129,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       reload_status_content(current_buf)
     end
   end, opts)
-
+  -- foo
   -- Commit current changes
   vim.keymap.set("n", "cc", function()
     local commit_msg = vim.fn.input("Commit message: ")
@@ -150,11 +150,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      vim.cmd("tabnew")
-      local diff_output = vim.fn.system({ "jj", "diff", filename })
-      vim.api.nvim_buf_set_lines(0, 0, -1, false, vim.split(diff_output, "\n"))
-      vim.api.nvim_buf_set_option(0, "filetype", "diff")
-      vim.api.nvim_buf_set_option(0, "modifiable", false)
+      require("jj-fugitive.diff").show_file_diff(filename)
     end
   end, opts)
 

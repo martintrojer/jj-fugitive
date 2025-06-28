@@ -7,7 +7,6 @@ This guide covers how to set up, test, and contribute to jj-fugitive development
 - Neovim 0.8+
 - [Jujutsu (jj)](https://github.com/martinvonz/jj) installed and in PATH
 - Lua development tools (luacheck, stylua)
-- Python 3.8+ with [uv](https://docs.astral.sh/uv/) for Python dependency management
 - Git for version control integration
 
 ## Setting Up Development Environment
@@ -54,33 +53,36 @@ export PLENARY_DIR=/tmp/plenary.nvim
 nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
 ```
 
-### Automated Remote API Tests
+### Functional Tests
 
-For comprehensive plugin testing without manual interaction:
+For comprehensive plugin testing using headless Neovim:
 
 ```bash
-# Install Python dependencies with uv
-uv sync
+# Run all tests including linting, formatting, and functional tests
+./tests/run_tests.sh
 
-# Run all automated tests
-./tests/run_remote_tests.sh
-
-# Or run specific test types
-./tests/run_remote_tests.sh python
-./tests/run_remote_tests.sh lua
-./tests/run_remote_tests.sh shell
+# Run individual functional tests
+./tests/test_status_functionality.lua
+./tests/test_diff_functionality.lua
 ```
-
-See [Remote Testing Guide](remote-testing.md) for detailed information.
 
 ### Manual Testing Methods
 
-For interactive development and debugging, see the [Remote Testing Guide](remote-testing.md) which covers:
+For interactive development and debugging:
 
-- Loading plugin with `vim.opt.rtp`
-- Temporary plugin manager setup
-- Testing in jj repositories
-- Manual command validation
+```bash
+# Test plugin loading manually
+nvim --cmd 'set rtp+=.' -c 'runtime plugin/jj-fugitive.lua'
+
+# Quick manual test
+nvim tests/manual_test.lua
+```
+
+Manual testing workflow:
+- Use `:JStatus` to test status functionality
+- Use `:JDiff <filename>` to test diff viewer
+- Test in a jj repository with actual changes
+- Verify keybindings work in status buffer (r, dd, cc, etc.)
 
 ### Writing Tests
 
@@ -100,22 +102,30 @@ describe("module functionality", function()
 end)
 ```
 
-#### Remote API Tests
+#### Functional Tests
 
-Add tests to the Python test suite:
+Add tests using headless Neovim with Lua scripts:
 
-```python
-def test_new_feature(self):
-    """Test new feature functionality"""
-    print("\n=== Testing new feature ===")
-    
-    try:
-        self.nvim.command('JNewCommand')
-        # Validate results...
-        return True
-    except Exception as e:
-        print(f"❌ FAIL: {e}")
-        return False
+```lua
+#!/usr/bin/env -S nvim --headless -l
+
+-- Test new feature
+vim.cmd('set rtp+=.')
+vim.cmd('runtime plugin/jj-fugitive.lua')
+
+local function assert_test(name, condition, message)
+  if condition then
+    print("✅ PASS: " .. name)
+  else 
+    print("❌ FAIL: " .. name .. " - " .. (message or ""))
+  end
+end
+
+-- Test the new feature
+local module = require("jj-fugitive.new-feature")
+assert_test("New feature loads", module ~= nil, "Could not load module")
+
+-- Add more tests...
 ```
 
 ## Code Quality
@@ -138,24 +148,6 @@ stylua --check .
 
 Configuration is in `.luacheckrc` (luacheck) and `stylua.toml` (stylua).
 
-### Python Linting and Formatting
-
-```bash
-# Install Python dependencies including ruff
-uv sync
-
-# Run Python linting
-uv run ruff check tests/
-
-# Fix Python issues automatically
-uv run ruff check tests/ --fix
-
-# Format Python files
-uv run ruff format tests/
-```
-
-Ruff handles both linting and formatting for Python code with sensible defaults.
-
 ### Pre-commit Checks
 
 Before committing, run:
@@ -165,15 +157,11 @@ Before committing, run:
 luacheck .
 stylua --check .
 
-# Run all Python checks
-uv run ruff check tests/
-uv run ruff format --check tests/
-
 # Run unit tests
 export PLENARY_DIR=/tmp/plenary.nvim && nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
 
-# Run automated integration tests
-./tests/run_remote_tests.sh
+# Run functional tests
+./tests/run_tests.sh
 ```
 
 ## Architecture
