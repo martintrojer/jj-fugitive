@@ -62,12 +62,15 @@ jj-fugitive aims to provide seamless jj version control integration within Neovi
 
 ### Testing
 ```bash
-# Install plenary.nvim for testing
-git clone https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
+# Run comprehensive test suite (linting, formatting, functional tests)
+./tests/run_tests.sh
 
-# Run tests
-export PLENARY_DIR=/tmp/plenary.nvim
-nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+# Run individual functional tests
+./tests/test_status_functionality.lua
+./tests/test_diff_functionality.lua
+
+# Manual testing
+nvim tests/manual_test.lua
 ```
 
 ### Linting

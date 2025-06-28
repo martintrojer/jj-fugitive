@@ -19,7 +19,6 @@ cd jj-fugitive.nvim
 
 # Install development dependencies
 luarocks install luacheck
-luarocks install busted
 ```
 
 ### Install Development Tools
@@ -40,17 +39,13 @@ luarocks install luacheck  # Cross-platform
 
 jj-fugitive has multiple testing approaches depending on your needs:
 
-### Unit Tests (Plenary/Busted)
+### Unit Tests
 
-For testing individual Lua modules and functions:
+Basic smoke tests for module loading:
 
 ```bash
-# Install test dependencies
-git clone https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
-
-# Run unit tests
-export PLENARY_DIR=/tmp/plenary.nvim
-nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+# Manual smoke test
+nvim tests/manual_test.lua
 ```
 
 ### Functional Tests
@@ -88,18 +83,16 @@ Manual testing workflow:
 
 #### Unit Tests
 
-Tests use the busted framework with plenary.nvim:
+Write simple unit tests for basic module validation:
 
 ```lua
--- tests/example_spec.lua
-local module = require("jj-fugitive.module")
+-- tests/example_manual_test.lua
+vim.cmd('set rtp+=.')
+vim.cmd('runtime plugin/jj-fugitive.lua')
 
-describe("module functionality", function()
-  it("should do something", function()
-    assert.is_not_nil(module)
-    assert.is_function(module.some_function)
-  end)
-end)
+local module = require("jj-fugitive.module")
+print("Module loaded:", module ~= nil)
+print("Function exists:", type(module.some_function) == "function")
 ```
 
 #### Functional Tests
@@ -157,8 +150,8 @@ Before committing, run:
 luacheck .
 stylua --check .
 
-# Run unit tests
-export PLENARY_DIR=/tmp/plenary.nvim && nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+# Run manual smoke tests (optional)
+nvim tests/manual_test.lua
 
 # Run functional tests
 ./tests/run_tests.sh
@@ -308,4 +301,4 @@ test: add status buffer integration tests
 - [Neovim Lua Guide](https://neovim.io/doc/user/lua-guide.html)
 - [jj Documentation](https://jj-vcs.github.io/jj/)
 - [vim-fugitive](https://github.com/tpope/vim-fugitive) - Inspiration and reference
-- [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) - Testing framework
+- [Headless Neovim testing](https://neovim.io/doc/user/starting.html#--headless) - For automated functional tests

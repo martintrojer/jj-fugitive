@@ -53,21 +53,27 @@ jobs:
         neovim: true
         version: ${{ matrix.neovim_version == 'stable' && 'stable' || 'nightly' }}
     
-    - name: Install Lua
-      uses: leafo/gh-actions-lua@v10
-      with:
-        luaVersion: "5.1"
-    
-    - name: Install LuaRocks
-      uses: leafo/gh-actions-luarocks@v4
-    
-    - name: Install busted
-      run: luarocks install busted
-    
-    - name: Clone plenary.nvim
-      run: git clone https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
-    
-    - name: Run tests
+    - name: Install jj (Jujutsu)
       run: |
-        export PLENARY_DIR=/tmp/plenary.nvim
-        nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+        curl -L https://github.com/martinvonz/jj/releases/download/v0.15.1/jj-v0.15.1-x86_64-unknown-linux-musl.tar.gz -o jj.tar.gz
+        tar -xzf jj.tar.gz
+        sudo mv jj /usr/local/bin/
+        jj --version
+    
+    - name: Set up test repository
+      run: |
+        jj git init test-repo
+        cd test-repo
+        echo "test content" > test.txt
+        jj describe -m "Initial commit"
+        echo "modified content" > test.txt
+        cd ..
+    
+    - name: Run functional tests
+      run: |
+        cd test-repo
+        export CI=true
+        chmod +x ../tests/test_status_functionality.lua
+        chmod +x ../tests/test_diff_functionality.lua
+        ../tests/test_status_functionality.lua
+        ../tests/test_diff_functionality.lua

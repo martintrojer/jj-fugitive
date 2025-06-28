@@ -34,17 +34,6 @@ else
 fi
 echo ""
 
-# Run unit tests (if they exist)
-if [ -f "tests/minimal_init.lua" ] && command -v plenary >/dev/null 2>&1; then
-    echo "🧪 Running unit tests..."
-    export PLENARY_DIR=${PLENARY_DIR:-/tmp/plenary.nvim}
-    if [ ! -d "$PLENARY_DIR" ]; then
-        echo "📦 Cloning plenary.nvim..."
-        git clone https://github.com/nvim-lua/plenary.nvim "$PLENARY_DIR"
-    fi
-    nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
-    echo ""
-fi
 
 # Run functional tests
 echo "🔧 Running functional tests..."

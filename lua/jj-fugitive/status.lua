@@ -92,7 +92,7 @@ local function format_status_buffer(status_info)
   table.insert(lines, "# Commands:")
   table.insert(lines, "# cc = commit, new = create new change")
   table.insert(lines, "# dd = diff file, o = open file")
-  table.insert(lines, "# r = reload status")
+  table.insert(lines, "# r = reload status, q/gq = close")
 
   return lines
 end
@@ -165,6 +165,10 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
 
   -- Close status buffer
   vim.keymap.set("n", "q", function()
+    vim.cmd("close")
+  end, opts)
+
+  vim.keymap.set("n", "gq", function()
     vim.cmd("close")
   end, opts)
 end
