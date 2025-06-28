@@ -50,4 +50,10 @@ echo "Testing diff functionality..."
 
 echo ""
 
+# Test completion functionality
+echo "Testing completion functionality..."
+./tests/test_completion_functionality.lua
+
+echo ""
+
 echo "🎉 All tests completed!"

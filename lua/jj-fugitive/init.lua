@@ -26,9 +26,44 @@ function M.jj(args)
     return
   end
 
-  local result = run_jj_command(args)
-  if result then
-    print(result)
+  -- Parse the first word to see if it's a command we handle specially
+  local parts = vim.split(args, "%s+", { trimempty = true })
+  local command = parts[1]
+  local rest_args = table.concat(parts, " ", 2)
+
+  -- Handle special commands that have custom implementations
+  if command == "status" then
+    M.status()
+  elseif command == "diff" then
+    M.diff(rest_args)
+  elseif command == "log" and rest_args == "" then
+    -- Only use custom log for simple cases, fall back to jj for complex args
+    M.log(rest_args)
+  else
+    -- For all other commands, pass through to jj directly
+    local result = run_jj_command(args)
+    if result then
+      -- For some commands, we might want to reload the status buffer
+      if command == "commit" or command == "new" or command == "edit" then
+        print(result)
+        -- If status buffer is open, refresh it
+        local status_module = require("jj-fugitive.status")
+        for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(bufnr) then
+            local name = vim.api.nvim_buf_get_name(bufnr)
+            if name:match("jj%-status$") then
+              -- Refresh status buffer if it exists
+              vim.schedule(function()
+                status_module.show_status()
+              end)
+              break
+            end
+          end
+        end
+      else
+        print(result)
+      end
+    end
   end
 end
 
@@ -126,27 +161,8 @@ function M.bookmark(args)
   end
 end
 
-function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cmdline cursorpos
-  local completions = {
-    "status",
-    "log",
-    "diff",
-    "commit",
-    "new",
-    "next",
-    "prev",
-    "edit",
-    "bookmark",
-  }
-
-  local matches = {}
-  for _, completion in ipairs(completions) do
-    if completion:find("^" .. vim.pesc(arglead)) then
-      table.insert(matches, completion)
-    end
-  end
-
-  return matches
+function M.complete(arglead, cmdline, cursorpos)
+  return require("jj-fugitive.completion").complete(arglead, cmdline, cursorpos)
 end
 
 return M
