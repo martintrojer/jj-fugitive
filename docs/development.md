@@ -7,6 +7,7 @@ This guide covers how to set up, test, and contribute to jj-fugitive development
 - Neovim 0.8+
 - [Jujutsu (jj)](https://github.com/martinvonz/jj) installed and in PATH
 - Lua development tools (luacheck, stylua)
+- Python 3.8+ with [uv](https://docs.astral.sh/uv/) for Python dependency management
 - Git for version control integration
 
 ## Setting Up Development Environment
@@ -119,39 +120,60 @@ def test_new_feature(self):
 
 ## Code Quality
 
-### Linting
+### Lua Linting and Formatting
 
 ```bash
-# Run linting (configured to only check our code, not dependencies)
+# Run Lua linting (configured to only check our code, not dependencies)
 luacheck .
 
-# Fix common issues automatically
+# Fix common Lua issues automatically
 luacheck . --fix
-```
 
-Configuration is in `.luacheckrc` and excludes external dependencies.
-
-### Formatting
-
-```bash
 # Format all Lua files
 stylua .
 
-# Check formatting without changing files
+# Check Lua formatting without changing files
 stylua --check .
 ```
 
-Configuration is in `stylua.toml`.
+Configuration is in `.luacheckrc` (luacheck) and `stylua.toml` (stylua).
+
+### Python Linting and Formatting
+
+```bash
+# Install Python dependencies including ruff
+uv sync
+
+# Run Python linting
+uv run ruff check tests/
+
+# Fix Python issues automatically
+uv run ruff check tests/ --fix
+
+# Format Python files
+uv run ruff format tests/
+```
+
+Ruff handles both linting and formatting for Python code with sensible defaults.
 
 ### Pre-commit Checks
 
 Before committing, run:
 
 ```bash
-# Run all checks
+# Run all Lua checks
 luacheck .
 stylua --check .
+
+# Run all Python checks
+uv run ruff check tests/
+uv run ruff format --check tests/
+
+# Run unit tests
 export PLENARY_DIR=/tmp/plenary.nvim && nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
+
+# Run automated integration tests
+./tests/run_remote_tests.sh
 ```
 
 ## Architecture

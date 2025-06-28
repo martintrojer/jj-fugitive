@@ -41,36 +41,39 @@ class JJFugitiveAPITest:
         self.nvim = None
         self.socket_path = None
         self.nvim_process = None
-        
+
     def start_neovim(self):
         """Start headless Neovim with jj-fugitive plugin loaded"""
         print("Starting headless Neovim with jj-fugitive...")
-        
+
         # Create temporary socket
-        self.socket_path = os.path.join(tempfile.gettempdir(), "nvim_jj_fugitive_test.sock")
-        
+        self.socket_path = os.path.join(
+            tempfile.gettempdir(), "nvim_jj_fugitive_test.sock"
+        )
+
         # Remove old socket if exists
         if os.path.exists(self.socket_path):
             os.remove(self.socket_path)
-        
+
         # Get plugin directory (assuming we're in tests/ subdirectory)
         plugin_dir = Path(__file__).parent.parent.absolute()
-        
+
         # Start Neovim
         cmd = [
             "nvim",
             "--headless",
-            "--listen", self.socket_path,
-            "--cmd", f"set rtp+={plugin_dir}",
-            "-c", "runtime plugin/jj-fugitive.lua"
+            "--listen",
+            self.socket_path,
+            "--cmd",
+            f"set rtp+={plugin_dir}",
+            "-c",
+            "runtime plugin/jj-fugitive.lua",
         ]
-        
+
         self.nvim_process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        
+
         # Wait for socket to be created
         for _ in range(50):  # 5 second timeout
             if os.path.exists(self.socket_path):
@@ -78,45 +81,42 @@ class JJFugitiveAPITest:
             time.sleep(0.1)
         else:
             raise RuntimeError("Failed to start Neovim or create socket")
-        
+
         # Connect to Neovim
-        self.nvim = pynvim.attach('socket', path=self.socket_path)
+        self.nvim = pynvim.attach("socket", path=self.socket_path)
         print("✅ Neovim started successfully")
-        
+
         # Register cleanup
         atexit.register(self.cleanup)
-        
+
     def cleanup(self):
         """Clean up Neovim process and socket"""
         print("Cleaning up...")
-        
+
         if self.nvim:
             try:
                 self.nvim.command("qall!")
-            except:
+            except Exception:
                 pass
             self.nvim.close()
-        
+
         if self.nvim_process:
             self.nvim_process.terminate()
             try:
                 self.nvim_process.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 self.nvim_process.kill()
-        
+
         if self.socket_path and os.path.exists(self.socket_path):
             os.remove(self.socket_path)
-    
+
     def test_jj_repository(self):
         """Test that we're in a valid jj repository"""
         print("\n=== Testing jj repository ===")
-        
+
         try:
             result = subprocess.run(
-                ["jj", "status"],
-                capture_output=True,
-                text=True,
-                check=True
+                ["jj", "status"], capture_output=True, text=True, check=True
             )
             print("✅ PASS: In a valid jj repository")
             print(f"jj status: {result.stdout[:100]}...")
@@ -124,13 +124,13 @@ class JJFugitiveAPITest:
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
             print(f"❌ FAIL: Not in a jj repository or jj command failed: {e}")
             return False
-    
+
     def test_plugin_loading(self):
         """Test that jj-fugitive commands are available"""
         print("\n=== Testing plugin loading ===")
-        
+
         commands = ["JStatus", "JLog", "JDiff", "JCommit", "JNew"]
-        
+
         for cmd in commands:
             try:
                 result = self.nvim.eval(f"exists(':{cmd}')")
@@ -142,34 +142,34 @@ class JJFugitiveAPITest:
             except Exception as e:
                 print(f"❌ FAIL: Error checking command :{cmd}: {e}")
                 return False
-        
+
         return True
-    
+
     def test_jstatus_command(self):
         """Test the :JStatus command functionality"""
         print("\n=== Testing :JStatus command ===")
-        
+
         try:
             # Execute :JStatus command
             print("Executing :JStatus...")
             self.nvim.command("JStatus")
-            
+
             # Give time for buffer creation
             time.sleep(0.5)
-            
+
             # Find the jj-status buffer
             buffers = self.nvim.buffers
             status_buffer = None
-            
+
             for buf in buffers:
                 try:
                     name = buf.name
                     if "jj-status" in name:
                         status_buffer = buf
                         break
-                except:
+                except Exception:
                     pass
-            
+
             if not status_buffer:
                 print("❌ FAIL: Could not find jj-status buffer")
                 # Debug: list all buffers
@@ -177,73 +177,73 @@ class JJFugitiveAPITest:
                 for buf in buffers:
                     try:
                         print(f"  Buffer {buf.number}: {buf.name}")
-                    except:
+                    except Exception:
                         print(f"  Buffer {buf.number}: <unnamed>")
                 return False
-            
+
             print(f"✅ Found jj-status buffer: {status_buffer.number}")
-            
+
             # Get buffer contents
             lines = status_buffer[:]
             content = "\n".join(lines)
-            
+
             print("Status buffer content:")
             print("--- START ---")
             print(content)
             print("--- END ---")
-            
+
             # Validate content
             expected_patterns = [
                 "jj-fugitive Status",
                 "Working copy",
                 "Commands:",
             ]
-            
+
             for pattern in expected_patterns:
                 if pattern.lower() in content.lower():
                     print(f"✅ PASS: Found expected pattern: {pattern}")
                 else:
                     print(f"❌ FAIL: Missing expected pattern: {pattern}")
                     return False
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ FAIL: Error during :JStatus test: {e}")
             return False
-    
+
     def test_jstatus_buffer_options(self):
         """Test that the status buffer has correct options set"""
         print("\n=== Testing status buffer options ===")
-        
+
         try:
             # Execute :JStatus to create buffer
             self.nvim.command("JStatus")
             time.sleep(0.5)
-            
+
             # Find status buffer
             buffers = self.nvim.buffers
             status_buffer = None
-            
+
             for buf in buffers:
                 try:
                     if "jj-status" in buf.name:
                         status_buffer = buf
                         break
-                except:
+                except Exception:
                     pass
-            
+
             if not status_buffer:
                 print("❌ FAIL: Could not find status buffer")
                 return False
-            
+
             # Check buffer options
             buffer_options = {
-                'buftype': 'nofile',
-                'swapfile': False,
-                'modifiable': False,
+                "buftype": "nofile",
+                "swapfile": False,
+                "modifiable": False,
             }
-            
+
             for option, expected in buffer_options.items():
                 try:
                     actual = status_buffer.options[option]
@@ -255,115 +255,117 @@ class JJFugitiveAPITest:
                 except Exception as e:
                     print(f"❌ FAIL: Error checking option {option}: {e}")
                     return False
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ FAIL: Error during buffer options test: {e}")
             return False
-    
+
     def test_jstatus_reload_function(self):
         """Test the status buffer reload functionality via direct function call"""
         print("\n=== Testing status buffer reload functionality ===")
-        
+
         try:
             # Execute :JStatus to create buffer
             self.nvim.command("JStatus")
             time.sleep(0.5)
-            
+
             # Find status buffer
             buffers = self.nvim.buffers
             status_buffer = None
-            
+
             for buf in buffers:
                 try:
                     if "jj-status" in buf.name:
                         status_buffer = buf
                         break
-                except:
+                except Exception:
                     pass
-            
+
             if not status_buffer:
                 print("❌ FAIL: Could not find status buffer")
                 return False
-            
+
             print(f"✅ Found status buffer {status_buffer.number}")
-            
+
             # Get initial buffer content
             initial_lines = status_buffer[:]
             print(f"Initial buffer has {len(initial_lines)} lines")
-            
+
             # Test reload by calling show_status again
             print("Testing reload by calling show_status again...")
-            
+
             try:
                 # Call show_status again to test reload
                 self.nvim.command("JStatus")
                 time.sleep(0.5)
-                
+
                 # Check if buffer still exists and has content
                 new_lines = status_buffer[:]
                 new_content = "\n".join(new_lines)
-                
+
                 print(f"After reload: buffer has {len(new_lines)} lines")
-                
+
                 # The content should still be valid (contains expected patterns)
                 if "jj-fugitive Status" in new_content and len(new_lines) > 0:
-                    print("✅ PASS: Buffer reloaded successfully, contains expected content")
+                    print(
+                        "✅ PASS: Buffer reloaded successfully, contains expected content"
+                    )
                     return True
                 else:
                     print("❌ FAIL: Buffer content missing after reload")
                     print("New content:", new_content[:200] + "...")
                     return False
-                    
+
             except Exception as e:
                 print(f"❌ FAIL: Error during reload test: {e}")
                 return False
-            
+
         except Exception as e:
             print(f"❌ FAIL: Error setting up reload test: {e}")
             return False
-    
+
     def test_jstatus_keybinding_setup(self):
         """Test that status buffer keybindings are properly set up"""
         print("\n=== Testing status buffer keybinding setup ===")
-        
+
         try:
             # Execute :JStatus to create buffer
             self.nvim.command("JStatus")
             time.sleep(0.5)
-            
+
             # Find status buffer and switch to it
             buffers = self.nvim.buffers
             status_buffer = None
-            
+
             for buf in buffers:
                 try:
                     if "jj-status" in buf.name:
                         status_buffer = buf
                         break
-                except:
+                except Exception:
                     pass
-            
+
             if not status_buffer:
                 print("❌ FAIL: Could not find status buffer")
                 return False
-            
+
             # Switch to the status buffer
             windows = self.nvim.windows
             for win in windows:
                 if win.buffer == status_buffer:
                     self.nvim.current.window = win
                     break
-            
+
             # Check if buffer-local keybindings exist
-            expected_keymaps = ['r', 'cc', 'new', 'dd', 'o', 'q']
-            
+            expected_keymaps = ["r", "cc", "new", "dd", "o", "q"]
+
             for key in expected_keymaps:
                 try:
                     # Check if keymap exists for this buffer
                     keymaps = self.nvim.eval(f"maparg('{key}', 'n', 0, 1)")
-                    if keymaps and keymaps.get('buffer') == 1:
+                    if keymaps and keymaps.get("buffer") == 1:
                         print(f"✅ PASS: Keybinding '{key}' is set up as buffer-local")
                     else:
                         print(f"❌ FAIL: Keybinding '{key}' is not properly set up")
@@ -372,17 +374,17 @@ class JJFugitiveAPITest:
                 except Exception as e:
                     print(f"❌ FAIL: Error checking keybinding '{key}': {e}")
                     return False
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ FAIL: Error during keybinding setup test: {e}")
             return False
-    
+
     def run_all_tests(self):
         """Run all tests and return success status"""
         print("🚀 === jj-fugitive Remote API Tests ===")
-        
+
         tests = [
             ("jj repository", self.test_jj_repository),
             ("plugin loading", self.test_plugin_loading),
@@ -391,10 +393,10 @@ class JJFugitiveAPITest:
             ("status keybinding setup", self.test_jstatus_keybinding_setup),
             ("status reload functionality", self.test_jstatus_reload_function),
         ]
-        
+
         passed = 0
         total = len(tests)
-        
+
         for name, test_func in tests:
             print(f"\n🔍 Running test: {name}")
             try:
@@ -402,10 +404,10 @@ class JJFugitiveAPITest:
                     passed += 1
             except Exception as e:
                 print(f"❌ FAIL: {name} - Exception: {e}")
-        
-        print(f"\n📊 === Test Results ===")
+
+        print("\n📊 === Test Results ===")
         print(f"Passed: {passed}/{total}")
-        
+
         if passed == total:
             print("🎉 All tests passed!")
             return True
@@ -417,16 +419,16 @@ class JJFugitiveAPITest:
 def main():
     """Main test execution"""
     test_runner = JJFugitiveAPITest()
-    
+
     try:
         test_runner.start_neovim()
-        
+
         # Give Neovim time to fully initialize
         time.sleep(1)
-        
+
         success = test_runner.run_all_tests()
         return 0 if success else 1
-        
+
     except Exception as e:
         print(f"💥 Fatal error: {e}")
         return 1

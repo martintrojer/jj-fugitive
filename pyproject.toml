@@ -8,4 +8,5 @@ dependencies = []
 [tool.uv]
 dev-dependencies = [
     "pynvim>=0.5.0",
+    "ruff>=0.1.0",
 ]
