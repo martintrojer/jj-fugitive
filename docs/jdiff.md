@@ -17,8 +17,10 @@ The `:JDiff` command provides an enhanced diff viewing experience with both unif
 ### Basic Commands
 
 ```vim
-:JDiff              " Show all changes in unified format
+:JDiff              " Show diff for current buffer file
 :JDiff filename     " Show diff for specific file
+:J diff             " Equivalent to :JDiff (current buffer)
+:J diff filename    " Equivalent to :JDiff filename
 ```
 
 ### From Status Buffer
@@ -135,6 +137,11 @@ View diffs for multiple files in sequence:
 :JDiff file1.rs     " View first file
 :q                  " Close diff
 :JDiff file2.rs     " View second file
+
+" Or using :J command
+:J diff file1.rs    " View first file
+:q                  " Close diff  
+:J diff file2.rs    " View second file
 ```
 
 ### From Command Line
@@ -207,7 +214,7 @@ If side-by-side mode doesn't work correctly:
 ### Basic Workflow
 
 ```vim
-" View all changes
+" View diff for current buffer
 :JDiff
 
 " Switch to side-by-side view
@@ -216,6 +223,10 @@ s
 " Close and view specific file
 q
 :JDiff src/main.rs
+
+" Using :J command equivalents
+:J diff              " Current buffer
+:J diff src/main.rs  " Specific file
 
 " Return to unified view
 s

@@ -143,11 +143,13 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
       end
     end
 
-    -- Also include our custom commands
-    local custom_commands =
-      { "status", "diff", "log", "commit", "new", "next", "prev", "edit", "bookmark" }
+    -- Also include our custom commands (prioritize status and diff)
+    local custom_commands = { "status", "diff" }
     for _, cmd in ipairs(custom_commands) do
-      if (arglead == "" or cmd:find("^" .. vim.pesc(arglead))) and not vim.tbl_contains(completions, cmd) then
+      if
+        (arglead == "" or cmd:find("^" .. vim.pesc(arglead)))
+        and not vim.tbl_contains(completions, cmd)
+      then
         table.insert(completions, cmd)
       end
     end

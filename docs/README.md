@@ -54,12 +54,13 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
   - File-specific diffs with syntax highlighting
   - Seamless integration with status buffer
 
-### 📋 Legacy Features (Use :J instead)
+### 📋 All Features Now Use :J
 
-- **:JLog** - Basic log display (use `:J log` instead)
-- **:JCommit** - Basic commit (use `:J commit` instead)
-- **:JBookmark** - Basic bookmark management (use `:J bookmark` instead)
-- **:JEdit/:JNext/:JPrev/:JNew** - Basic operations (use `:J` equivalents instead)
+All jj operations are available through the universal `:J` command:
+
+- **Commands**: `:J log`, `:J commit`, `:J bookmark`, `:J edit`, `:J next`, `:J prev`, `:J new`, etc.
+- **Smart completion**: All commands and flags are intelligently completed
+- **Full jj functionality**: Any jj command can be used with `:J`
 
 ## Quick Reference
 
@@ -68,11 +69,12 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 ```vim
 :J                    " Show status (default) or use smart completion
 :J <space>            " Show all available jj commands
-:J status             " Show status buffer
+:J status             " Show status buffer (equivalent to :JStatus)
+:J diff               " Show diff for current buffer (equivalent to :JDiff)
 :J commit -m "msg"    " Commit with message
 :J log -T compact     " Show log with custom template
-:JStatus              " Open interactive status buffer
-:JDiff [file]         " Show diff (all changes or specific file)
+:JStatus              " Interactive status buffer (convenience alias)
+:JDiff [file]         " Enhanced diff viewer (convenience alias)
 ```
 
 ### Status Buffer Keybindings

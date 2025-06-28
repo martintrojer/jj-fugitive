@@ -37,25 +37,11 @@ use "your-username/jj-fugitive.nvim"
 
 ## Commands
 
-### Primary Commands
-
 | Command | Description |
 |---------|-------------|
 | `:J` | Universal jj command with smart completion - shows status by default |
 | `:JStatus` | Interactive status buffer with vim-fugitive-style keybindings |
-| `:JDiff [file]` | Enhanced diff viewer (unified or side-by-side) |
-
-### Legacy Commands (Deprecated - use `:J` instead)
-
-| Command | Description |
-|---------|-------------|
-| `:JLog` | Show revision history |
-| `:JCommit` | Create a commit |
-| `:JNew` | Create a new change |
-| `:JNext` | Move to next child revision |
-| `:JPrev` | Move to parent revision |
-| `:JEdit` | Set specific revision as working copy |
-| `:JBookmark` | List and manage bookmarks |
+| `:JDiff [file]` | Enhanced diff viewer for current buffer or specified file |
 
 ## Usage Examples
 
@@ -99,11 +85,15 @@ The `:J` command provides intelligent tab completion for all jj operations:
 ### Enhanced Diff Viewer (`:JDiff`)
 
 ```vim
-" Show all changes in unified format
+" Show diff for current buffer
 :JDiff
 
-" Show specific file diff
+" Show diff for specific file
 :JDiff src/main.rs
+
+" Using :J command (equivalent)
+:J diff              " Current buffer
+:J diff src/main.rs  " Specific file
 
 " In diff buffer:
 " s        - Toggle between unified and side-by-side view

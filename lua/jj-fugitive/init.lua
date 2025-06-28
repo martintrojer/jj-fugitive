@@ -36,9 +36,6 @@ function M.jj(args)
     M.status()
   elseif command == "diff" then
     M.diff(rest_args)
-  elseif command == "log" and rest_args == "" then
-    -- Only use custom log for simple cases, fall back to jj for complex args
-    M.log(rest_args)
   else
     -- For all other commands, pass through to jj directly
     local result = run_jj_command(args)
@@ -71,21 +68,20 @@ function M.status()
   require("jj-fugitive.status").show_status()
 end
 
-function M.log(args)
-  local cmd_args = "log"
-  if args and args ~= "" then
-    cmd_args = cmd_args .. " " .. args
-  end
-
-  local result = run_jj_command(cmd_args)
-  if result then
-    print(result)
-  end
-end
-
 function M.diff(args)
   if not args or args == "" then
-    require("jj-fugitive.diff").show_all_diff()
+    -- Get current buffer filename
+    local current_file = vim.api.nvim_buf_get_name(0)
+    if current_file ~= "" then
+      -- Convert to relative path if it's in the current working directory
+      local cwd = vim.fn.getcwd()
+      if current_file:find(cwd, 1, true) == 1 then
+        current_file = current_file:sub(#cwd + 2) -- +2 to skip the trailing slash
+      end
+      require("jj-fugitive.diff").show_file_diff(current_file)
+    else
+      require("jj-fugitive.diff").show_all_diff()
+    end
   else
     -- Parse arguments to see if it's a filename
     local filename = args:match("^%s*(.-)%s*$")
@@ -94,70 +90,6 @@ function M.diff(args)
     else
       require("jj-fugitive.diff").show_all_diff()
     end
-  end
-end
-
-function M.commit(args)
-  local cmd_args = "commit"
-  if args and args ~= "" then
-    cmd_args = cmd_args .. " " .. args
-  end
-
-  local result = run_jj_command(cmd_args)
-  if result then
-    print(result)
-  end
-end
-
-function M.new(args)
-  local cmd_args = "new"
-  if args and args ~= "" then
-    cmd_args = cmd_args .. " " .. args
-  end
-
-  local result = run_jj_command(cmd_args)
-  if result then
-    print(result)
-  end
-end
-
-function M.next()
-  local result = run_jj_command("next")
-  if result then
-    print(result)
-  end
-end
-
-function M.prev()
-  local result = run_jj_command("prev")
-  if result then
-    print(result)
-  end
-end
-
-function M.edit(args)
-  local cmd_args = "edit"
-  if args and args ~= "" then
-    cmd_args = cmd_args .. " " .. args
-  end
-
-  local result = run_jj_command(cmd_args)
-  if result then
-    print(result)
-  end
-end
-
-function M.bookmark(args)
-  local cmd_args = "bookmark"
-  if args and args ~= "" then
-    cmd_args = cmd_args .. " " .. args
-  else
-    cmd_args = cmd_args .. " list"
-  end
-
-  local result = run_jj_command(cmd_args)
-  if result then
-    print(result)
   end
 end
 
