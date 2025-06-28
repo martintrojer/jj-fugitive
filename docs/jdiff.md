@@ -1,31 +1,29 @@
-# JDiff - Enhanced Diff Viewer
+# Enhanced Diff Viewer
 
-The `:JDiff` command provides an enhanced diff viewing experience with both unified and side-by-side formats, seamlessly integrated with the jj-fugitive workflow.
+The `:J diff` command provides an enhanced diff viewing experience with both unified and side-by-side formats, seamlessly integrated with the jj-fugitive workflow.
 
 ## Overview
 
-`:JDiff` offers advanced diff visualization features:
+`:J diff` offers advanced diff visualization features:
 
 - **Unified diff format** - Traditional diff with syntax highlighting
 - **Side-by-side diff format** - Compare original and current versions
 - **File-specific diffs** - View changes for individual files
 - **Interactive toggling** - Switch between formats on the fly
-- **Integration with status buffer** - Seamless workflow from `:JStatus`
+- **Integration with status buffer** - Seamless workflow from `:J` status
 
 ## Usage
 
 ### Basic Commands
 
 ```vim
-:JDiff              " Show diff for current buffer file
-:JDiff filename     " Show diff for specific file
-:J diff             " Equivalent to :JDiff (current buffer)
-:J diff filename    " Equivalent to :JDiff filename
+:J diff             " Show diff for current buffer file  
+:J diff filename    " Show diff for specific file
 ```
 
 ### From Status Buffer
 
-In the `:JStatus` buffer, press `dd` on any file to open its diff in the enhanced viewer.
+In the status buffer (`:J`), press `dd` on any file to open its diff in the enhanced viewer.
 
 ## Diff Formats
 
@@ -111,9 +109,9 @@ The side-by-side format shows original and current versions in separate panes:
 
 ### Status Buffer Integration
 
-The diff viewer integrates seamlessly with `:JStatus`:
+The diff viewer integrates seamlessly with the status buffer:
 
-1. Open status buffer: `:JStatus`
+1. Open status buffer: `:J`
 2. Navigate to any file with changes
 3. Press `dd` to open the enhanced diff viewer
 4. Toggle between formats as needed
@@ -121,7 +119,7 @@ The diff viewer integrates seamlessly with `:JStatus`:
 
 ### Conflict Resolution
 
-While `:JDiff` is primarily for viewing changes, it provides a foundation for future conflict resolution features:
+While `:J diff` is primarily for viewing changes, it provides a foundation for future conflict resolution features:
 
 - Side-by-side view makes conflicts easier to understand
 - Built-in diff commands (`do`, `dp`) work in side-by-side mode
@@ -134,11 +132,6 @@ While `:JDiff` is primarily for viewing changes, it provides a foundation for fu
 View diffs for multiple files in sequence:
 
 ```vim
-:JDiff file1.rs     " View first file
-:q                  " Close diff
-:JDiff file2.rs     " View second file
-
-" Or using :J command
 :J diff file1.rs    " View first file
 :q                  " Close diff  
 :J diff file2.rs    " View second file
@@ -154,7 +147,7 @@ jj diff > /tmp/changes.diff
 nvim /tmp/changes.diff
 
 # Or directly in Neovim
-nvim -c "JDiff src/main.rs"
+nvim -c "J diff src/main.rs"
 ```
 
 ## File Type Support
@@ -215,18 +208,14 @@ If side-by-side mode doesn't work correctly:
 
 ```vim
 " View diff for current buffer
-:JDiff
+:J diff
 
 " Switch to side-by-side view
 s
 
 " Close and view specific file
 q
-:JDiff src/main.rs
-
-" Using :J command equivalents
-:J diff              " Current buffer
-:J diff src/main.rs  " Specific file
+:J diff src/main.rs
 
 " Return to unified view
 s
@@ -236,7 +225,7 @@ s
 
 ```vim
 " Open status buffer
-:JStatus
+:J
 
 " Navigate to modified file (e.g., src/lib.rs)
 /src/lib.rs
@@ -255,7 +244,7 @@ q
 
 ```vim
 " Start with status to see all changes
-:JStatus
+:J
 
 " Review each file:
 " 1. Position cursor on file
@@ -267,7 +256,7 @@ q
 
 ## Future Enhancements
 
-Planned improvements for `:JDiff`:
+Planned improvements for `:J diff`:
 
 - **Three-way diff support** for merge conflicts
 - **Revision comparison** (e.g., compare any two revisions)
@@ -277,6 +266,6 @@ Planned improvements for `:JDiff`:
 
 ## See Also
 
-- [JStatus Documentation](jstatus.md) - Interactive status buffer that integrates with JDiff
+- [Status Buffer Documentation](jstatus.md) - Interactive status buffer accessed via `:J`
 - [J Command Documentation](j-command.md) - Universal jj command interface
 - [Development Guide](development.md) - Information for plugin developers

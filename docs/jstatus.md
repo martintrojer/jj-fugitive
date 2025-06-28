@@ -1,10 +1,10 @@
-# :JStatus - Interactive Status Buffer
+# Interactive Status Buffer
 
-The `:JStatus` command opens an interactive status buffer that provides a comprehensive view of your jj repository state and allows you to perform common version control operations directly from within Neovim.
+The `:J` and `:J status` commands open an interactive status buffer that provides a comprehensive view of your jj repository state and allows you to perform common version control operations directly from within Neovim.
 
 ## Overview
 
-When you run `:JStatus`, jj-fugitive creates a dedicated buffer that displays:
+When you run `:J` or `:J status`, jj-fugitive creates a dedicated buffer that displays:
 - Current working copy information
 - Parent commit details  
 - List of changed files with their status
@@ -67,7 +67,7 @@ The status buffer includes syntax highlighting to make it easier to scan:
 
 ### Basic Workflow
 
-1. **Open status**: `:JStatus`
+1. **Open status**: `:J` or `:J status`
 2. **Review changes**: Navigate through the file list
 3. **View a diff**: Position cursor on a file and press `dd` to open enhanced diff viewer
 4. **Edit a file**: Position cursor on a file and press `o`
@@ -118,15 +118,15 @@ The status buffer integrates seamlessly with jj commands and the `:J` universal 
 2. **Frequent refreshes**: Press `r` after making changes outside Neovim
 3. **Commit often**: Use `cc` to create small, focused commits
 4. **Review before commit**: Use `dd` to review changes before committing
-5. **Use with splits**: Open status in a vertical split: `:vsplit | JStatus`
+5. **Use with splits**: Open status in a vertical split: `:vsplit | J`
 
 ## Comparison with vim-fugitive
 
-If you're familiar with vim-fugitive, here's how jj-fugitive's `:JStatus` compares:
+If you're familiar with vim-fugitive, here's how jj-fugitive's status buffer compares:
 
 | vim-fugitive | jj-fugitive | Description |
 |--------------|-------------|-------------|
-| `:Git` | `:JStatus` | Main status interface |
+| `:Git` | `:J` | Main status interface |
 | `s` | `cc` | Stage/commit changes |
 | `cc` | `cc` | Commit changes |
 | `dd` | `dd` | Diff file |

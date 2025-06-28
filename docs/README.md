@@ -5,7 +5,7 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 ## Quick Start
 
 1. **Installation**: See the main [README](../README.md) for installation instructions
-2. **Basic usage**: Open a jj repository and run `:J` or `:JStatus`
+2. **Basic usage**: Open a jj repository and run `:J` to show interactive status
 3. **Smart completion**: Type `:J <space>` to see all available jj commands with tab completion
 4. **Interactive workflow**: Use keybindings in the status buffer to manage changes
 
@@ -14,8 +14,8 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 ### Core Features
 
 - **[:J Command](j-command.md)** - Universal jj command with smart completion
-- **[:JStatus](jstatus.md)** - Interactive status buffer with file management  
-- **[:JDiff](jdiff.md)** - Enhanced diff viewer with side-by-side support
+- **[Status Buffer](jstatus.md)** - Interactive status buffer accessed via `:J` or `:J status`  
+- **[Diff Viewer](jdiff.md)** - Enhanced diff viewer accessed via `:J diff`
 - **[Commands](commands.md)** - Complete command reference (coming soon)
 - **[Keybindings](keybindings.md)** - All available keybindings (coming soon)
 
@@ -42,16 +42,16 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
   - Automatic status buffer refresh after state changes
   - Support for all jj operations with full argument passing
 
-- **:JStatus** - Full-featured interactive status buffer
+- **Status Buffer** (`:J` or `:J status`) - Full-featured interactive interface
   - File status display with syntax highlighting
   - Keybindings for common operations (cc, new, dd, o, r, q/gq)
   - Integration with diff viewer
   - Real-time status updates
 
-- **:JDiff** - Enhanced diff viewer
+- **Diff Viewer** (`:J diff`) - Enhanced diff visualization
   - Unified and side-by-side diff formats
   - Toggle between formats with 's' key
-  - File-specific diffs with syntax highlighting
+  - Current buffer or file-specific diffs with syntax highlighting
   - Seamless integration with status buffer
 
 ### 📋 All Features Now Use :J
@@ -67,14 +67,14 @@ All jj operations are available through the universal `:J` command:
 ### Most Used Commands
 
 ```vim
-:J                    " Show status (default) or use smart completion
+:J                    " Show interactive status buffer (default)
 :J <space>            " Show all available jj commands
-:J status             " Show status buffer (equivalent to :JStatus)
-:J diff               " Show diff for current buffer (equivalent to :JDiff)
+:J status             " Show interactive status buffer
+:J diff               " Show diff for current buffer
+:J diff [file]        " Show diff for specific file
 :J commit -m "msg"    " Commit with message
 :J log -T compact     " Show log with custom template
-:JStatus              " Interactive status buffer (convenience alias)
-:JDiff [file]         " Enhanced diff viewer (convenience alias)
+:J new -m "msg"       " Create new change
 ```
 
 ### Status Buffer Keybindings
@@ -135,7 +135,7 @@ jj-fugitive follows the same design principles as vim-fugitive:
 nvim
 
 # In Neovim
-:JStatus
+:J
 
 # In the status buffer
 # - Press 'o' on a file to edit it
@@ -149,10 +149,10 @@ nvim
 
 ```vim
 " Open status in vertical split
-:vsplit | JStatus
+:vsplit | J
 
 " Open status in horizontal split  
-:split | JStatus
+:split | J
 ```
 
 ## Version History

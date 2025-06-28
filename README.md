@@ -39,9 +39,12 @@ use "your-username/jj-fugitive.nvim"
 
 | Command | Description |
 |---------|-------------|
-| `:J` | Universal jj command with smart completion - shows status by default |
-| `:JStatus` | Interactive status buffer with vim-fugitive-style keybindings |
-| `:JDiff [file]` | Enhanced diff viewer for current buffer or specified file |
+| `:J` | Universal jj command with smart completion |
+| `:J` (no args) | Show interactive status buffer |
+| `:J status` | Show interactive status buffer |
+| `:J diff` | Show diff for current buffer |
+| `:J diff [file]` | Show diff for specified file |
+| `:J <any-jj-command>` | Execute any jj command with smart completion |
 
 ## Usage Examples
 
@@ -67,11 +70,12 @@ The `:J` command provides intelligent tab completion for all jj operations:
 :J abandon
 ```
 
-### Interactive Status Buffer (`:JStatus`)
+### Interactive Status Buffer
 
 ```vim
 " Open interactive status buffer
-:JStatus
+:J
+:J status
 
 " Keybindings in status buffer:
 " r        - Reload status
@@ -82,18 +86,14 @@ The `:J` command provides intelligent tab completion for all jj operations:
 " q / gq   - Close status buffer
 ```
 
-### Enhanced Diff Viewer (`:JDiff`)
+### Enhanced Diff Viewer
 
 ```vim
 " Show diff for current buffer
-:JDiff
+:J diff
 
 " Show diff for specific file
-:JDiff src/main.rs
-
-" Using :J command (equivalent)
-:J diff              " Current buffer
-:J diff src/main.rs  " Specific file
+:J diff src/main.rs
 
 " In diff buffer:
 " s        - Toggle between unified and side-by-side view

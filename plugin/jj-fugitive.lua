@@ -13,13 +13,3 @@ end, {
     return jj_fugitive.complete(arglead, cmdline, cursorpos)
   end,
 })
-
-vim.api.nvim_create_user_command("JStatus", function()
-  jj_fugitive.status()
-end, {})
-
-vim.api.nvim_create_user_command("JDiff", function(opts)
-  jj_fugitive.diff(opts.args)
-end, {
-  nargs = "*",
-})
