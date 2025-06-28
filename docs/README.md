@@ -24,9 +24,10 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 
 ### Advanced
 
+- **[Remote Testing](remote-testing.md)** - Automated testing with Neovim remote API
+- **[Development](development.md)** - Development and contribution guide
 - **[API Reference](api.md)** - Lua API for extending functionality (coming soon)
 - **[Troubleshooting](troubleshooting.md)** - Common issues and solutions (coming soon)
-- **[Development](development.md)** - Development and contribution guide
 
 ## Currently Available
 

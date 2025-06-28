@@ -38,20 +38,54 @@ luarocks install luacheck  # Cross-platform
 
 ## Testing
 
-### Running Tests
+jj-fugitive has multiple testing approaches depending on your needs:
+
+### Unit Tests (Plenary/Busted)
+
+For testing individual Lua modules and functions:
 
 ```bash
 # Install test dependencies
 git clone https://github.com/nvim-lua/plenary.nvim /tmp/plenary.nvim
 
-# Run all tests
+# Run unit tests
 export PLENARY_DIR=/tmp/plenary.nvim
 nvim --headless --noplugin -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua'}"
 ```
 
+### Automated Remote API Tests
+
+For comprehensive plugin testing without manual interaction:
+
+```bash
+# Install Python dependencies with uv
+uv sync
+
+# Run all automated tests
+./tests/run_remote_tests.sh
+
+# Or run specific test types
+./tests/run_remote_tests.sh python
+./tests/run_remote_tests.sh lua
+./tests/run_remote_tests.sh shell
+```
+
+See [Remote Testing Guide](remote-testing.md) for detailed information.
+
+### Manual Testing Methods
+
+For interactive development and debugging, see the [Remote Testing Guide](remote-testing.md) which covers:
+
+- Loading plugin with `vim.opt.rtp`
+- Temporary plugin manager setup
+- Testing in jj repositories
+- Manual command validation
+
 ### Writing Tests
 
-Tests are located in the `tests/` directory and use the busted framework with plenary.nvim:
+#### Unit Tests
+
+Tests use the busted framework with plenary.nvim:
 
 ```lua
 -- tests/example_spec.lua
@@ -65,64 +99,22 @@ describe("module functionality", function()
 end)
 ```
 
-### Testing the Plugin in Neovim
+#### Remote API Tests
 
-#### Method 1: Using vim.opt.rtp (Quick Testing)
+Add tests to the Python test suite:
 
-```bash
-# Navigate to your plugin directory
-cd /path/to/jj-fugitive
-
-# Start Neovim with the plugin in runtime path
-nvim --cmd "set rtp+=."
-```
-
-Then in Neovim:
-```vim
-" Source the plugin manually
-:runtime plugin/jj-fugitive.lua
-
-" Test commands
-:JStatus
-:JLog
-```
-
-#### Method 2: Temporary Plugin Manager Setup
-
-Create a minimal init file for testing:
-
-```lua
--- test_init.lua
-vim.opt.rtp:prepend("/path/to/jj-fugitive")
-require("jj-fugitive")
-```
-
-```bash
-nvim -u test_init.lua
-```
-
-#### Method 3: Using Package Manager in Dev Mode
-
-For lazy.nvim:
-```lua
-{
-  dir = "/path/to/jj-fugitive",  -- Use local directory
-  name = "jj-fugitive",
-  dev = true,
-}
-```
-
-#### Testing in a jj Repository
-
-```bash
-# Create a test jj repository
-mkdir test-repo && cd test-repo
-jj init --git
-echo "test content" > file.txt
-jj describe -m "Initial commit"
-
-# Open Neovim and test commands
-nvim --cmd "set rtp+=../jj-fugitive"
+```python
+def test_new_feature(self):
+    """Test new feature functionality"""
+    print("\n=== Testing new feature ===")
+    
+    try:
+        self.nvim.command('JNewCommand')
+        # Validate results...
+        return True
+    except Exception as e:
+        print(f"❌ FAIL: {e}")
+        return False
 ```
 
 ## Code Quality

@@ -1,0 +1,11 @@
+[project]
+name = "jj-fugitive"
+version = "0.1.0"
+description = "Test dependencies for jj-fugitive Neovim plugin"
+requires-python = ">=3.8"
+dependencies = []
+
+[tool.uv]
+dev-dependencies = [
+    "pynvim>=0.5.0",
+]
