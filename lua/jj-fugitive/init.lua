@@ -36,6 +36,8 @@ function M.jj(args)
     M.status()
   elseif command == "diff" then
     M.diff(rest_args)
+  elseif command == "log" then
+    M.log(rest_args)
   else
     -- For all other commands, pass through to jj directly
     local result = run_jj_command(args)
@@ -91,6 +93,28 @@ function M.diff(args)
       require("jj-fugitive.diff").show_all_diff()
     end
   end
+end
+
+function M.log(args)
+  local options = {}
+
+  if args and args ~= "" then
+    -- Parse basic options
+    if args:match("%-%-limit%s+(%d+)") then
+      options.limit = tonumber(args:match("%-%-limit%s+(%d+)"))
+    end
+
+    -- Parse revisions
+    local revisions = {}
+    for rev in args:gmatch("%-r%s+([^%s]+)") do
+      table.insert(revisions, rev)
+    end
+    if #revisions > 0 then
+      options.revisions = revisions
+    end
+  end
+
+  require("jj-fugitive.log").show_log(options)
 end
 
 function M.complete(arglead, cmdline, cursorpos)

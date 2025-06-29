@@ -62,10 +62,23 @@ echo "Testing status features..."
 
 echo ""
 
+# Test log functionality
+echo "Testing log functionality..."
+./tests/test_log_functionality.lua
+
+echo ""
+
 # Demo enhanced diff view (if demo file exists)
 if [ -f "./tests/demo_enhanced_diff.lua" ]; then
   echo "Running enhanced diff demo..."
   ./tests/demo_enhanced_diff.lua
+  echo ""
+fi
+
+# Demo enhanced log view (if demo file exists)
+if [ -f "./tests/demo_log_view.lua" ]; then
+  echo "Running enhanced log demo..."
+  ./tests/demo_log_view.lua
   echo ""
 fi
 
