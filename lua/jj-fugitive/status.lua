@@ -158,7 +158,42 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      vim.cmd("edit " .. vim.fn.fnameescape(filename))
+      -- Get the full path of the file
+      local full_path = vim.fn.fnamemodify(filename, ":p")
+
+      -- Check if the file is already open in any buffer
+      local existing_bufnr = nil
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(buf) then
+          local buf_name = vim.api.nvim_buf_get_name(buf)
+          if buf_name == full_path then
+            existing_bufnr = buf
+            break
+          end
+        end
+      end
+
+      if existing_bufnr then
+        -- File is already open, find its window or create a new one
+        local existing_win = nil
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          if vim.api.nvim_win_get_buf(win) == existing_bufnr then
+            existing_win = win
+            break
+          end
+        end
+
+        if existing_win then
+          -- Switch to the existing window
+          vim.api.nvim_set_current_win(existing_win)
+        else
+          -- Buffer exists but no window is showing it, open it in current window
+          vim.api.nvim_set_current_buf(existing_bufnr)
+        end
+      else
+        -- File is not open, open it normally
+        vim.cmd("edit " .. vim.fn.fnameescape(filename))
+      end
     end
   end, opts)
 
