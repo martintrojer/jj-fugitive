@@ -3,20 +3,20 @@ local M = {}
 -- Find the jj repository root starting from a given directory
 local function find_jj_root(start_path)
   local path = start_path or vim.fn.getcwd()
-  
+
   -- Convert to absolute path and normalize (remove trailing slash)
   path = vim.fn.fnamemodify(path, ":p")
   if path:sub(-1) == "/" and path ~= "/" then
     path = path:sub(1, -2)
   end
-  
+
   -- Walk up the directory tree looking for .jj directory
   while path ~= "/" and path ~= "" do
     local jj_dir = path .. "/.jj"
     if vim.fn.isdirectory(jj_dir) == 1 then
       return path
     end
-    
+
     -- Go up one directory
     local parent = vim.fn.fnamemodify(path, ":h")
     if parent == path then
@@ -24,7 +24,7 @@ local function find_jj_root(start_path)
     end
     path = parent
   end
-  
+
   return nil
 end
 
@@ -39,21 +39,21 @@ local function get_repo_root()
       return repo_root
     end
   end
-  
+
   -- Fall back to current working directory
   return find_jj_root(vim.fn.getcwd())
 end
 
 local function run_jj_command(args, options)
   options = options or {}
-  
+
   -- Find the repository root
   local repo_root = get_repo_root()
   if not repo_root then
     vim.api.nvim_err_writeln("Not in a jj repository. Current directory: " .. vim.fn.getcwd())
     return nil
   end
-  
+
   local cmd = { "jj" }
   if type(args) == "string" and args ~= "" then
     for arg in args:gmatch("%S+") do
@@ -72,13 +72,13 @@ local function run_jj_command(args, options)
     vim.api.nvim_err_writeln("Failed to change to repository root: " .. repo_root)
     return nil
   end
-  
+
   local result = vim.fn.system(cmd)
   local exit_code = vim.v.shell_error
-  
+
   -- Restore original working directory
   pcall(vim.cmd, "cd " .. vim.fn.fnameescape(old_cwd))
-  
+
   if exit_code ~= 0 then
     vim.api.nvim_err_writeln("jj command failed: " .. result)
     return nil

@@ -24,7 +24,11 @@ pcall(function()
   log_module = require("jj-fugitive.log")
   main_module = require("jj-fugitive.init")
 end)
-assert_test("Module loading", log_module ~= nil and main_module ~= nil, "Could not load required modules")
+assert_test(
+  "Module loading",
+  log_module ~= nil and main_module ~= nil,
+  "Could not load required modules"
+)
 
 if log_module and main_module then
   -- Test 2: Create log view
@@ -32,10 +36,14 @@ if log_module and main_module then
   pcall(function()
     log_module.show_log({ limit = 5 })
   end)
-  
+
   local final_buf_count = #vim.api.nvim_list_bufs()
-  assert_test("Log buffer creation", final_buf_count > initial_buf_count, "Log buffer was not created")
-  
+  assert_test(
+    "Log buffer creation",
+    final_buf_count > initial_buf_count,
+    "Log buffer was not created"
+  )
+
   -- Test 3: Find and verify log buffer
   local log_buffer = nil
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
@@ -47,24 +55,24 @@ if log_module and main_module then
       end
     end
   end
-  
+
   assert_test("Log buffer found", log_buffer ~= nil, "Could not find log buffer by name")
-  
+
   if log_buffer then
     vim.api.nvim_set_current_buf(log_buffer)
     local lines = vim.api.nvim_buf_get_lines(log_buffer, 0, -1, false)
     assert_test("Log buffer has content", #lines > 0, "Log buffer is empty")
-    
+
     -- Test 4: Verify log buffer format
     local has_header = false
     local has_commits = false
     local commit_lines = {}
-    
+
     for i, line in ipairs(lines) do
       if line:match("📜 jj Log View") then
         has_header = true
       end
-      
+
       -- Check for actual commit lines (not headers)
       if line:match("|") then
         local first_part = line:match("^([^|]+)")
@@ -83,15 +91,15 @@ if log_module and main_module then
         end
       end
     end
-    
+
     assert_test("Log buffer has proper header", has_header, "Log buffer missing expected header")
     assert_test("Log buffer has commit lines", has_commits, "Log buffer has no valid commit lines")
-    
+
     -- Test 5: Test cursor positioning
     if has_commits then
       local cursor_pos = vim.api.nvim_win_get_cursor(0)
       local current_line = vim.api.nvim_get_current_line()
-      
+
       -- Check if cursor is positioned on a valid commit line
       local cursor_on_commit = false
       for _, commit_info in ipairs(commit_lines) do
@@ -100,10 +108,13 @@ if log_module and main_module then
           break
         end
       end
-      
-      assert_test("Cursor positioned on commit line", cursor_on_commit, 
-                  "Cursor not positioned on a valid commit line")
-      
+
+      assert_test(
+        "Cursor positioned on commit line",
+        cursor_on_commit,
+        "Cursor not positioned on a valid commit line"
+      )
+
       -- Test 6: Test commit ID extraction function
       local function get_commit_from_line(line)
         local first_part = line:match("^([^|]+)")
@@ -121,56 +132,71 @@ if log_module and main_module then
         end
         return nil
       end
-      
+
       local extracted_commit_id = get_commit_from_line(current_line)
-      assert_test("Commit ID extraction from cursor line", 
-                  extracted_commit_id ~= nil, 
-                  "Could not extract commit ID from cursor line: " .. current_line)
-      
+      assert_test(
+        "Commit ID extraction from cursor line",
+        extracted_commit_id ~= nil,
+        "Could not extract commit ID from cursor line: " .. current_line
+      )
+
       -- Test 7: Test jj show command (simulating Enter press)
       if extracted_commit_id then
         print("Testing with commit ID:", extracted_commit_id)
         local show_result = main_module.run_jj_command_from_module({ "show", extracted_commit_id })
-        assert_test("jj show command for extracted commit ID", 
-                    show_result ~= nil, 
-                    "jj show failed for commit ID: " .. extracted_commit_id)
-        
+        assert_test(
+          "jj show command for extracted commit ID",
+          show_result ~= nil,
+          "jj show failed for commit ID: " .. extracted_commit_id
+        )
+
         if show_result then
-          local has_commit_details = show_result:match("Commit ID:") or show_result:match("Change ID:")
-          assert_test("jj show returns valid commit details", 
-                      has_commit_details, 
-                      "jj show output doesn't contain expected commit details")
+          local has_commit_details = show_result:match("Commit ID:")
+            or show_result:match("Change ID:")
+          assert_test(
+            "jj show returns valid commit details",
+            has_commit_details,
+            "jj show output doesn't contain expected commit details"
+          )
         end
       end
-      
+
       -- Test 8: Test Enter functionality from subdirectory
       print("\n=== Testing Enter functionality from subdirectory ===")
       local original_cwd = vim.fn.getcwd()
       vim.cmd("cd lua")
-      
+
       if extracted_commit_id then
-        local subdir_show_result = main_module.run_jj_command_from_module({ "show", extracted_commit_id })
-        assert_test("jj show from subdirectory", 
-                    subdir_show_result ~= nil, 
-                    "jj show failed from subdirectory")
+        local subdir_show_result =
+          main_module.run_jj_command_from_module({ "show", extracted_commit_id })
+        assert_test(
+          "jj show from subdirectory",
+          subdir_show_result ~= nil,
+          "jj show failed from subdirectory"
+        )
       end
-      
+
       vim.cmd("cd " .. vim.fn.fnameescape(original_cwd))
-      
+
       -- Test 9: Test multiple commit lines
       local valid_commits = 0
       for _, commit_info in ipairs(commit_lines) do
-        local test_result = main_module.run_jj_command_from_module({ "show", commit_info.commit_id })
+        local test_result =
+          main_module.run_jj_command_from_module({ "show", commit_info.commit_id })
         if test_result then
           valid_commits = valid_commits + 1
         end
       end
-      
-      assert_test("Multiple commit IDs are valid", 
-                  valid_commits > 0, 
-                  "No valid commit IDs found in log view")
-      
-      print(string.format("Found %d valid commit lines out of %d total", valid_commits, #commit_lines))
+
+      assert_test(
+        "Multiple commit IDs are valid",
+        valid_commits > 0,
+        "No valid commit IDs found in log view"
+      )
+
+      print(
+        string.format("Found %d valid commit lines out of %d total", valid_commits, #commit_lines)
+      )
     end
   end
 end

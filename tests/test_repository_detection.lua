@@ -32,71 +32,85 @@ if main_module then
   if repo_root then
     print("Repository root detected:", repo_root)
     print("Current working directory:", vim.fn.getcwd())
-    
+
     -- Test 3: Test running a simple jj command
-    local result = main_module.run_jj_command_from_module({"status"})
+    local result = main_module.run_jj_command_from_module({ "status" })
     assert_test("jj status command execution", result ~= nil, "jj status command failed")
-    
+
     -- Test 4: Test log command specifically
-    local log_result = main_module.run_jj_command_from_module({"log", "--limit", "2"})
+    local log_result = main_module.run_jj_command_from_module({ "log", "--limit", "2" })
     assert_test("jj log command execution", log_result ~= nil, "jj log command failed")
-    
+
     -- Test 5: Test from a subdirectory (the key issue that was reported)
     print("\n=== Testing from subdirectory (original reported issue) ===")
     local original_cwd = vim.fn.getcwd()
-    
+
     -- Change to lua subdirectory
     vim.cmd("cd lua")
     local sub_cwd = vim.fn.getcwd()
     print("Changed to:", sub_cwd)
-    
+
     local sub_repo_root = main_module.get_repo_root()
-    assert_test("Repository root detection from subdirectory", 
-                sub_repo_root ~= nil, 
-                "Could not detect repository root from subdirectory")
-    
+    assert_test(
+      "Repository root detection from subdirectory",
+      sub_repo_root ~= nil,
+      "Could not detect repository root from subdirectory"
+    )
+
     if sub_repo_root then
-      assert_test("Repository root consistency", 
-                  sub_repo_root == repo_root,
-                  "Repository root differs when detected from subdirectory")
-      
-      local sub_result = main_module.run_jj_command_from_module({"status"})
-      assert_test("jj status from subdirectory", 
-                  sub_result ~= nil, 
-                  "jj status failed from subdirectory")
-      
-      local sub_log_result = main_module.run_jj_command_from_module({"log", "--limit", "1"})
-      assert_test("jj log from subdirectory", 
-                  sub_log_result ~= nil, 
-                  "jj log failed from subdirectory")
+      assert_test(
+        "Repository root consistency",
+        sub_repo_root == repo_root,
+        "Repository root differs when detected from subdirectory"
+      )
+
+      local sub_result = main_module.run_jj_command_from_module({ "status" })
+      assert_test(
+        "jj status from subdirectory",
+        sub_result ~= nil,
+        "jj status failed from subdirectory"
+      )
+
+      local sub_log_result = main_module.run_jj_command_from_module({ "log", "--limit", "1" })
+      assert_test(
+        "jj log from subdirectory",
+        sub_log_result ~= nil,
+        "jj log failed from subdirectory"
+      )
     end
-    
+
     -- Restore original directory
     vim.cmd("cd " .. vim.fn.fnameescape(original_cwd))
-    
+
     -- Test 6: Test from nested subdirectory
     if vim.fn.isdirectory("lua/jj-fugitive") == 1 then
       print("\n=== Testing from nested subdirectory ===")
       vim.cmd("cd lua/jj-fugitive")
       local nested_cwd = vim.fn.getcwd()
       print("Changed to nested directory:", nested_cwd)
-      
+
       local nested_repo_root = main_module.get_repo_root()
-      assert_test("Repository root detection from nested subdirectory", 
-                  nested_repo_root ~= nil, 
-                  "Could not detect repository root from nested subdirectory")
-      
+      assert_test(
+        "Repository root detection from nested subdirectory",
+        nested_repo_root ~= nil,
+        "Could not detect repository root from nested subdirectory"
+      )
+
       if nested_repo_root then
-        assert_test("Repository root consistency from nested directory", 
-                    nested_repo_root == repo_root,
-                    "Repository root differs when detected from nested subdirectory")
-        
-        local nested_result = main_module.run_jj_command_from_module({"status"})
-        assert_test("jj status from nested subdirectory", 
-                    nested_result ~= nil, 
-                    "jj status failed from nested subdirectory")
+        assert_test(
+          "Repository root consistency from nested directory",
+          nested_repo_root == repo_root,
+          "Repository root differs when detected from nested subdirectory"
+        )
+
+        local nested_result = main_module.run_jj_command_from_module({ "status" })
+        assert_test(
+          "jj status from nested subdirectory",
+          nested_result ~= nil,
+          "jj status failed from nested subdirectory"
+        )
       end
-      
+
       -- Restore original directory
       vim.cmd("cd " .. vim.fn.fnameescape(original_cwd))
     end

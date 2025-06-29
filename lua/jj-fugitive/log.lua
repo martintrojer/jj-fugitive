@@ -3,10 +3,10 @@ local M = {}
 -- Get log output from jj with enhanced formatting
 local function get_jj_log(options)
   options = options or {}
-  
+
   -- Use the main module's repository-aware command runner
   local main_module = require("jj-fugitive.init")
-  
+
   local cmd_args = { "log" }
 
   -- Use a custom template for better formatting
@@ -184,12 +184,12 @@ local function get_commit_from_line(line)
   local first_part = line:match("^([^|]+)")
   if first_part then
     first_part = vim.trim(first_part)
-    
+
     -- Skip header lines (they contain column headers)
     if first_part:match("Commit ID") or first_part:match("Description") then
       return nil
     end
-    
+
     -- Get all tokens and take the last one (which should be the commit ID)
     local tokens = {}
     for token in first_part:gmatch("%S+") do
@@ -568,7 +568,7 @@ function M.show_log(options)
       local first_part = line:match("^([^|]+)")
       if first_part then
         first_part = vim.trim(first_part)
-        
+
         -- Skip header lines
         if not (first_part:match("Commit ID") or first_part:match("Description")) then
           local tokens = {}

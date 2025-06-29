@@ -3,10 +3,10 @@ local M = {}
 -- Get diff output from jj
 local function get_jj_diff(filename, options)
   options = options or {}
-  
+
   -- Use the main module's repository-aware command runner
   local main_module = require("jj-fugitive.init")
-  
+
   local cmd_args = { "diff" }
 
   if options.tool then
@@ -295,7 +295,8 @@ function M.show_file_diff_sidebyside(filename)
 
   -- Get the original file content (before changes)
   local main_module = require("jj-fugitive.init")
-  local original_content = main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
+  local original_content =
+    main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
   if not original_content then
     -- File might be newly added, so original content is empty
     original_content = ""
