@@ -62,27 +62,27 @@ jobs:
     
     - name: Set up test repository
       run: |
-        jj git init test-repo
-        cd test-repo
+        # Initialize jj repository in current directory
+        jj git init --git-dir=.git .
+        
+        # Create initial test files and commits for testing
         echo "test content" > test.txt
         jj describe -m "Initial commit"
-        echo "modified content" > test.txt
-        cd ..
+        
+        echo "modified content" > test.txt  
+        jj describe -m "Modified test file"
+        
+        # Create additional test files for comprehensive testing
+        mkdir -p subdir
+        echo "subdir content" > subdir/file.txt
+        jj describe -m "Add subdirectory files"
     
-    - name: Run functional tests
+    - name: Run comprehensive test suite
       run: |
         export CI=true
-        export TEST_REPO_DIR="$(pwd)/test-repo"
-        chmod +x tests/test_status_functionality.lua
-        chmod +x tests/test_diff_functionality.lua
         
-        # Copy tests to test-repo and modify runtime path for CI
-        cp tests/test_status_functionality.lua test-repo/
-        cp tests/test_diff_functionality.lua test-repo/
+        # Make test runner executable
+        chmod +x tests/run_tests.sh
         
-        cd test-repo
-        sed -i 's/vim.cmd("set rtp+=\.")/vim.cmd("set rtp+=..")/' test_status_functionality.lua
-        sed -i 's/vim.cmd("set rtp+=\.")/vim.cmd("set rtp+=..")/' test_diff_functionality.lua
-        
-        ./test_status_functionality.lua
-        ./test_diff_functionality.lua
+        # Run all tests using intelligent discovery
+        ./tests/run_tests.sh
