@@ -122,9 +122,9 @@ if diff_module then
         "buftype is " .. buftype .. ", expected nofile"
       )
       assert_test(
-        "Diff buffer has diff filetype",
-        filetype == "diff",
-        "filetype is " .. filetype .. ", expected diff"
+        "Diff buffer has enhanced content formatting",
+        content:match("📄 File:") and content:match("🔄 Changes"),
+        "Enhanced diff formatting not found in buffer content"
       )
       assert_test(
         "Diff buffer is not modifiable",
