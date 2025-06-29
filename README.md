@@ -6,10 +6,13 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 
 - **Smart completion system** - Intelligent tab completion for all jj commands and flags
 - **Interactive status buffer** - vim-fugitive-style interface with keybindings
-- **Enhanced diff viewer** - Both unified and side-by-side diff formats
+- **Enhanced diff viewer** - Both unified and side-by-side diff formats with visual improvements
+- **Interactive log view** - Enhanced log browser with commit operations (edit, new, rebase)
+- **Repository-aware commands** - Works seamlessly from any subdirectory within a jj repository
 - **Seamless jj integration** - Direct access to all jj functionality
 - **Familiar command interface** - Inspired by vim-fugitive for easy adoption
 - **Auto-refresh** - Status buffer updates automatically after state changes
+- **Comprehensive testing** - Thoroughly tested functionality with extensive test suite
 
 ## Requirements
 
@@ -22,7 +25,7 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 
 ```lua
 {
-  "your-username/jj-fugitive.nvim",
+  "martintrojer/jj-fugitive.nvim",
   config = function()
     -- Plugin loads automatically
   end,
@@ -32,7 +35,17 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 ### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
-use "your-username/jj-fugitive.nvim"
+use "martintrojer/jj-fugitive.nvim"
+```
+
+### Manual Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/martintrojer/jj-fugitive.nvim ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive.nvim
+
+# Or using jj
+jj git clone https://github.com/martintrojer/jj-fugitive.nvim ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive.nvim
 ```
 
 ## Commands
@@ -42,8 +55,9 @@ use "your-username/jj-fugitive.nvim"
 | `:J` | Universal jj command with smart completion |
 | `:J` (no args) | Show interactive status buffer |
 | `:J status` | Show interactive status buffer |
-| `:J diff` | Show diff for current buffer |
-| `:J diff [file]` | Show diff for specified file |
+| `:J log` | Show interactive log view with enhanced formatting |
+| `:J diff` | Show enhanced diff for current buffer |
+| `:J diff [file]` | Show enhanced diff for specified file |
 | `:J <any-jj-command>` | Execute any jj command with smart completion |
 
 ## Usage Examples
@@ -86,6 +100,22 @@ The `:J` command provides intelligent tab completion for all jj operations:
 " q / gq   - Close status buffer
 ```
 
+### Interactive Log View
+
+```vim
+" Show interactive log with enhanced formatting
+:J log
+
+" In log buffer:
+" Enter/o  - Show commit details
+" e        - Edit at commit (jj edit)
+" n        - Create new commit after this one (jj new)
+" r        - Rebase current commit onto this one (jj rebase)
+" d        - Show diff for commit
+" q        - Close log view
+" ?        - Show detailed help
+```
+
 ### Enhanced Diff Viewer
 
 ```vim
@@ -98,6 +128,8 @@ The `:J` command provides intelligent tab completion for all jj operations:
 " In diff buffer:
 " s        - Toggle between unified and side-by-side view
 " q        - Close diff buffer
+" o        - Open file in editor
+" ?        - Show help
 ```
 
 ## Documentation
