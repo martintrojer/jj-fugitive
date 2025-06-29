@@ -209,22 +209,165 @@ local function show_commit_details(commit_id)
     return
   end
 
-  -- Get commit details using repository-aware command
+  -- Get commit details using repository-aware command with color
   local main_module = require("jj-fugitive.init")
-  local result = main_module.run_jj_command_from_module({ "show", commit_id })
+  local result = main_module.run_jj_command_from_module({ "show", "--color", "always", commit_id })
   if not result then
     return
   end
 
-  -- Create buffer for commit details
+  -- Use ANSI color parsing similar to diff module
+  local timestamp = os.time()
+  local bufname = string.format("jj-show: %s [%d]", commit_id, timestamp)
   local bufnr = vim.api.nvim_create_buf(false, true)
+
+  -- Set buffer options
   vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
   vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
   vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_name(bufnr, "jj-show: " .. commit_id)
+  vim.api.nvim_buf_set_name(bufnr, bufname)
 
-  -- Enhanced commit details formatting
+  -- Process content with ANSI color parsing (using internal functions from diff module)
+  -- We'll need to access the process_diff_content and setup_diff_highlighting functions
+  -- For now, let's create a simplified version here
+  local parse_ansi_colors = function(text)
+    local highlights = {}
+    local clean_text = ""
+    local pos = 1
+    local current_style = {}
+
+    -- ANSI color code mappings - basic 3/4 bit colors
+    local ansi_colors = {
+      ["30"] = "Black",
+      ["31"] = "Red",
+      ["32"] = "Green",
+      ["33"] = "Yellow",
+      ["34"] = "Blue",
+      ["35"] = "Magenta",
+      ["36"] = "Cyan",
+      ["37"] = "White",
+      ["90"] = "DarkGray",
+      ["91"] = "LightRed",
+      ["92"] = "LightGreen",
+      ["93"] = "LightYellow",
+      ["94"] = "LightBlue",
+      ["95"] = "LightMagenta",
+      ["96"] = "LightCyan",
+      ["97"] = "White",
+    }
+
+    -- Map 256-color palette indices to reasonable colors for diff
+    local ansi_256_colors = {
+      ["1"] = "Red",
+      ["2"] = "Green",
+      ["3"] = "Yellow",
+      ["4"] = "Blue",
+      ["5"] = "Magenta",
+      ["6"] = "Cyan",
+      ["9"] = "LightRed",
+      ["10"] = "LightGreen",
+      ["11"] = "LightYellow",
+    }
+
+    while pos <= #text do
+      local esc_start, esc_end = text:find("\27%[[0-9;]*m", pos)
+
+      if esc_start then
+        -- Add text before escape sequence with current styling
+        if esc_start > pos then
+          local segment = text:sub(pos, esc_start - 1)
+          if next(current_style) then
+            table.insert(highlights, {
+              group = current_style.group or "Normal",
+              line = 0,
+              col_start = #clean_text,
+              col_end = #clean_text + #segment,
+            })
+          end
+          clean_text = clean_text .. segment
+        end
+
+        -- Parse the escape sequence
+        local codes = text:sub(esc_start + 2, esc_end - 1)
+
+        -- Handle different codes
+        if codes == "0" or codes == "" then
+          current_style = {}
+        elseif codes == "1" then
+          current_style.bold = true
+          current_style.group = "Bold"
+        elseif codes == "4" then
+          current_style.underline = true
+          current_style.group = "Underlined"
+        elseif codes == "24" then
+          current_style.underline = false
+          if not current_style.bold and not (current_style.color or current_style.bg_color) then
+            current_style = {}
+          end
+        elseif codes == "39" then
+          current_style.color = nil
+          if
+            not current_style.bold
+            and not current_style.underline
+            and not current_style.bg_color
+          then
+            current_style = {}
+          end
+        else
+          -- Handle complex color codes like 38;5;n (256-color foreground)
+          local codes_list = {}
+          for code in codes:gmatch("[^;]+") do
+            table.insert(codes_list, code)
+          end
+
+          local i = 1
+          while i <= #codes_list do
+            local code = codes_list[i]
+
+            if code == "38" and codes_list[i + 1] == "5" and codes_list[i + 2] then
+              -- 256-color foreground: 38;5;n
+              local color_index = codes_list[i + 2]
+              local color = ansi_256_colors[color_index]
+              if color then
+                current_style.color = color
+                current_style.group = color
+              end
+              i = i + 3
+            elseif ansi_colors[code] then
+              -- Basic color
+              current_style.color = ansi_colors[code]
+              current_style.group = ansi_colors[code]
+              i = i + 1
+            else
+              i = i + 1
+            end
+          end
+        end
+
+        pos = esc_end + 1
+      else
+        -- No more escape sequences, add rest of text with current styling
+        local remaining = text:sub(pos)
+        if #remaining > 0 then
+          if next(current_style) then
+            table.insert(highlights, {
+              group = current_style.group or "Normal",
+              line = 0,
+              col_start = #clean_text,
+              col_end = #clean_text + #remaining,
+            })
+          end
+          clean_text = clean_text .. remaining
+        end
+        break
+      end
+    end
+
+    return clean_text, highlights
+  end
+
+  -- Enhanced commit details formatting with header
   local header_lines = {
     "",
     "📄 Commit Details: " .. commit_id,
@@ -234,19 +377,65 @@ local function show_commit_details(commit_id)
 
   local content_lines = vim.split(result, "\n")
   local all_lines = {}
+  local all_highlights = {}
 
   -- Add header
   for _, line in ipairs(header_lines) do
     table.insert(all_lines, line)
   end
 
-  -- Add content
-  for _, line in ipairs(content_lines) do
-    table.insert(all_lines, line)
+  -- Process each line to extract colors and clean text
+  for i, line in ipairs(content_lines) do
+    local clean_line, highlights = parse_ansi_colors(line)
+    table.insert(all_lines, clean_line)
+
+    -- Adjust line numbers for highlights (account for header)
+    local line_offset = #header_lines
+    for _, hl in ipairs(highlights) do
+      hl.line = i + line_offset - 1 -- Convert to 0-based indexing
+      table.insert(all_highlights, hl)
+    end
   end
 
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, all_lines)
-  vim.api.nvim_buf_set_option(bufnr, "filetype", "diff")
+
+  -- Setup highlighting similar to diff module
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.cmd("setlocal filetype=diff")
+    vim.cmd("setlocal conceallevel=0")
+
+    -- Add some custom highlighting for our headers
+    vim.cmd("syntax match JjShowHeader '^📄.*$'")
+    vim.cmd("syntax match JjShowSeparator '^─\\+$'")
+    vim.cmd("highlight default link JjShowHeader Comment")
+    vim.cmd("highlight default link JjShowSeparator Comment")
+
+    -- Define highlight groups for diff colors
+    vim.cmd("highlight JjShowAdd guifg=#00ff00 ctermfg=green")
+    vim.cmd("highlight JjShowDelete guifg=#ff0000 ctermfg=red")
+    vim.cmd("highlight JjShowChange guifg=#ffff00 ctermfg=yellow")
+    vim.cmd("highlight JjShowBold gui=bold cterm=bold")
+  end)
+
+  -- Apply highlights from parsed ANSI codes
+  for _, hl in ipairs(all_highlights) do
+    local group = hl.group
+    -- Map generic colors to diff-specific ones for better appearance
+    if group == "Green" or group == "LightGreen" then
+      group = "JjShowAdd"
+    elseif group == "Red" or group == "LightRed" then
+      group = "JjShowDelete"
+    elseif group == "Yellow" or group == "LightYellow" then
+      group = "JjShowChange"
+    elseif group == "Bold" then
+      group = "JjShowBold"
+    end
+
+    -- Apply the highlight to the buffer
+    local col_end = hl.col_end == -1 and -1 or hl.col_end
+    pcall(vim.api.nvim_buf_add_highlight, bufnr, 0, group, hl.line, hl.col_start, col_end)
+  end
+
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
   -- Open in new window
@@ -326,22 +515,164 @@ local function show_commit_diff(commit_id)
     return
   end
 
-  -- Show diff for commit using repository-aware command
+  -- Show diff for commit using repository-aware command with color
   local main_module = require("jj-fugitive.init")
-  local result = main_module.run_jj_command_from_module({ "diff", "-r", commit_id })
+  local result =
+    main_module.run_jj_command_from_module({ "diff", "--color", "always", "-r", commit_id })
   if not result then
     return
   end
 
-  -- Create enhanced diff buffer
+  -- Create the diff buffer using the same ANSI color parsing approach
+  local timestamp = os.time()
+  local bufname = string.format("jj-diff: %s [%d]", commit_id, timestamp)
   local bufnr = vim.api.nvim_create_buf(false, true)
+
+  -- Set buffer options
   vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
   vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
   vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_name(bufnr, "jj-diff: " .. commit_id)
+  vim.api.nvim_buf_set_name(bufnr, bufname)
 
-  -- Enhanced diff formatting
+  -- Use the same ANSI parser as in show_commit_details
+  local parse_ansi_colors = function(text)
+    local highlights = {}
+    local clean_text = ""
+    local pos = 1
+    local current_style = {}
+
+    -- ANSI color code mappings - basic 3/4 bit colors
+    local ansi_colors = {
+      ["30"] = "Black",
+      ["31"] = "Red",
+      ["32"] = "Green",
+      ["33"] = "Yellow",
+      ["34"] = "Blue",
+      ["35"] = "Magenta",
+      ["36"] = "Cyan",
+      ["37"] = "White",
+      ["90"] = "DarkGray",
+      ["91"] = "LightRed",
+      ["92"] = "LightGreen",
+      ["93"] = "LightYellow",
+      ["94"] = "LightBlue",
+      ["95"] = "LightMagenta",
+      ["96"] = "LightCyan",
+      ["97"] = "White",
+    }
+
+    -- Map 256-color palette indices to reasonable colors for diff
+    local ansi_256_colors = {
+      ["1"] = "Red",
+      ["2"] = "Green",
+      ["3"] = "Yellow",
+      ["4"] = "Blue",
+      ["5"] = "Magenta",
+      ["6"] = "Cyan",
+      ["9"] = "LightRed",
+      ["10"] = "LightGreen",
+      ["11"] = "LightYellow",
+    }
+
+    while pos <= #text do
+      local esc_start, esc_end = text:find("\27%[[0-9;]*m", pos)
+
+      if esc_start then
+        -- Add text before escape sequence with current styling
+        if esc_start > pos then
+          local segment = text:sub(pos, esc_start - 1)
+          if next(current_style) then
+            table.insert(highlights, {
+              group = current_style.group or "Normal",
+              line = 0,
+              col_start = #clean_text,
+              col_end = #clean_text + #segment,
+            })
+          end
+          clean_text = clean_text .. segment
+        end
+
+        -- Parse the escape sequence
+        local codes = text:sub(esc_start + 2, esc_end - 1)
+
+        -- Handle different codes
+        if codes == "0" or codes == "" then
+          current_style = {}
+        elseif codes == "1" then
+          current_style.bold = true
+          current_style.group = "Bold"
+        elseif codes == "4" then
+          current_style.underline = true
+          current_style.group = "Underlined"
+        elseif codes == "24" then
+          current_style.underline = false
+          if not current_style.bold and not (current_style.color or current_style.bg_color) then
+            current_style = {}
+          end
+        elseif codes == "39" then
+          current_style.color = nil
+          if
+            not current_style.bold
+            and not current_style.underline
+            and not current_style.bg_color
+          then
+            current_style = {}
+          end
+        else
+          -- Handle complex color codes like 38;5;n (256-color foreground)
+          local codes_list = {}
+          for code in codes:gmatch("[^;]+") do
+            table.insert(codes_list, code)
+          end
+
+          local i = 1
+          while i <= #codes_list do
+            local code = codes_list[i]
+
+            if code == "38" and codes_list[i + 1] == "5" and codes_list[i + 2] then
+              -- 256-color foreground: 38;5;n
+              local color_index = codes_list[i + 2]
+              local color = ansi_256_colors[color_index]
+              if color then
+                current_style.color = color
+                current_style.group = color
+              end
+              i = i + 3
+            elseif ansi_colors[code] then
+              -- Basic color
+              current_style.color = ansi_colors[code]
+              current_style.group = ansi_colors[code]
+              i = i + 1
+            else
+              i = i + 1
+            end
+          end
+        end
+
+        pos = esc_end + 1
+      else
+        -- No more escape sequences, add rest of text with current styling
+        local remaining = text:sub(pos)
+        if #remaining > 0 then
+          if next(current_style) then
+            table.insert(highlights, {
+              group = current_style.group or "Normal",
+              line = 0,
+              col_start = #clean_text,
+              col_end = #clean_text + #remaining,
+            })
+          end
+          clean_text = clean_text .. remaining
+        end
+        break
+      end
+    end
+
+    return clean_text, highlights
+  end
+
+  -- Enhanced diff formatting with header
   local header_lines = {
     "",
     "📄 Commit Diff: " .. commit_id,
@@ -352,19 +683,67 @@ local function show_commit_diff(commit_id)
 
   local content_lines = vim.split(result, "\n")
   local all_lines = {}
+  local all_highlights = {}
 
   -- Add header
   for _, line in ipairs(header_lines) do
     table.insert(all_lines, line)
   end
 
-  -- Add content
-  for _, line in ipairs(content_lines) do
-    table.insert(all_lines, line)
+  -- Process each line to extract colors and clean text
+  for i, line in ipairs(content_lines) do
+    local clean_line, highlights = parse_ansi_colors(line)
+    table.insert(all_lines, clean_line)
+
+    -- Adjust line numbers for highlights (account for header)
+    local line_offset = #header_lines
+    for _, hl in ipairs(highlights) do
+      hl.line = i + line_offset - 1 -- Convert to 0-based indexing
+      table.insert(all_highlights, hl)
+    end
   end
 
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, all_lines)
-  vim.api.nvim_buf_set_option(bufnr, "filetype", "diff")
+
+  -- Setup highlighting similar to diff module
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.cmd("setlocal filetype=diff")
+    vim.cmd("setlocal conceallevel=0")
+
+    -- Add some custom highlighting for our headers
+    vim.cmd("syntax match JjCommitDiffHeader '^📄.*$'")
+    vim.cmd("syntax match JjCommitDiffSubHeader '^🔄.*$'")
+    vim.cmd("syntax match JjCommitDiffSeparator '^─\\+$'")
+    vim.cmd("highlight default link JjCommitDiffHeader Comment")
+    vim.cmd("highlight default link JjCommitDiffSubHeader Comment")
+    vim.cmd("highlight default link JjCommitDiffSeparator Comment")
+
+    -- Define highlight groups for diff colors
+    vim.cmd("highlight JjCommitDiffAdd guifg=#00ff00 ctermfg=green")
+    vim.cmd("highlight JjCommitDiffDelete guifg=#ff0000 ctermfg=red")
+    vim.cmd("highlight JjCommitDiffChange guifg=#ffff00 ctermfg=yellow")
+    vim.cmd("highlight JjCommitDiffBold gui=bold cterm=bold")
+  end)
+
+  -- Apply highlights from parsed ANSI codes
+  for _, hl in ipairs(all_highlights) do
+    local group = hl.group
+    -- Map generic colors to diff-specific ones for better appearance
+    if group == "Green" or group == "LightGreen" then
+      group = "JjCommitDiffAdd"
+    elseif group == "Red" or group == "LightRed" then
+      group = "JjCommitDiffDelete"
+    elseif group == "Yellow" or group == "LightYellow" then
+      group = "JjCommitDiffChange"
+    elseif group == "Bold" then
+      group = "JjCommitDiffBold"
+    end
+
+    -- Apply the highlight to the buffer
+    local col_end = hl.col_end == -1 and -1 or hl.col_end
+    pcall(vim.api.nvim_buf_add_highlight, bufnr, 0, group, hl.line, hl.col_start, col_end)
+  end
+
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
   -- Open in new window
