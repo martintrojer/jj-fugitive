@@ -92,9 +92,9 @@ local function format_status_buffer(status_info)
 
   table.insert(lines, "")
   table.insert(lines, "# Commands:")
-  table.insert(lines, "# cc = commit, new = create new change")
-  table.insert(lines, "# dd = diff file, o = open file")
-  table.insert(lines, "# r = reload status, Enter/l = log view, q/gq = close")
+  table.insert(lines, "# <CR> = open file, o = open split, D = diff, dv = vertical diff")
+  table.insert(lines, "# cc = commit, new = create new change, l = log view")
+  table.insert(lines, "# R = reload status, q = close, g? = help")
 
   return lines
 end
@@ -119,8 +119,8 @@ end
 local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore status_info
   local opts = { noremap = true, silent = true, buffer = bufnr }
 
-  -- Reload status
-  vim.keymap.set("n", "r", function()
+  -- Reload status (vim-fugitive uses R)
+  vim.keymap.set("n", "R", function()
     -- Get current buffer for reload
     local current_buf = vim.api.nvim_get_current_buf()
 
@@ -130,7 +130,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       reload_status_content(current_buf)
     end
   end, opts)
-  -- foo
+
   -- Commit current changes
   vim.keymap.set("n", "cc", function()
     local commit_msg = vim.fn.input("Commit message: ")
@@ -148,8 +148,26 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     M.show_status()
   end, opts)
 
-  -- Diff file under cursor
-  vim.keymap.set("n", "dd", function()
+  -- Diff file under cursor (vim-fugitive uses D)
+  vim.keymap.set("n", "D", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      require("jj-fugitive.diff").show_file_diff(filename)
+    end
+  end, opts)
+
+  -- Vertical diff split (vim-fugitive pattern)
+  vim.keymap.set("n", "dv", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      require("jj-fugitive.diff").show_file_diff_sidebyside(filename)
+    end
+  end, opts)
+
+  -- Horizontal diff split (vim-fugitive pattern)
+  vim.keymap.set("n", "ds", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
@@ -210,13 +228,84 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     vim.cmd("close")
   end, opts)
 
-  -- Launch log view
+  -- Open file under cursor (vim-fugitive standard)
   vim.keymap.set("n", "<CR>", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      vim.cmd("edit " .. vim.fn.fnameescape(filename))
+    end
+  end, opts)
+
+  -- Launch log view (use 'l' for log)
+  vim.keymap.set("n", "l", function()
     require("jj-fugitive.log").show_log()
   end, opts)
 
-  vim.keymap.set("n", "l", function()
-    require("jj-fugitive.log").show_log()
+  -- Show help (vim-fugitive standard)
+  vim.keymap.set("n", "g?", function()
+    local help_lines = {
+      "# jj-fugitive Status Window Help",
+      "",
+      "File operations:",
+      "  <CR>    - Open file in editor",
+      "  o       - Open file in split",
+      "  D       - Show diff for file",
+      "  dv      - Vertical diff split",
+      "  ds      - Horizontal diff split",
+      "",
+      "jj operations:",
+      "  cc      - Create commit",
+      "  new     - Create new change",
+      "",
+      "Navigation & misc:",
+      "  l       - Show log view",
+      "  R       - Reload status",
+      "  q       - Close status window",
+      "  g?      - Show this help",
+      "",
+      "Press any key to close help...",
+    }
+
+    local help_buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, help_lines)
+    vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
+    vim.api.nvim_buf_set_option(help_buf, "filetype", "markdown")
+
+    local win_width = vim.api.nvim_get_option("columns")
+    local win_height = vim.api.nvim_get_option("lines")
+    local width = math.min(60, win_width - 4)
+    local height = math.min(#help_lines + 2, win_height - 4)
+
+    local win_opts = {
+      relative = "editor",
+      width = width,
+      height = height,
+      row = (win_height - height) / 2,
+      col = (win_width - width) / 2,
+      style = "minimal",
+      border = "rounded",
+      title = " jj-fugitive Status Help ",
+      title_pos = "center",
+    }
+
+    local help_win = vim.api.nvim_open_win(help_buf, true, win_opts)
+
+    -- Close help on any key
+    vim.keymap.set("n", "<CR>", function()
+      vim.api.nvim_win_close(help_win, true)
+    end, { buffer = help_buf, noremap = true, silent = true })
+
+    vim.keymap.set("n", "<Esc>", function()
+      vim.api.nvim_win_close(help_win, true)
+    end, { buffer = help_buf, noremap = true, silent = true })
+
+    -- Close on any other key
+    for _, key in ipairs({ "q", "g", "?", "o", "D", "l", "R" }) do
+      vim.keymap.set("n", key, function()
+        vim.api.nvim_win_close(help_win, true)
+      end, { buffer = help_buf, noremap = true, silent = true })
+    end
   end, opts)
 end
 
@@ -248,8 +337,8 @@ function M.show_status()
 
   local bufnr = get_or_create_status_buffer()
 
-  -- Check if keymaps are already set up by looking for the 'r' mapping
-  local existing_keymap = vim.fn.maparg("r", "n", false, true)
+  -- Check if keymaps are already set up by looking for the 'R' mapping (changed from 'r')
+  local existing_keymap = vim.fn.maparg("R", "n", false, true)
   local is_new_buffer = not existing_keymap or existing_keymap.buffer ~= 1
 
   -- Set buffer content

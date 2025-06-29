@@ -432,8 +432,8 @@ local function setup_log_keymaps(bufnr)
     M.show_log()
   end, opts)
 
-  -- Show help
-  vim.keymap.set("n", "?", function()
+  -- Show help (vim-fugitive standard)
+  vim.keymap.set("n", "g?", function()
     local help_lines = {
       "# jj-fugitive Log View Help",
       "",
@@ -451,7 +451,7 @@ local function setup_log_keymaps(bufnr)
       "View Actions:",
       "  R         - Refresh log view",
       "  q         - Close log view",
-      "  ?         - Show this help",
+      "  g?        - Show this help",
       "",
       "Visual Indicators:",
       "  👉        - Current working copy",

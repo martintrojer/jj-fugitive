@@ -4,7 +4,7 @@ local M = {}
 local help_cache = {}
 local cache_ttl = 300 -- 5 minutes cache TTL
 
--- Parse jj help output to extract commands
+-- Parse jj help output to extract commands with descriptions
 local function parse_jj_commands()
   local cache_key = "jj_commands"
   local now = os.time()
@@ -29,10 +29,20 @@ local function parse_jj_commands()
     elseif line:match("^Options:") or line:match("^OPTIONS:") or line:match("^Usage:") then
       in_commands_section = false
     elseif in_commands_section then
-      -- Parse command lines that start with whitespace followed by a command name
-      local cmd = line:match("^%s+([a-z][a-z0-9%-]*)")
-      if cmd then
-        table.insert(commands, cmd)
+      -- Parse command lines with descriptions
+      -- Format: "  command    Description of the command"
+      local cmd, desc = line:match("^%s+([a-z][a-z0-9%-]*)%s+(.+)")
+      if cmd and desc then
+        table.insert(commands, {
+          name = cmd,
+          description = desc:gsub("^%s+", ""):gsub("%s+$", ""), -- trim whitespace
+        })
+      else
+        -- Fallback: just the command name
+        local cmd_only = line:match("^%s+([a-z][a-z0-9%-]*)")
+        if cmd_only then
+          table.insert(commands, { name = cmd_only, description = "" })
+        end
       end
     end
   end
@@ -46,7 +56,7 @@ local function parse_jj_commands()
   return commands
 end
 
--- Parse command-specific help to extract flags
+-- Parse command-specific help to extract flags with descriptions
 local function parse_command_flags(command)
   local cache_key = "jj_" .. command .. "_flags"
   local now = os.time()
@@ -71,22 +81,38 @@ local function parse_command_flags(command)
     elseif line:match("^Commands:") or line:match("^COMMANDS:") or line:match("^Usage:") then
       in_options_section = false
     elseif in_options_section then
-      -- Parse flag lines
-      -- Look for patterns like: "  -f, --flag" or "      --long-flag"
-      local short_flag, long_flag = line:match("^%s*%-([a-zA-Z]),%s*%-%-([a-z][a-z0-9%-]*)")
+      -- Parse flag lines with descriptions
+      -- Handle multi-line descriptions by looking at current and next lines
+      local current_line = line
+
+      -- Look for patterns like: "  -h, --help" (flags on one line)
+      local short_flag, long_flag = current_line:match("^%s*%-([a-zA-Z]),%s*%-%-([a-z][a-z0-9%-]*)")
       if short_flag and long_flag then
-        table.insert(flags, "-" .. short_flag)
-        table.insert(flags, "--" .. long_flag)
+        -- This is a flag line, description might be on next line or same line
+        local desc = current_line:match("^%s*%-[a-zA-Z],%s*%-%-[a-z][a-z0-9%-]*%s+(.+)")
+        if not desc then
+          desc = "Print help information" -- Default for help flags
+        end
+        table.insert(flags, { name = "-" .. short_flag, description = desc })
+        table.insert(flags, { name = "--" .. long_flag, description = desc })
       else
         -- Look for long flags only: "      --flag"
-        local flag = line:match("^%s*%-%-([a-z][a-z0-9%-]*)")
+        local flag = current_line:match("^%s*%-%-([a-z][a-z0-9%-]*)")
         if flag then
-          table.insert(flags, "--" .. flag)
+          local desc = current_line:match("^%s*%-%-[a-z][a-z0-9%-]*%s+(.+)")
+          if not desc then
+            desc = "" -- No description found
+          end
+          table.insert(flags, { name = "--" .. flag, description = desc })
         else
           -- Look for short flags only: "  -f"
-          local short = line:match("^%s*%-([a-zA-Z])%s")
+          local short = current_line:match("^%s*%-([a-zA-Z])%s")
           if short then
-            table.insert(flags, "-" .. short)
+            local desc = current_line:match("^%s*%-[a-zA-Z]%s+(.+)")
+            if not desc then
+              desc = ""
+            end
+            table.insert(flags, { name = "-" .. short, description = desc })
           end
         end
       end
@@ -95,17 +121,24 @@ local function parse_command_flags(command)
 
   -- Add common global flags that work with most commands
   local global_flags = {
-    "--help",
-    "-h",
-    "--repository",
-    "-R",
-    "--at-operation",
-    "--config-toml",
+    { name = "--help", description = "Print help information" },
+    { name = "-h", description = "Print help information" },
+    { name = "--repository", description = "Path to repository to operate on" },
+    { name = "-R", description = "Path to repository to operate on" },
+    { name = "--at-operation", description = "Operation to load the repo at" },
+    { name = "--config-toml", description = "Additional configuration options" },
   }
 
-  for _, flag in ipairs(global_flags) do
-    if not vim.tbl_contains(flags, flag) then
-      table.insert(flags, flag)
+  for _, global_flag in ipairs(global_flags) do
+    local already_exists = false
+    for _, existing_flag in ipairs(flags) do
+      if existing_flag.name == global_flag.name then
+        already_exists = true
+        break
+      end
+    end
+    if not already_exists then
+      table.insert(flags, global_flag)
     end
   end
 
@@ -138,8 +171,9 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
     -- Complete jj subcommands
     local commands = parse_jj_commands()
     for _, cmd in ipairs(commands) do
-      if arglead == "" or cmd:find("^" .. vim.pesc(arglead)) then
-        table.insert(completions, cmd)
+      local cmd_name = type(cmd) == "table" and cmd.name or cmd
+      if arglead == "" or cmd_name:find("^" .. vim.pesc(arglead)) then
+        table.insert(completions, cmd_name)
       end
     end
 
@@ -167,8 +201,11 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
     end
 
     for _, flag in ipairs(flags) do
-      if (arglead == "" or flag:find("^" .. vim.pesc(arglead))) and not used_flags[flag] then
-        table.insert(completions, flag)
+      local flag_name = type(flag) == "table" and flag.name or flag
+      if
+        (arglead == "" or flag_name:find("^" .. vim.pesc(arglead))) and not used_flags[flag_name]
+      then
+        table.insert(completions, flag_name)
       end
     end
 
@@ -251,6 +288,126 @@ function M.get_changed_files()
   end
 
   return files
+end
+
+-- Get help information for a command
+function M.get_command_help(command)
+  local commands = parse_jj_commands()
+  for _, cmd in ipairs(commands) do
+    if type(cmd) == "table" and cmd.name == command then
+      return cmd.description
+    end
+  end
+  return ""
+end
+
+-- Get help information for a flag
+function M.get_flag_help(command, flag)
+  local flags = parse_command_flags(command)
+  for _, flag_info in ipairs(flags) do
+    if type(flag_info) == "table" and flag_info.name == flag then
+      return flag_info.description
+    end
+  end
+  return ""
+end
+
+-- Show inline help for the current completion context
+function M.show_inline_help(cmdline)
+  -- Parse the command line to understand context
+  local parts = vim.split(cmdline, "%s+")
+
+  -- Remove the :J command itself
+  if parts[1] == "J" then
+    table.remove(parts, 1)
+  end
+
+  local help_lines = { "# jj-fugitive Inline Help" }
+  table.insert(help_lines, "")
+
+  if #parts == 0 then
+    -- Show available commands with descriptions
+    table.insert(help_lines, "Available commands:")
+    table.insert(help_lines, "")
+
+    local commands = parse_jj_commands()
+    for _, cmd in ipairs(commands) do
+      if type(cmd) == "table" then
+        local desc = cmd.description ~= "" and cmd.description or "No description available"
+        table.insert(help_lines, string.format("  %-12s %s", cmd.name, desc))
+      end
+    end
+
+    -- Add custom commands
+    local custom_commands = {
+      { name = "status", description = "Show repository status (enhanced view)" },
+      { name = "diff", description = "Show file differences (enhanced view)" },
+      { name = "log", description = "Show revision history (enhanced view)" },
+    }
+
+    table.insert(help_lines, "")
+    table.insert(help_lines, "jj-fugitive enhanced commands:")
+    table.insert(help_lines, "")
+    for _, cmd in ipairs(custom_commands) do
+      table.insert(help_lines, string.format("  %-12s %s", cmd.name, cmd.description))
+    end
+  elseif #parts >= 1 then
+    -- Show flags for the current command
+    local subcommand = parts[1]
+    table.insert(help_lines, string.format("Flags for 'jj %s':", subcommand))
+    table.insert(help_lines, "")
+
+    local command_desc = M.get_command_help(subcommand)
+    if command_desc ~= "" then
+      table.insert(help_lines, string.format("Command: %s", command_desc))
+      table.insert(help_lines, "")
+    end
+
+    local flags = parse_command_flags(subcommand)
+    for _, flag in ipairs(flags) do
+      if type(flag) == "table" then
+        local desc = flag.description ~= "" and flag.description or "No description available"
+        table.insert(help_lines, string.format("  %-20s %s", flag.name, desc))
+      end
+    end
+  end
+
+  table.insert(help_lines, "")
+  table.insert(help_lines, "Use Tab for completion, Ctrl-C to cancel")
+
+  -- Create a floating window to display help
+  local help_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, help_lines)
+  vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
+  vim.api.nvim_buf_set_option(help_buf, "filetype", "markdown")
+
+  local win_width = vim.api.nvim_get_option("columns")
+  local win_height = vim.api.nvim_get_option("lines")
+  local width = math.min(80, win_width - 4)
+  local height = math.min(#help_lines + 2, win_height - 4)
+
+  local win_opts = {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = 2,
+    col = 2,
+    style = "minimal",
+    border = "rounded",
+    title = " jj-fugitive Help ",
+    title_pos = "center",
+  }
+
+  local help_win = vim.api.nvim_open_win(help_buf, false, win_opts)
+
+  -- Auto-close the help window after a few seconds or on any key
+  vim.defer_fn(function()
+    if vim.api.nvim_win_is_valid(help_win) then
+      vim.api.nvim_win_close(help_win, true)
+    end
+  end, 5000) -- 5 seconds
+
+  return help_win
 end
 
 -- Clear the help cache (useful for testing or if jj is updated)
