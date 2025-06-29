@@ -69,25 +69,22 @@ if log_module and main_module then
     local commit_lines = {}
 
     for i, line in ipairs(lines) do
-      if line:match("📜 jj Log View") then
+      if line:match("# jj Log View") then
         has_header = true
       end
 
-      -- Check for actual commit lines (not headers)
-      if line:match("|") then
-        local first_part = line:match("^([^|]+)")
-        if first_part then
-          first_part = vim.trim(first_part)
-          if not (first_part:match("Commit ID") or first_part:match("Description")) then
-            local tokens = {}
-            for token in first_part:gmatch("%S+") do
-              table.insert(tokens, token)
-            end
-            if #tokens >= 3 then
-              has_commits = true
-              table.insert(commit_lines, { line_num = i, line = line, commit_id = tokens[#tokens] })
-            end
-          end
+      -- Check for native jj commit lines (with @ ◆ ○ symbols)
+      if
+        not line:match("^#")
+        and line ~= ""
+        and (line:match("@") or line:match("◆") or line:match("○"))
+      then
+        -- Extract 8-character hex commit ID from end of line
+        local commit_id =
+          line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
+        if commit_id then
+          has_commits = true
+          table.insert(commit_lines, { line_num = i, line = line, commit_id = commit_id })
         end
       end
     end

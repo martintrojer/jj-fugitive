@@ -1,97 +1,226 @@
 # jj-fugitive Test Suite
 
-This directory contains comprehensive tests for the jj-fugitive Neovim plugin.
+This directory contains comprehensive tests for the jj-fugitive Neovim plugin. The test suite uses intelligent discovery to automatically find and run all test files.
+
+## Test Runner
+
+### Quick Start
+```bash
+# Run all tests with intelligent discovery
+./tests/run_tests.sh
+
+# Run a specific test
+./tests/test_status_functionality.lua
+
+# Run all tests matching a pattern
+./tests/test_log*.lua
+```
+
+### Features
+- **Intelligent Discovery**: Automatically finds all `test_*.lua` files
+- **Comprehensive Coverage**: Linting, formatting, and functional tests
+- **Detailed Reporting**: Shows individual test results and summary
+- **Demo Support**: Runs demo files separately (non-critical)
+- **Executable Management**: Automatically makes test files executable
 
 ## Test Categories
 
 ### Core Functionality Tests
-- **`test_status_functionality.lua`** - Tests basic status view functionality
-- **`test_diff_functionality.lua`** - Tests diff view functionality 
-- **`test_completion_functionality.lua`** - Tests command completion
-- **`test_log_functionality.lua`** - Tests basic log view functionality
+- **`test_status_functionality.lua`** - Status view creation and navigation
+- **`test_diff_functionality.lua`** - Diff view and file comparison features  
+- **`test_log_functionality.lua`** - Log view with commit history
+- **`test_completion_functionality.lua`** - Command completion system
 
-### Enhanced Feature Tests
-- **`test_status_features.lua`** - Tests enhanced status features (cursor positioning, buffer management)
-- **`test_repository_detection.lua`** - Tests repository root detection from subdirectories ⭐
-- **`test_log_enter_functionality.lua`** - Tests log view Enter key functionality ⭐
-- **`test_user_experience_simulation.lua`** - End-to-end user workflow simulation ⭐
+### Native Integration Tests
+- **`test_native_log_view.lua`** - Native jj log format preservation
+- **`test_commit_extraction.lua`** - ANSI processing and commit ID extraction
+- **`test_repository_detection.lua`** - Repository discovery from subdirectories
 
-### Demo and Manual Tests
-- **`demo_enhanced_diff.lua`** - Interactive demo of enhanced diff features
-- **`demo_log_view.lua`** - Interactive demo of enhanced log view
-- **`manual_test.lua`** - Manual testing utilities
-- **`test_enhanced_diff.txt`** - Sample diff output for testing
+### Advanced Feature Tests
+- **`test_status_features.lua`** - Cursor positioning and buffer management
+- **`test_log_enter_functionality.lua`** - Interactive log navigation
+- **`test_status_enter_l_keys.lua`** - Keyboard shortcuts and mappings
+- **`test_status_keybindings_simple.lua`** - Basic keybinding functionality
 
-## Key Tests (⭐ = Addresses Original Reported Issues)
+### Color and Format Tests
+- **`test_color_rendering.lua`** - ANSI color processing
+- **`test_log_color_rendering.lua`** - Log-specific color handling
+- **`test_unified_ansi_functionality.lua`** - Shared ANSI parsing module
+- **`test_format_consistency.lua`** - Format consistency across views
+- **`test_git_format_consistency.lua`** - Git diff format standardization
 
-### Repository Detection (`test_repository_detection.lua`)
-**Addresses:** "There is no jj repo in '.' - This looks like a git repo" error
+### User Experience Tests
+- **`test_user_experience_simulation.lua`** - End-to-end workflow simulation
+- **`test_vim_fugitive_alignment.lua`** - vim-fugitive compatibility
+- **`test_improved_diff.lua`** - Enhanced diff view features
+- **`test_inline_help.lua`** - Help system functionality
+- **`test_inline_help_simple.lua`** - Basic help features
 
-Tests:
-- Repository root detection from current directory
-- Repository root detection from subdirectories  
-- Repository root detection from nested subdirectories
-- Path consistency across different starting directories
-- jj command execution from various directories
+### Documentation and Quality Tests
+- **`test_documentation.lua`** - Documentation completeness and accuracy
 
-### Log Enter Functionality (`test_log_enter_functionality.lua`)  
-**Addresses:** Pressing Enter in log view giving errors
+## Test Architecture
 
-Tests:
-- Log buffer creation and formatting
-- Cursor positioning on valid commit lines
-- Commit ID extraction from formatted lines
-- jj show command execution with extracted commit IDs
-- Functionality from subdirectories
-- Multiple commit line validation
+### Test File Structure
+```lua
+#!/usr/bin/env -S nvim --headless -l
 
-### User Experience Simulation (`test_user_experience_simulation.lua`)
-**Addresses:** Complete user workflow verification
+-- Test description
+vim.cmd("set rtp+=.")
+vim.cmd("runtime plugin/jj-fugitive.lua")
 
-Simulates:
-1. User runs `:J log`
-2. Log view opens with proper formatting
-3. Cursor positioned on first commit
-4. User presses Enter
-5. Commit details displayed successfully
-6. All operations work from subdirectories
+local test_results = {}
+local function assert_test(name, condition, message)
+  -- Test assertion logic
+end
+
+-- Test implementation
+-- ...
+
+-- Summary and exit
+```
+
+### Key Components
+
+#### Test Discovery
+The test runner automatically discovers test files using:
+```bash
+find tests/ -name "test_*.lua" -print0 | sort -z
+```
+
+#### Test Execution
+- Each test runs in isolation with captured output
+- Failed tests show detailed error information
+- Summary provides pass/fail counts and specific failures
+
+#### Test Types
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: Cross-component functionality
+- **End-to-End Tests**: Complete workflow validation
+- **Regression Tests**: Prevention of known issues
 
 ## Running Tests
 
-### Run All Tests
+### Prerequisites
 ```bash
+# Required tools
+brew install luacheck     # Lua linting
+brew install stylua       # Lua formatting
+# jj CLI tool must be available in PATH
+```
+
+### Environment
+- Tests must run from within a jj repository
+- Neovim must support headless mode with Lua
+- Tests create temporary files (automatically cleaned up)
+
+### Test Patterns
+
+#### Basic Test
+```lua
+assert_test("Feature works", some_condition, "Error message if failed")
+```
+
+#### Module Loading
+```lua
+local module = require("jj-fugitive.module")
+assert_test("Module loads", module ~= nil, "Could not require module")
+```
+
+#### Buffer Testing
+```lua
+local bufnr = vim.api.nvim_create_buf(false, true)
+assert_test("Buffer created", bufnr ~= nil, "Buffer creation failed")
+```
+
+#### Command Testing
+```lua
+local result = vim.fn.system({"jj", "status"})
+assert_test("Command works", vim.v.shell_error == 0, "Command failed")
+```
+
+## Test Results
+
+The test runner provides detailed results:
+
+```
+📊 === Test Results Summary ===
+Total tests run: 22
+Passed: 16
+Failed: 6
+
+💥 Some tests failed:
+   ❌ test_format_consistency
+   ❌ test_git_format_consistency
+```
+
+### Success Indicators
+- ✅ **All tests passed**: Full functionality verified
+- 🎉 **Specific achievements**: Individual test accomplishments
+- 📝 **Key achievements**: Summary of validated features
+
+### Failure Analysis
+- 📄 **Error output**: Detailed failure information
+- ❌ **Failed test name**: Specific test that failed
+- 💥 **Failure summary**: Overview of issues
+
+## Continuous Integration
+
+The test suite is designed for CI environments:
+
+```bash
+# CI-friendly execution
 ./tests/run_tests.sh
+exit_code=$?
+
+if [ $exit_code -eq 0 ]; then
+    echo "All tests passed - ready for merge"
+else
+    echo "Tests failed - review required"
+    exit $exit_code
+fi
 ```
 
-### Run Individual Tests
-```bash
-./tests/test_repository_detection.lua
-./tests/test_log_enter_functionality.lua
-./tests/test_user_experience_simulation.lua
-```
+## Demo Files
 
-### Run Key Tests Only
-```bash
-# Test the original reported issues
-./tests/test_repository_detection.lua
-./tests/test_log_enter_functionality.lua
-```
+Demo files showcase functionality but don't affect test results:
+- **`demo_enhanced_diff.lua`** - Diff view demonstration
+- **`demo_log_view.lua`** - Log view demonstration
 
-## Test Requirements
+## Manual Testing
 
-- Must be run from within a jj repository
-- Neovim must be available in PATH
-- jj command must be available and working
+For interactive testing:
+- **`manual_test.lua`** - Manual testing helpers (excluded from automated runs)
 
-## Expected Results
+## Best Practices
 
-All tests should pass with `🎉 All tests passed!` messages. Any failures indicate regressions that need to be addressed.
+### Writing Tests
+1. **Clear Names**: Use descriptive test names
+2. **Isolated Tests**: Each test should be independent
+3. **Comprehensive Coverage**: Test both success and failure cases
+4. **Clean Up**: Remove temporary files and state
+5. **Meaningful Messages**: Provide helpful error messages
 
-## Adding New Tests
+### Test Organization
+1. **Group Related Tests**: Keep similar functionality together
+2. **Progressive Complexity**: Start with basic tests, build up
+3. **Document Assumptions**: Note any test prerequisites
+4. **Version Compatibility**: Consider different jj/Neovim versions
 
-When adding new functionality:
-1. Create test file in `tests/` directory
-2. Make it executable: `chmod +x tests/new_test.lua`
-3. Add to `run_tests.sh` if it should be part of the standard test suite
-4. Follow the existing test pattern with assert_test() function
-5. Update this README with test description
+### Debugging Tests
+1. **Run Individual Tests**: Test specific functionality
+2. **Add Debug Output**: Use print statements for investigation
+3. **Check Prerequisites**: Ensure jj repository and tools available
+4. **Review Error Output**: Analyze detailed failure information
+
+## Contributing
+
+When adding new tests:
+
+1. Follow the naming convention: `test_*.lua`
+2. Make the file executable: `chmod +x tests/test_new_feature.lua`
+3. Include in appropriate category above
+4. Test both success and failure cases
+5. Add to this documentation
+
+The intelligent test discovery will automatically include new test files in the next run.
