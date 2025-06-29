@@ -94,7 +94,7 @@ local function format_status_buffer(status_info)
   table.insert(lines, "# Commands:")
   table.insert(lines, "# cc = commit, new = create new change")
   table.insert(lines, "# dd = diff file, o = open file")
-  table.insert(lines, "# r = reload status, q/gq = close")
+  table.insert(lines, "# r = reload status, Enter/l = log view, q/gq = close")
 
   return lines
 end
@@ -208,6 +208,15 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
 
   vim.keymap.set("n", "gq", function()
     vim.cmd("close")
+  end, opts)
+
+  -- Launch log view
+  vim.keymap.set("n", "<CR>", function()
+    require("jj-fugitive.log").show_log()
+  end, opts)
+
+  vim.keymap.set("n", "l", function()
+    require("jj-fugitive.log").show_log()
   end, opts)
 end
 
