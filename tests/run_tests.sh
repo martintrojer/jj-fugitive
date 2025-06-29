@@ -56,4 +56,10 @@ echo "Testing completion functionality..."
 
 echo ""
 
+# Test status features (cursor positioning and buffer switching)
+echo "Testing status features..."
+./tests/test_status_features.lua
+
+echo ""
+
 echo "🎉 All tests completed!"
