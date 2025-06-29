@@ -24,14 +24,17 @@ pcall(function()
 end)
 assert_test("Log module loading", log_module ~= nil, "Could not require jj-fugitive.log")
 
--- Test 2: Check if J command with log works (skip in CI due to timing issues)
-if not os.getenv("CI") then
-  local j_exists = vim.fn.exists(":J") == 1
-  assert_test("J command exists", j_exists, ":J command not found")
-else
-  print("⏭️  SKIP: J command exists (CI timing issue)")
-  table.insert(test_results, { name = "J command exists", passed = true })
+-- Test 2: Check if J command works by trying to execute it
+local j_command_works = false
+local j_error = ""
+local success, err = pcall(function()
+  vim.cmd("J help")
+  j_command_works = true
+end)
+if not success then
+  j_error = tostring(err)
 end
+assert_test("J command works", j_command_works, "J command failed: " .. j_error)
 
 -- Test 3: Check if jj log works
 local jj_log_result = vim.fn.system({ "jj", "log", "--limit", "5" })

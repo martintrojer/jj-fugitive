@@ -172,7 +172,7 @@ jj-fugitive.nvim/
 ├── tests/
 │   ├── minimal_init.lua   # Test setup
 │   └── *_spec.lua         # Test files
-├── docs/                  # Documentation
+├── doc/                   # Documentation (Vim help and markdown)
 └── README.md
 ```
 
@@ -187,7 +187,7 @@ jj-fugitive.nvim/
 1. Create a new module in `lua/jj-fugitive/`
 2. Add command registration in `plugin/jj-fugitive.lua`
 3. Write tests in `tests/`
-4. Add documentation in `docs/`
+4. Add documentation in `doc/`
 
 Example new module:
 

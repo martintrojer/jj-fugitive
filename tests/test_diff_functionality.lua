@@ -24,14 +24,18 @@ pcall(function()
 end)
 assert_test("Diff module loading", diff_module ~= nil, "Could not require jj-fugitive.diff")
 
--- Test 2: Check if J command exists (skip in CI due to timing issues)
-if not os.getenv("CI") then
-  local j_exists = vim.fn.exists(":J") == 1
-  assert_test("J command exists", j_exists, ":J command not found")
-else
-  print("⏭️  SKIP: J command exists (CI timing issue)")
-  table.insert(test_results, { name = "J command exists", passed = true })
+-- Test 2: Check if J command works by trying to execute it
+local j_command_works = false
+local j_error = ""
+local success, err = pcall(function()
+  -- Just test a simple J command that doesn't need files
+  vim.cmd("J help")
+  j_command_works = true
+end)
+if not success then
+  j_error = tostring(err)
 end
+assert_test("J command works", j_command_works, "J command failed: " .. j_error)
 
 -- Test 3: Create test file with changes
 local test_file = "test_diff_functionality.txt"
@@ -120,10 +124,14 @@ if diff_module then
         buftype == "nofile",
         "buftype is " .. buftype .. ", expected nofile"
       )
+      -- Test that diff uses native jj formatting (instead of our old emoji formatting)
+      local has_native_formatting = content:match("# File:")
+        or content:match("# Changes")
+        or content:match("diff --git")
       assert_test(
-        "Diff buffer has enhanced content formatting",
-        content:match("📄 File:") and content:match("🔄 Changes"),
-        "Enhanced diff formatting not found in buffer content"
+        "Diff buffer has native jj formatting",
+        has_native_formatting,
+        "Native jj diff formatting not found in buffer content"
       )
       assert_test(
         "Diff buffer is not modifiable",

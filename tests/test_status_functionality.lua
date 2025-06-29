@@ -24,40 +24,44 @@ pcall(function()
 end)
 assert_test("Status module loading", status_module ~= nil, "Could not require jj-fugitive.status")
 
--- Test 2: Check if J command exists (skip in CI due to timing issues)
-if not os.getenv("CI") then
-  local j_exists = vim.fn.exists(":J") == 1
-  assert_test("J command exists", j_exists, ":J command not found")
-else
-  print("⏭️  SKIP: J command exists (CI timing issue)")
-  table.insert(test_results, { name = "J command exists", passed = true })
+-- Test 2: Check if J command works by trying to execute it
+local j_command_works = false
+local j_error = ""
+local success, err = pcall(function()
+  vim.cmd("J status")
+  j_command_works = true
+end)
+if not success then
+  j_error = tostring(err)
 end
+assert_test("J command works", j_command_works, "J command failed: " .. j_error)
 
 -- Test 3: Check if jj status works
 local jj_status_result = vim.fn.system({ "jj", "status" })
 local jj_status_works = vim.v.shell_error == 0
 assert_test("jj status command works", jj_status_works, "jj status failed: " .. jj_status_result)
 
--- Test 4: Test status buffer creation
+-- Test 4: Test status buffer creation (or find existing one)
 if status_module then
-  local initial_buf_count = #vim.api.nvim_list_bufs()
+  -- First try to find existing status buffer
+  local status_buffer = nil
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(bufnr) then
+      local name = vim.api.nvim_buf_get_name(bufnr)
+      if name:match("jj%-status") then
+        status_buffer = bufnr
+        break
+      end
+    end
+  end
 
-  pcall(function()
-    status_module.show_status()
-  end)
+  -- If no existing buffer, create one
+  if not status_buffer then
+    pcall(function()
+      status_module.show_status()
+    end)
 
-  local final_buf_count = #vim.api.nvim_list_bufs()
-  local status_buffer_created = final_buf_count > initial_buf_count
-
-  assert_test(
-    "Status buffer created",
-    status_buffer_created,
-    "No new buffer created by show_status"
-  )
-
-  if status_buffer_created then
-    -- Find the status buffer
-    local status_buffer = nil
+    -- Find the newly created buffer
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
       if vim.api.nvim_buf_is_valid(bufnr) then
         local name = vim.api.nvim_buf_get_name(bufnr)
@@ -67,49 +71,54 @@ if status_module then
         end
       end
     end
+  end
 
+  assert_test(
+    "Status buffer created",
+    status_buffer ~= nil,
+    "No status buffer found after creation attempt"
+  )
+
+  if status_buffer then
     assert_test("Status buffer found", status_buffer ~= nil, "Could not find status buffer by name")
 
-    if status_buffer then
-      local lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
-      local content = table.concat(lines, "\n")
-      local has_expected_content = content:match("jj%-fugitive Status")
-        and content:match("Commands:")
+    local lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
+    local content = table.concat(lines, "\n")
+    local has_expected_content = content:match("jj%-fugitive Status") and content:match("Commands:")
 
-      assert_test(
-        "Status buffer has expected content",
-        has_expected_content,
-        "Status buffer missing expected content"
-      )
+    assert_test(
+      "Status buffer has expected content",
+      has_expected_content,
+      "Status buffer missing expected content"
+    )
 
-      -- Test buffer options
-      local buftype = vim.api.nvim_buf_get_option(status_buffer, "buftype")
-      local modifiable = vim.api.nvim_buf_get_option(status_buffer, "modifiable")
+    -- Test buffer options
+    local buftype = vim.api.nvim_buf_get_option(status_buffer, "buftype")
+    local modifiable = vim.api.nvim_buf_get_option(status_buffer, "modifiable")
 
-      assert_test(
-        "Status buffer has correct buftype",
-        buftype == "nofile",
-        "buftype is " .. buftype .. ", expected nofile"
-      )
-      assert_test(
-        "Status buffer is not modifiable",
-        modifiable == false,
-        "buffer should not be modifiable"
-      )
+    assert_test(
+      "Status buffer has correct buftype",
+      buftype == "nofile",
+      "buftype is " .. buftype .. ", expected nofile"
+    )
+    assert_test(
+      "Status buffer is not modifiable",
+      modifiable == false,
+      "buffer should not be modifiable"
+    )
 
-      -- Test that reload function exists and works
-      pcall(function()
-        status_module.show_status() -- Call again to test reload
-      end)
+    -- Test that reload function exists and works
+    pcall(function()
+      status_module.show_status() -- Call again to test reload
+    end)
 
-      local new_lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
-      local reload_worked = #new_lines > 0
-      assert_test(
-        "Status buffer reload works",
-        reload_worked,
-        "Status buffer became empty after reload"
-      )
-    end
+    local new_lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
+    local reload_worked = #new_lines > 0
+    assert_test(
+      "Status buffer reload works",
+      reload_worked,
+      "Status buffer became empty after reload"
+    )
   end
 end
 

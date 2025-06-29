@@ -182,9 +182,21 @@ if log_module then
 end
 
 -- Test 5: Test help content updates
-if status_buffer then
-  vim.api.nvim_set_current_buf(status_buffer)
-  local lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
+-- Re-find status buffer for this test
+local status_buffer_for_help = nil
+for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+  if vim.api.nvim_buf_is_valid(bufnr) then
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name:match("jj%-status$") then
+      status_buffer_for_help = bufnr
+      break
+    end
+  end
+end
+
+if status_buffer_for_help then
+  vim.api.nvim_set_current_buf(status_buffer_for_help)
+  local lines = vim.api.nvim_buf_get_lines(status_buffer_for_help, 0, -1, false)
   local help_text = table.concat(lines, "\n")
 
   -- Check that help text reflects new keybindings
@@ -202,8 +214,8 @@ if status_buffer then
 end
 
 -- Test 6: Test that help windows can be opened
-if status_buffer then
-  vim.api.nvim_set_current_buf(status_buffer)
+if status_buffer_for_help then
+  vim.api.nvim_set_current_buf(status_buffer_for_help)
 
   local help_success = pcall(function()
     vim.api.nvim_feedkeys("g?", "n", false)

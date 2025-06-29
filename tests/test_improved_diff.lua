@@ -139,17 +139,17 @@ local enhanced_options = {
 }
 
 for _, option in ipairs(enhanced_options) do
-  local success, err = pcall(function()
+  local success_test, err = pcall(function() -- luacheck: ignore success_test
     diff_module.show_file_diff(nil, option.options)
   end)
 
-  if not success and err then
+  if not success_test and err then
     print("Error details for " .. option.name .. ": " .. tostring(err))
   end
 
   assert_test(
     string.format("Diff with %s option works", option.name),
-    success,
+    success_test,
     string.format(
       "Failed to create diff with %s option: %s",
       option.name,

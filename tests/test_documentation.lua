@@ -30,18 +30,18 @@ assert_test("jj-fugitive.txt help file exists", help_exists, "Help file should e
 if help_exists then
   -- Test 3: Read and validate help file content
   local content = table.concat(vim.fn.readfile(help_file), "\n")
-  
+
   -- Test basic vim help format
   assert_test(
     "Help file has proper header",
     content:match("*jj%-fugitive%.txt*") and content:match("*jj%-fugitive*"),
     "Help file should have proper vim help tags"
   )
-  
+
   -- Test sections exist
   local required_sections = {
     "INTRODUCTION",
-    "COMMANDS", 
+    "COMMANDS",
     "STATUS BUFFER",
     "DIFF BUFFER",
     "LOG BUFFER",
@@ -50,9 +50,9 @@ if help_exists then
     "INTEGRATION",
     "EXAMPLES",
     "TROUBLESHOOTING",
-    "ABOUT"
+    "ABOUT",
   }
-  
+
   for _, section in ipairs(required_sections) do
     assert_test(
       string.format("Help file contains %s section", section),
@@ -60,9 +60,9 @@ if help_exists then
       string.format("Help file should contain %s section", section)
     )
   end
-  
+
   -- Test command documentation
-  local commands = {":J", ":JHelp", ":JHelpPopup"}
+  local commands = { ":J", ":JHelp", ":JHelpPopup" }
   for _, cmd in ipairs(commands) do
     assert_test(
       string.format("Help file documents %s command", cmd),
@@ -70,9 +70,9 @@ if help_exists then
       string.format("Help file should document %s command", cmd)
     )
   end
-  
+
   -- Test keybinding documentation
-  local keybindings = {"<CR>", "D", "dv", "ds", "R", "g?", "[c", "]c"}
+  local keybindings = { "<CR>", "D", "dv", "ds", "R", "g?", "[c", "]c" }
   for _, key in ipairs(keybindings) do
     assert_test(
       string.format("Help file documents %s keybinding", key),
@@ -80,15 +80,15 @@ if help_exists then
       string.format("Help file should document %s keybinding", key)
     )
   end
-  
+
   -- Test help tags for cross-references
   local help_tags = {
     "*jj-fugitive-status*",
-    "*jj-fugitive-diff*", 
+    "*jj-fugitive-diff*",
     "*jj-fugitive-log*",
-    "*jj-fugitive-completion*"
+    "*jj-fugitive-completion*",
   }
-  
+
   for _, tag in ipairs(help_tags) do
     assert_test(
       string.format("Help file has %s tag", tag),
@@ -96,24 +96,24 @@ if help_exists then
       string.format("Help file should have %s tag for cross-references", tag)
     )
   end
-  
+
   -- Test vim help file format (ends with vim modeline)
   assert_test(
     "Help file has vim modeline",
     content:match("vim:.*ft=help"),
     "Help file should end with vim modeline for proper formatting"
   )
-  
+
   -- Test file structure
   local lines = vim.split(content, "\n")
   local line_count = #lines
-  
+
   assert_test(
     "Help file has substantial content",
     line_count > 50,
     "Help file should have substantial documentation content"
   )
-  
+
   -- Test for proper vim help tags (surrounded by asterisks)
   local tag_count = 0
   for line in content:gmatch("[^\n]*") do
@@ -123,7 +123,7 @@ if help_exists then
       table.insert(tags_in_line, tag)
     end
   end
-  
+
   assert_test(
     "Help file has sufficient help tags",
     tag_count >= 10,
@@ -136,13 +136,13 @@ if help_exists then
   local success = pcall(function()
     vim.cmd("helptags " .. doc_dir)
   end)
-  
+
   assert_test(
     "Help tags can be generated",
     success,
     "vim should be able to generate help tags from the help file"
   )
-  
+
   -- Check if tags file was created
   local tags_file = doc_dir .. "/tags"
   local tags_exists = vim.fn.filereadable(tags_file) == 1

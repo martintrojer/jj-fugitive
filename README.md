@@ -134,15 +134,16 @@ The `:J` command provides intelligent tab completion for all jj operations:
 
 ## Documentation
 
-See the [docs/](docs/) folder for comprehensive documentation:
+See the [doc/](doc/) folder for comprehensive documentation:
 
-- **[User Guide](docs/README.md)** - Complete usage documentation
-- **[Status Buffer](docs/jstatus.md)** - Detailed `:JStatus` guide with keybindings
-- **[Development](docs/development.md)** - Setup, testing, and contribution guide
+- **[User Guide](doc/README.md)** - Complete usage documentation
+- **[Status Buffer](doc/jstatus.md)** - Detailed `:JStatus` guide with keybindings
+- **[Development](doc/development.md)** - Setup, testing, and contribution guide
+- **[Vim Help](doc/jj-fugitive.txt)** - Integrated vim help (`:help jj-fugitive`)
 
 ## Contributing
 
-See [docs/development.md](docs/development.md) for detailed development and contribution instructions.
+See [doc/development.md](doc/development.md) for detailed development and contribution instructions.
 
 ## License
 

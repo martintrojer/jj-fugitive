@@ -45,7 +45,7 @@ local function get_repo_root()
 end
 
 local function run_jj_command(args, options)
-  options = options or {}
+  options = options or {} -- luacheck: ignore options
 
   -- Find the repository root
   local repo_root = get_repo_root()
