@@ -1,4 +1,0 @@
-This is a test file for enhanced diff view.
-Line 2 has been MODIFIED with new content!
-Line 4 stays the same.
-Line 5 is a new addition.

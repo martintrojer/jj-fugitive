@@ -113,7 +113,6 @@ if diff_module then
 
       -- Test buffer options
       local buftype = vim.api.nvim_buf_get_option(diff_buffer, "buftype")
-      local filetype = vim.api.nvim_buf_get_option(diff_buffer, "filetype")
       local modifiable = vim.api.nvim_buf_get_option(diff_buffer, "modifiable")
 
       assert_test(

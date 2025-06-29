@@ -62,4 +62,11 @@ echo "Testing status features..."
 
 echo ""
 
+# Demo enhanced diff view (if demo file exists)
+if [ -f "./tests/demo_enhanced_diff.lua" ]; then
+  echo "Running enhanced diff demo..."
+  ./tests/demo_enhanced_diff.lua
+  echo ""
+fi
+
 echo "🎉 All tests completed!"

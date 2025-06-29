@@ -250,10 +250,11 @@ function M.show_file_diff(filename)
 
   -- Add enhanced status line info
   vim.api.nvim_buf_call(bufnr, function()
-    local status_text = "🔄 jj-diff: "
-      .. (filename or "all changes")
-      .. " | Enhanced view with colors and icons | Press ? for help"
-    vim.cmd("setlocal statusline=" .. vim.fn.escape(status_text, " "))
+    local file_desc = filename or "all changes"
+    -- Simple status line without problematic characters
+    vim.cmd(
+      "setlocal statusline=jj-diff:\\ " .. vim.fn.escape(file_desc, " \\ ") .. "\\ (enhanced)"
+    )
   end)
 end
 
