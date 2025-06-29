@@ -62,8 +62,8 @@ jobs:
     
     - name: Set up test repository
       run: |
-        # Initialize jj repository in current directory
-        jj git init --git-dir=.git .
+        # Initialize colocated jj repository (works with both jj and git)
+        jj git init --colocate .
         
         # Create initial test files and commits for testing
         echo "test content" > test.txt
