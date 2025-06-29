@@ -72,13 +72,13 @@ if log_module then
     if log_buffer then
       local lines = vim.api.nvim_buf_get_lines(log_buffer, 0, -1, false)
       local content = table.concat(lines, "\n")
-      local has_expected_content = content:match("📜 jj Log View")
-        and content:match("💡 Commands:")
+      local has_expected_content = content:match("# jj Log View")
+        and (content:match("@") or content:match("◆") or content:match("○"))
 
       assert_test(
         "Log buffer has expected content",
         has_expected_content,
-        "Log buffer missing expected content"
+        "Log buffer missing expected content (native jj format)"
       )
 
       -- Test buffer options

@@ -90,8 +90,8 @@ print("\n📊 === Test Results Summary ===")
 local passed = 0
 local total = #test_results
 
-for _, result in ipairs(test_results) do
-  if result.passed then
+for _, test_result in ipairs(test_results) do
+  if test_result.passed then
     passed = passed + 1
   end
 end
@@ -108,9 +108,9 @@ if passed == total then
   os.exit(0)
 else
   print("💥 Some native log view tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
+  for _, test_result in ipairs(test_results) do
+    if not test_result.passed then
+      print("  ❌ " .. test_result.name .. ": " .. (test_result.message or ""))
     end
   end
   os.exit(1)

@@ -233,10 +233,10 @@ if commit_id and #commit_id > 0 then
       "Diff buffer missing expected header format"
     )
 
-    local diff_content = table.concat(diff_lines, "\n")
+    local buffer_content = table.concat(diff_lines, "\n")
     assert_test(
       "Diff buffer content clean of ANSI",
-      not diff_content:match("\27%["),
+      not buffer_content:match("\27%["),
       "ANSI codes found in diff buffer"
     )
   end

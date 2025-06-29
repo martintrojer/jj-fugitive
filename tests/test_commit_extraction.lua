@@ -33,7 +33,7 @@ local function extract_commit_ids_from_log(output)
       local clean_line, _ = ansi.parse_ansi_colors(line)
 
       -- Extract commit ID from clean jj log format
-      local commit_id = nil
+      local commit_id
 
       -- Try to extract commit ID (8-character hex at end or after bookmark)
       commit_id = clean_line:match("[%w]+%s+([a-f0-9]+)$")
@@ -81,7 +81,7 @@ assert_test(
 -- Test 4: Test ANSI stripping
 local test_line = result:match("[^\n]+")
 if test_line then
-  local clean_line, highlights = ansi.parse_ansi_colors(test_line)
+  local clean_line, _ = ansi.parse_ansi_colors(test_line) -- luacheck: ignore
 
   assert_test(
     "ANSI codes stripped from line",
@@ -149,8 +149,8 @@ print("\n📊 === Test Results Summary ===")
 local passed = 0
 local total = #test_results
 
-for _, result in ipairs(test_results) do
-  if result.passed then
+for _, test_result in ipairs(test_results) do
+  if test_result.passed then
     passed = passed + 1
   end
 end
@@ -167,9 +167,9 @@ if passed == total then
   os.exit(0)
 else
   print("💥 Some commit extraction tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
+  for _, test_result in ipairs(test_results) do
+    if not test_result.passed then
+      print("  ❌ " .. test_result.name .. ": " .. (test_result.message or ""))
     end
   end
   os.exit(1)

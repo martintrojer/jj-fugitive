@@ -208,7 +208,7 @@ if diff_module and log_module then
     end
 
     if log_buffer then
-      local log_filetype = vim.api.nvim_buf_get_option(log_buffer, "filetype")
+      local _ = vim.api.nvim_buf_get_option(log_buffer, "filetype") -- luacheck: ignore
       local log_buftype = vim.api.nvim_buf_get_option(log_buffer, "buftype")
 
       assert_test(

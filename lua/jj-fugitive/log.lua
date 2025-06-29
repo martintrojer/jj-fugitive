@@ -51,7 +51,7 @@ local function extract_commit_ids_from_log(output)
       -- Extract commit ID from clean jj log format
       -- Look for patterns like: @ yxmkqymr ... e10e058e
       -- or: ◆ movyorsy ... main 92709b0c
-      local commit_id = nil
+      local commit_id
 
       -- Try to extract commit ID (8-character hex at end or after bookmark)
       -- Pattern: any non-space followed by 8 hex chars at line end
