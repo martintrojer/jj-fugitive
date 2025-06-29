@@ -143,8 +143,8 @@ function M.parse_ansi_colors(text)
 end
 
 -- Process diff content and parse ANSI colors
-function M.process_diff_content(diff_content, header_lines, options)
-  options = options or {}
+function M.process_diff_content(diff_content, header_lines, _)
+  -- options parameter not used but kept for API compatibility
   local lines = vim.split(diff_content, "\n")
   local processed_lines = {}
   local all_highlights = {}

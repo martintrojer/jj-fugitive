@@ -3,7 +3,7 @@ local M = {}
 -- Import shared ANSI parsing utilities
 local ansi = require("jj-fugitive.ansi")
 
--- Get log output from jj with enhanced formatting
+-- Get native jj log output with colors preserved
 local function get_jj_log(options)
   options = options or {}
 
@@ -12,12 +12,9 @@ local function get_jj_log(options)
 
   local cmd_args = { "log" }
 
-  -- Use a custom template for better formatting
-  table.insert(cmd_args, "--template")
-  table.insert(
-    cmd_args,
-    'change_id.short() ++ " | " ++ if(description, description.first_line(), "(no description)") ++ " | " ++ author.email() ++ " | " ++ committer.timestamp().ago()'
-  )
+  -- Add color support to get native jj formatting
+  table.insert(cmd_args, "--color")
+  table.insert(cmd_args, "always")
 
   -- Limit number of commits if specified
   if options.limit then
@@ -41,168 +38,69 @@ local function get_jj_log(options)
   return result, nil
 end
 
--- Parse log output into structured data
-local function parse_log_output(output)
+-- Extract commit IDs from native jj log output
+local function extract_commit_ids_from_log(output)
   local lines = vim.split(output, "\n")
-  local commits = {}
+  local commit_data = {}
 
-  for _, line in ipairs(lines) do
+  for i, line in ipairs(lines) do
     if line ~= "" then
-      -- Parse the custom template format: commit_id | description | author | time
-      local commit_id, description, author, time =
-        line:match("^([^|]+) | ([^|]+) | ([^|]+) | (.+)$")
-      if commit_id then
-        table.insert(commits, {
-          id = vim.trim(commit_id),
-          description = vim.trim(description),
-          author = vim.trim(author),
-          time = vim.trim(time),
-          full_line = line,
+      -- Strip ANSI codes using the shared ANSI module
+      local clean_line, _ = ansi.parse_ansi_colors(line)
+
+      -- Extract commit ID from clean jj log format
+      -- Look for patterns like: @ yxmkqymr ... e10e058e
+      -- or: ◆ movyorsy ... main 92709b0c
+      local commit_id = nil
+
+      -- Try to extract commit ID (8-character hex at end or after bookmark)
+      -- Pattern: any non-space followed by 8 hex chars at line end
+      commit_id = clean_line:match("[%w]+%s+([a-f0-9]+)$")
+
+      if not commit_id then
+        -- Try pattern with bookmark: main 92709b0c
+        commit_id = clean_line:match("%s+[%w%-_]+%s+([a-f0-9]+)$")
+      end
+
+      if not commit_id then
+        -- Try simpler pattern: 8 hex chars at end
+        commit_id =
+          clean_line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
+      end
+
+      if commit_id and #commit_id == 8 then
+        table.insert(commit_data, {
+          line_number = i,
+          commit_id = commit_id,
+          original_line = line, -- Keep original line with ANSI codes for display
+          clean_line = clean_line,
         })
       end
     end
   end
 
-  return commits
+  return commit_data
 end
 
--- Enhanced log content formatting with visual indicators
-local function format_log_content(commits)
-  local lines = {}
-
-  -- Add header
-  table.insert(lines, "")
-  table.insert(lines, "📜 jj Log View - Repository History")
-  table.insert(lines, "🔍 Navigate with j/k, press Enter to show commit, ? for help")
-  table.insert(lines, string.rep("─", 80))
-  table.insert(lines, "")
-
-  -- Add column headers
-  table.insert(
-    lines,
-    "📋 Commit ID        | Description                           | Author      | Time"
-  )
-  table.insert(lines, string.rep("─", 80))
-
-  -- Format each commit with visual indicators
-  for _, commit in ipairs(commits) do
-    local icon = "📝"
-
-    -- Special icons for certain commits
-    if commit.id:match("^@") then
-      icon = "👉" -- Current working copy
-    elseif commit.description:match("^Merge") then
-      icon = "🔀" -- Merge commit
-    elseif commit.description:match("^Initial") or commit.description:match("^initial") then
-      icon = "🌱" -- Initial commit
-    elseif commit.description:match("^Fix") or commit.description:match("^fix") then
-      icon = "🔧" -- Fix commit
-    elseif commit.description:match("^Add") or commit.description:match("^add") then
-      icon = "➕" -- Add commit
-    elseif commit.description:match("^Remove") or commit.description:match("^remove") then
-      icon = "➖" -- Remove commit
-    end
-
-    -- Format commit line with proper spacing
-    local short_id = commit.id:sub(1, 8)
-    local short_desc = commit.description:sub(1, 35)
-    if #commit.description > 35 then
-      short_desc = short_desc .. "..."
-    end
-    local short_author = commit.author:sub(1, 10)
-    if #commit.author > 10 then
-      short_author = short_author .. "..."
-    end
-
-    local formatted_line = string.format(
-      "%s %s | %-35s | %-10s | %s",
-      icon,
-      short_id,
-      short_desc,
-      short_author,
-      commit.time
-    )
-    table.insert(lines, formatted_line)
+-- Get commit ID from current line in native jj log format
+local function get_commit_from_line(line, commit_data)
+  -- Skip header lines
+  if line:match("^#") or line == "" then
+    return nil
   end
 
-  table.insert(lines, "")
-  table.insert(lines, string.rep("─", 80))
-  table.insert(lines, "")
-  table.insert(lines, "💡 Commands:")
-  table.insert(lines, "   Enter/o = Show commit details    e = Edit at commit")
-  table.insert(lines, "   n = New commit after this       r = Rebase onto this commit")
-  table.insert(lines, "   d = Show diff for commit        q = Close log view")
-  table.insert(lines, "   ? = Show detailed help")
-
-  return lines
-end
-
--- Setup enhanced log highlighting
-local function setup_log_highlighting(bufnr)
-  vim.api.nvim_buf_call(bufnr, function()
-    -- Clear existing syntax
-    vim.cmd("syntax clear")
-
-    -- Header highlighting
-    vim.cmd("syntax match JjLogHeader '^📜.*$'")
-    vim.cmd("syntax match JjLogSubHeader '^🔍.*$'")
-    vim.cmd("syntax match JjLogSeparator '^─\\+$'")
-    vim.cmd("syntax match JjLogColumnHeader '^📋.*$'")
-    vim.cmd("syntax match JjLogHelp '^💡.*$'")
-    vim.cmd("syntax match JjLogHelpDetail '^   .*$'")
-
-    -- Commit line highlighting with icons
-    vim.cmd("syntax match JjLogCurrentCommit '^👉.*$'")
-    vim.cmd("syntax match JjLogMergeCommit '^🔀.*$'")
-    vim.cmd("syntax match JjLogInitialCommit '^🌱.*$'")
-    vim.cmd("syntax match JjLogFixCommit '^🔧.*$'")
-    vim.cmd("syntax match JjLogAddCommit '^➕.*$'")
-    vim.cmd("syntax match JjLogRemoveCommit '^➖.*$'")
-    vim.cmd("syntax match JjLogRegularCommit '^📝.*$'")
-
-    -- Apply colors
-    vim.cmd("highlight default JjLogHeader ctermfg=14 guifg=Cyan cterm=bold gui=bold")
-    vim.cmd("highlight default JjLogSubHeader ctermfg=8 guifg=Gray cterm=italic gui=italic")
-    vim.cmd("highlight default JjLogSeparator ctermfg=8 guifg=Gray")
-    vim.cmd("highlight default JjLogColumnHeader ctermfg=11 guifg=Yellow cterm=bold gui=bold")
-    vim.cmd("highlight default JjLogHelp ctermfg=10 guifg=LightGreen cterm=bold gui=bold")
-    vim.cmd("highlight default JjLogHelpDetail ctermfg=7 guifg=LightGray")
-
-    -- Commit type colors
-    vim.cmd("highlight default JjLogCurrentCommit ctermfg=13 guifg=Magenta cterm=bold gui=bold")
-    vim.cmd("highlight default JjLogMergeCommit ctermfg=12 guifg=LightBlue cterm=bold gui=bold")
-    vim.cmd("highlight default JjLogInitialCommit ctermfg=10 guifg=LightGreen cterm=bold gui=bold")
-    vim.cmd("highlight default JjLogFixCommit ctermfg=9 guifg=LightRed")
-    vim.cmd("highlight default JjLogAddCommit ctermfg=10 guifg=LightGreen")
-    vim.cmd("highlight default JjLogRemoveCommit ctermfg=9 guifg=LightRed")
-    vim.cmd("highlight default JjLogRegularCommit ctermfg=7 guifg=LightGray")
-  end)
-end
-
--- Get commit ID from current line
-local function get_commit_from_line(line)
-  -- Extract commit ID from formatted line
-  -- Format: "icon revision_symbol actual_commit_id | description | author | time"
-  -- Extract the part before the first pipe, then get the last token
-  local first_part = line:match("^([^|]+)")
-  if first_part then
-    first_part = vim.trim(first_part)
-
-    -- Skip header lines (they contain column headers)
-    if first_part:match("Commit ID") or first_part:match("Description") then
-      return nil
-    end
-
-    -- Get all tokens and take the last one (which should be the commit ID)
-    local tokens = {}
-    for token in first_part:gmatch("%S+") do
-      table.insert(tokens, token)
-    end
-    if #tokens >= 3 then -- icon, revision_symbol, commit_id
-      return tokens[#tokens] -- Last token is the commit ID
+  -- Find the commit data for this line by matching content
+  for _, data in ipairs(commit_data or {}) do
+    if data.original_line == line then
+      return data.commit_id
     end
   end
-  return nil
+
+  -- Fallback: try to extract directly from line
+  -- Look for 8-character hex at end of line
+  local commit_id =
+    line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
+  return commit_id
 end
 
 -- Show commit details with consistent diff formatting
@@ -360,47 +258,47 @@ local function show_commit_diff(commit_id)
 end
 
 -- Setup log buffer keymaps
-local function setup_log_keymaps(bufnr)
+local function setup_log_keymaps(bufnr, commit_data)
   local opts = { noremap = true, silent = true, buffer = bufnr }
 
   -- Show commit details
   vim.keymap.set("n", "<CR>", function()
     local line = vim.api.nvim_get_current_line()
-    local commit_id = get_commit_from_line(line)
+    local commit_id = get_commit_from_line(line, commit_data)
     show_commit_details(commit_id)
   end, opts)
 
   vim.keymap.set("n", "o", function()
     local line = vim.api.nvim_get_current_line()
-    local commit_id = get_commit_from_line(line)
+    local commit_id = get_commit_from_line(line, commit_data)
     show_commit_details(commit_id)
   end, opts)
 
   -- Edit at commit
   vim.keymap.set("n", "e", function()
     local line = vim.api.nvim_get_current_line()
-    local commit_id = get_commit_from_line(line)
+    local commit_id = get_commit_from_line(line, commit_data)
     edit_at_commit(commit_id)
   end, opts)
 
   -- New commit after this one
   vim.keymap.set("n", "n", function()
     local line = vim.api.nvim_get_current_line()
-    local commit_id = get_commit_from_line(line)
+    local commit_id = get_commit_from_line(line, commit_data)
     new_after_commit(commit_id)
   end, opts)
 
   -- Rebase onto commit
   vim.keymap.set("n", "r", function()
     local line = vim.api.nvim_get_current_line()
-    local commit_id = get_commit_from_line(line)
+    local commit_id = get_commit_from_line(line, commit_data)
     rebase_onto_commit(commit_id)
   end, opts)
 
   -- Show diff for commit
   vim.keymap.set("n", "d", function()
     local line = vim.api.nvim_get_current_line()
-    local commit_id = get_commit_from_line(line)
+    local commit_id = get_commit_from_line(line, commit_data)
     show_commit_diff(commit_id)
   end, opts)
 
@@ -490,42 +388,39 @@ function M.show_log(options)
     return
   end
 
-  local commits = parse_log_output(log_output)
-  if #commits == 0 then
+  -- Extract commit data for interactive features
+  local commit_data = extract_commit_ids_from_log(log_output)
+  if #commit_data == 0 then
     vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
     return
   end
 
-  local lines = format_log_content(commits)
+  -- Use native jj output with ANSI processing
+  local header_lines = {
+    "",
+    "# jj Log View",
+    "# Navigate: j/k, Enter=show commit, d=diff, e=edit, n=new, r=rebase, q=quit, ?=help",
+    "",
+  }
 
-  -- Create or reuse log buffer
-  local bufnr = nil
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(buf) then
-      local name = vim.api.nvim_buf_get_name(buf)
-      if name:match("jj%-log$") then
-        bufnr = buf
-        break
-      end
-    end
-  end
+  -- Create buffer with native jj log output and ANSI color processing
+  local bufname = "jj-log"
+  local bufnr = ansi.create_colored_buffer(log_output, bufname, header_lines, {
+    prefix = "JjLog",
+    custom_syntax = {
+      ["^# jj Log View$"] = "JjLogHeader",
+      ["^# Navigate:.*$"] = "JjLogSubHeader",
+    },
+  })
 
-  if not bufnr then
-    bufnr = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
-    vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-    vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-    vim.api.nvim_buf_set_name(bufnr, "jj-log")
-  end
+  -- Apply custom header highlighting after buffer creation
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.cmd("highlight default JjLogHeader ctermfg=14 guifg=Cyan cterm=bold gui=bold")
+    vim.cmd("highlight default JjLogSubHeader ctermfg=8 guifg=Gray cterm=italic gui=italic")
+  end)
 
-  -- Set content
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-
-  -- Setup highlighting and keymaps
-  setup_log_highlighting(bufnr)
-  setup_log_keymaps(bufnr)
+  -- Setup keymaps for interaction
+  setup_log_keymaps(bufnr, commit_data)
 
   -- Open in current window or split
   local existing_win = nil
@@ -544,26 +439,12 @@ function M.show_log(options)
   end
 
   -- Position cursor on first commit line (skip headers)
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for i, line in ipairs(lines) do
-    -- Match actual commit lines: lines with pipes that can extract valid commit IDs
-    if line:match("|") then
-      local first_part = line:match("^([^|]+)")
-      if first_part then
-        first_part = vim.trim(first_part)
-
-        -- Skip header lines
-        if not (first_part:match("Commit ID") or first_part:match("Description")) then
-          local tokens = {}
-          for token in first_part:gmatch("%S+") do
-            table.insert(tokens, token)
-          end
-          -- Real commit lines have at least 3 tokens: icon, revision_symbol, commit_id
-          if #tokens >= 3 then
-            vim.api.nvim_win_set_cursor(0, { i, 0 })
-            break
-          end
-        end
-      end
+    -- Look for the first actual commit line (not header)
+    if not line:match("^#") and line ~= "" and get_commit_from_line(line, commit_data) then
+      vim.api.nvim_win_set_cursor(0, { i, 0 })
+      break
     end
   end
 
