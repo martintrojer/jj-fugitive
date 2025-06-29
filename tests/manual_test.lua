@@ -1,14 +1,14 @@
--- Manual test script for debugging :JStatus issues
+-- Manual test script for debugging :J status issues
 -- Run with: nvim --cmd "set rtp+=." -l tests/manual_test.lua
 
 -- Load the plugin
 vim.cmd("runtime plugin/jj-fugitive.lua")
 
-print("=== Manual Test: JStatus functionality ===")
+print("=== Manual Test: J status functionality ===")
 
 -- Test 1: Create status buffer
 print("Test 1: Creating status buffer...")
-vim.cmd("JStatus")
+vim.cmd("J status")
 
 -- Wait a moment
 vim.loop.sleep(500)

@@ -24,13 +24,13 @@ pcall(function()
 end)
 assert_test("Diff module loading", diff_module ~= nil, "Could not require jj-fugitive.diff")
 
--- Test 2: Check if JDiff command exists (skip in CI due to timing issues)
+-- Test 2: Check if J command exists (skip in CI due to timing issues)
 if not os.getenv("CI") then
-  local jdiff_exists = vim.fn.exists(":JDiff") == 1
-  assert_test("JDiff command exists", jdiff_exists, ":JDiff command not found")
+  local j_exists = vim.fn.exists(":J") == 1
+  assert_test("J command exists", j_exists, ":J command not found")
 else
-  print("⏭️  SKIP: JDiff command exists (CI timing issue)")
-  table.insert(test_results, { name = "JDiff command exists", passed = true })
+  print("⏭️  SKIP: J command exists (CI timing issue)")
+  table.insert(test_results, { name = "J command exists", passed = true })
 end
 
 -- Test 3: Create test file with changes
@@ -135,21 +135,21 @@ if diff_module then
   end
 end
 
--- Test 6: Test :JDiff command (skip in CI due to timing issues)
+-- Test 6: Test :J diff command (skip in CI due to timing issues)
 if not os.getenv("CI") then
   local initial_buf_count = #vim.api.nvim_list_bufs()
 
   pcall(function()
-    vim.cmd("JDiff " .. test_file)
+    vim.cmd("J diff " .. test_file)
   end)
 
   local final_buf_count = #vim.api.nvim_list_bufs()
-  local jdiff_created_buffer = final_buf_count > initial_buf_count
+  local j_diff_created_buffer = final_buf_count > initial_buf_count
 
   assert_test(
-    "JDiff command creates buffer",
-    jdiff_created_buffer,
-    ":JDiff did not create new buffer"
+    "J diff command creates buffer",
+    j_diff_created_buffer,
+    ":J diff did not create new buffer"
   )
 end
 

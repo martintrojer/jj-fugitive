@@ -230,6 +230,18 @@ function M.show_status()
     vim.cmd("split")
     vim.api.nvim_set_current_buf(bufnr)
   end
+
+  -- Position cursor on the first file if there are changes
+  if #status_info.changes > 0 then
+    -- Find the line with the first file (lines start at 1)
+    -- The format is: header, empty, working copy info, empty, "Working copy changes:", then files
+    for i, line in ipairs(lines) do
+      if line:match("^[A-Z] ") then -- First line that starts with a status character and space
+        vim.api.nvim_win_set_cursor(0, { i, 0 })
+        break
+      end
+    end
+  end
 end
 
 return M

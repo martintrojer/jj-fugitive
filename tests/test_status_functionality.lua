@@ -24,13 +24,13 @@ pcall(function()
 end)
 assert_test("Status module loading", status_module ~= nil, "Could not require jj-fugitive.status")
 
--- Test 2: Check if JStatus command exists (skip in CI due to timing issues)
+-- Test 2: Check if J command exists (skip in CI due to timing issues)
 if not os.getenv("CI") then
-  local jstatus_exists = vim.fn.exists(":JStatus") == 1
-  assert_test("JStatus command exists", jstatus_exists, ":JStatus command not found")
+  local j_exists = vim.fn.exists(":J") == 1
+  assert_test("J command exists", j_exists, ":J command not found")
 else
-  print("⏭️  SKIP: JStatus command exists (CI timing issue)")
-  table.insert(test_results, { name = "JStatus command exists", passed = true })
+  print("⏭️  SKIP: J command exists (CI timing issue)")
+  table.insert(test_results, { name = "J command exists", passed = true })
 end
 
 -- Test 3: Check if jj status works
@@ -113,18 +113,18 @@ if status_module then
   end
 end
 
--- Test 5: Test :JStatus command (skip in CI due to timing issues)
+-- Test 5: Test :J status command (skip in CI due to timing issues)
 if not os.getenv("CI") then
   local initial_buf_count = #vim.api.nvim_list_bufs()
 
   pcall(function()
-    vim.cmd("JStatus")
+    vim.cmd("J status")
   end)
 
   local final_buf_count = #vim.api.nvim_list_bufs()
-  local jstatus_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
+  local j_status_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
 
-  assert_test("JStatus command works", jstatus_created_buffer, ":JStatus command failed")
+  assert_test("J status command works", j_status_created_buffer, ":J status command failed")
 end
 
 -- Summary
