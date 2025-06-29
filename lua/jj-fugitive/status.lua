@@ -22,9 +22,11 @@ local function get_or_create_status_buffer()
 end
 
 local function get_jj_status()
-  local result = vim.fn.system({ "jj", "status" })
-  if vim.v.shell_error ~= 0 then
-    return nil, "Failed to get jj status: " .. result
+  -- Use the main module's repository-aware command runner
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "status" })
+  if not result then
+    return nil, "Failed to get jj status"
   end
   return result, nil
 end
@@ -133,14 +135,16 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
   vim.keymap.set("n", "cc", function()
     local commit_msg = vim.fn.input("Commit message: ")
     if commit_msg and commit_msg ~= "" then
-      vim.fn.system({ "jj", "commit", "-m", commit_msg })
+      local main_module = require("jj-fugitive.init")
+      main_module.run_jj_command_from_module({ "commit", "-m", commit_msg })
       M.show_status()
     end
   end, opts)
 
   -- Create new change
   vim.keymap.set("n", "new", function()
-    vim.fn.system({ "jj", "new" })
+    local main_module = require("jj-fugitive.init")
+    main_module.run_jj_command_from_module({ "new" })
     M.show_status()
   end, opts)
 

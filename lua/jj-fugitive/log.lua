@@ -3,32 +3,37 @@ local M = {}
 -- Get log output from jj with enhanced formatting
 local function get_jj_log(options)
   options = options or {}
-  local cmd = { "jj", "log" }
+  
+  -- Use the main module's repository-aware command runner
+  local main_module = require("jj-fugitive.init")
+  
+  local cmd_args = { "log" }
 
   -- Use a custom template for better formatting
-  table.insert(cmd, "--template")
+  table.insert(cmd_args, "--template")
   table.insert(
-    cmd,
+    cmd_args,
     'change_id.short() ++ " | " ++ if(description, description.first_line(), "(no description)") ++ " | " ++ author.email() ++ " | " ++ committer.timestamp().ago()'
   )
 
   -- Limit number of commits if specified
   if options.limit then
-    table.insert(cmd, "--limit")
-    table.insert(cmd, tostring(options.limit))
+    table.insert(cmd_args, "--limit")
+    table.insert(cmd_args, tostring(options.limit))
   end
 
   -- Add revisions if specified
   if options.revisions then
     for _, rev in ipairs(options.revisions) do
-      table.insert(cmd, "--revisions")
-      table.insert(cmd, rev)
+      table.insert(cmd_args, "--revisions")
+      table.insert(cmd_args, rev)
     end
   end
 
-  local result = vim.fn.system(cmd)
-  if vim.v.shell_error ~= 0 then
-    return nil, "Failed to get log: " .. result
+  -- Use the main module's run_jj_command function for proper repository handling
+  local result = main_module.run_jj_command_from_module(cmd_args)
+  if not result then
+    return nil, "Failed to get log"
   end
   return result, nil
 end
@@ -173,9 +178,28 @@ end
 
 -- Get commit ID from current line
 local function get_commit_from_line(line)
-  -- Extract commit ID from formatted line (after icon, first 8 chars)
-  local commit_id = line:match("^[^%s]+ ([^%s]+)")
-  return commit_id
+  -- Extract commit ID from formatted line
+  -- Format: "icon revision_symbol actual_commit_id | description | author | time"
+  -- Extract the part before the first pipe, then get the last token
+  local first_part = line:match("^([^|]+)")
+  if first_part then
+    first_part = vim.trim(first_part)
+    
+    -- Skip header lines (they contain column headers)
+    if first_part:match("Commit ID") or first_part:match("Description") then
+      return nil
+    end
+    
+    -- Get all tokens and take the last one (which should be the commit ID)
+    local tokens = {}
+    for token in first_part:gmatch("%S+") do
+      table.insert(tokens, token)
+    end
+    if #tokens >= 3 then -- icon, revision_symbol, commit_id
+      return tokens[#tokens] -- Last token is the commit ID
+    end
+  end
+  return nil
 end
 
 -- Show commit details
@@ -185,10 +209,10 @@ local function show_commit_details(commit_id)
     return
   end
 
-  -- Get commit details
-  local result = vim.fn.system({ "jj", "show", commit_id })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_err_writeln("Failed to show commit: " .. result)
+  -- Get commit details using repository-aware command
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "show", commit_id })
+  if not result then
     return
   end
 
@@ -242,9 +266,9 @@ local function edit_at_commit(commit_id)
     return
   end
 
-  local result = vim.fn.system({ "jj", "edit", commit_id })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_err_writeln("Failed to edit commit: " .. result)
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "edit", commit_id })
+  if not result then
     return
   end
 
@@ -260,9 +284,9 @@ local function new_after_commit(commit_id)
     return
   end
 
-  local result = vim.fn.system({ "jj", "new", commit_id })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_err_writeln("Failed to create new commit: " .. result)
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "new", commit_id })
+  if not result then
     return
   end
 
@@ -284,9 +308,9 @@ local function rebase_onto_commit(commit_id)
     return
   end
 
-  local result = vim.fn.system({ "jj", "rebase", "-d", commit_id })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_err_writeln("Failed to rebase: " .. result)
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "rebase", "-d", commit_id })
+  if not result then
     return
   end
 
@@ -302,10 +326,10 @@ local function show_commit_diff(commit_id)
     return
   end
 
-  -- Show diff for commit
-  local result = vim.fn.system({ "jj", "diff", "-r", commit_id })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_err_writeln("Failed to get diff: " .. result)
+  -- Show diff for commit using repository-aware command
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "diff", "-r", commit_id })
+  if not result then
     return
   end
 
@@ -539,9 +563,25 @@ function M.show_log(options)
 
   -- Position cursor on first commit line (skip headers)
   for i, line in ipairs(lines) do
-    if line:match("^[📝👉🔀🌱🔧➕➖]") then
-      vim.api.nvim_win_set_cursor(0, { i, 0 })
-      break
+    -- Match actual commit lines: lines with pipes that can extract valid commit IDs
+    if line:match("|") then
+      local first_part = line:match("^([^|]+)")
+      if first_part then
+        first_part = vim.trim(first_part)
+        
+        -- Skip header lines
+        if not (first_part:match("Commit ID") or first_part:match("Description")) then
+          local tokens = {}
+          for token in first_part:gmatch("%S+") do
+            table.insert(tokens, token)
+          end
+          -- Real commit lines have at least 3 tokens: icon, revision_symbol, commit_id
+          if #tokens >= 3 then
+            vim.api.nvim_win_set_cursor(0, { i, 0 })
+            break
+          end
+        end
+      end
     end
   end
 

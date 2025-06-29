@@ -68,6 +68,24 @@ echo "Testing log functionality..."
 
 echo ""
 
+# Test repository detection (addresses original reported issue)
+echo "Testing repository detection..."
+./tests/test_repository_detection.lua
+
+echo ""
+
+# Test log Enter functionality (addresses original reported issue)
+echo "Testing log Enter functionality..."
+./tests/test_log_enter_functionality.lua
+
+echo ""
+
+# Test complete user experience simulation
+echo "Running user experience simulation..."
+./tests/test_user_experience_simulation.lua
+
+echo ""
+
 # Demo enhanced diff view (if demo file exists)
 if [ -f "./tests/demo_enhanced_diff.lua" ]; then
   echo "Running enhanced diff demo..."

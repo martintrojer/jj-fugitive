@@ -3,25 +3,29 @@ local M = {}
 -- Get diff output from jj
 local function get_jj_diff(filename, options)
   options = options or {}
-  local cmd = { "jj", "diff" }
+  
+  -- Use the main module's repository-aware command runner
+  local main_module = require("jj-fugitive.init")
+  
+  local cmd_args = { "diff" }
 
   if options.tool then
-    table.insert(cmd, "--tool")
-    table.insert(cmd, options.tool)
+    table.insert(cmd_args, "--tool")
+    table.insert(cmd_args, options.tool)
   end
 
   if options.color == false then
-    table.insert(cmd, "--color")
-    table.insert(cmd, "never")
+    table.insert(cmd_args, "--color")
+    table.insert(cmd_args, "never")
   end
 
   if filename then
-    table.insert(cmd, filename)
+    table.insert(cmd_args, filename)
   end
 
-  local result = vim.fn.system(cmd)
-  if vim.v.shell_error ~= 0 then
-    return nil, "Failed to get diff: " .. result
+  local result = main_module.run_jj_command_from_module(cmd_args)
+  if not result then
+    return nil, "Failed to get diff"
   end
   return result, nil
 end
@@ -290,8 +294,9 @@ function M.show_file_diff_sidebyside(filename)
   end
 
   -- Get the original file content (before changes)
-  local original_content = vim.fn.system({ "jj", "file", "show", filename, "-r", "@-" })
-  if vim.v.shell_error ~= 0 then
+  local main_module = require("jj-fugitive.init")
+  local original_content = main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
+  if not original_content then
     -- File might be newly added, so original content is empty
     original_content = ""
   end
