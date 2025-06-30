@@ -130,12 +130,24 @@ for test_file in "${test_files[@]}"; do
     if [[ "$VERBOSE_OUTPUT" == "true" ]]; then
         # In CI mode, show all output in real-time
         echo "   🔍 Running with verbose output..."
-        if "$test_file"; then
-            echo "   ✅ PASSED"
-            ((passed_count++))
+        # Try different execution methods for CI compatibility
+        if [[ "$test_file" == *.lua ]] && [[ "${CI:-}" == "true" ]]; then
+            echo "   🔧 Using nvim --headless -l for CI compatibility..."
+            if nvim --headless -l "$test_file"; then
+                echo "   ✅ PASSED"
+                ((passed_count++))
+            else
+                echo "   ❌ FAILED"
+                failed_tests+=("$test_name")
+            fi
         else
-            echo "   ❌ FAILED"
-            failed_tests+=("$test_name")
+            if "$test_file"; then
+                echo "   ✅ PASSED"
+                ((passed_count++))
+            else
+                echo "   ❌ FAILED"
+                failed_tests+=("$test_name")
+            fi
         fi
     else
         # Normal mode - capture output and show only on failure

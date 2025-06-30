@@ -58,7 +58,7 @@ if plugin_ok then
     local repo_root = init_module.get_repo_root()
     print("✅ Repository root: " .. (repo_root or "nil"))
   end)
-  
+
   if not test_ok then
     print("❌ Plugin function test failed: " .. tostring(test_error))
   end
