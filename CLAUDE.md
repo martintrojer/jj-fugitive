@@ -21,6 +21,7 @@ jj-fugitive provides seamless jj version control integration within Neovim, mimi
 - **Native jj Integration**: Preserves authentic jj log formatting (@, ◆, ○, │, ~)
 - **ANSI Color Processing**: Unified color handling across all views
 - **Interactive Navigation**: Enter key functionality in log and status views
+- **Expandable Log View**: Expand log view to show more commits with `=` or `+` keys
 - **Repository Detection**: Works from any subdirectory within jj repo
 - **Command Completion**: Full tab completion for jj commands and flags
 - **Error Handling**: Robust error detection and user feedback
@@ -85,7 +86,7 @@ lua/jj-fugitive/
 
 ### Interactive Features
 - **Status View**: Press `Enter` on file to see diff, `l` for log view
-- **Log View**: Press `Enter` on commit to see details and diff
+- **Log View**: Press `Enter` on commit to see details and diff, `=` or `+` to expand view
 - **Tab Completion**: Use `<Tab>` for command and file completion
 - **Repository Detection**: Works from any subdirectory in jj repo
 
@@ -95,11 +96,12 @@ lua/jj-fugitive/
 \" Navigate to file, press Enter to see diff
 :J log --limit 10  \" View recent commits with native jj formatting
 \" Navigate to commit, press Enter to see details
+\" Press = or + to expand log view and see more commits
 ```
 
 ## Testing Strategy
 
-### Comprehensive Test Suite (22 Tests)
+### Comprehensive Test Suite (23 Tests)
 - **Unit Tests**: Core jj command wrappers and module loading
 - **Integration Tests**: Cross-component functionality and ANSI processing
 - **End-to-End Tests**: Complete user workflow simulation

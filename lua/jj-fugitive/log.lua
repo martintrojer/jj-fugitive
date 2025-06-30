@@ -312,6 +312,15 @@ local function setup_log_keymaps(bufnr, commit_data)
     M.show_log()
   end, opts)
 
+  -- Expand log view (show more commits)
+  vim.keymap.set("n", "=", function()
+    expand_log_view(bufnr)
+  end, opts)
+
+  vim.keymap.set("n", "+", function()
+    expand_log_view(bufnr)
+  end, opts)
+
   -- Show help (vim-fugitive standard)
   vim.keymap.set("n", "g?", function()
     local help_lines = {
@@ -329,6 +338,7 @@ local function setup_log_keymaps(bufnr, commit_data)
       "  d         - Show diff for this commit",
       "",
       "View Actions:",
+      "  =, +      - Expand log view (show 50 more commits)",
       "  R         - Refresh log view",
       "  q         - Close log view",
       "  g?        - Show this help",
@@ -378,6 +388,38 @@ local function setup_log_keymaps(bufnr, commit_data)
   end, opts)
 end
 
+-- Expand log view with more commits
+local function expand_log_view(bufnr)
+  -- Get current limit from buffer variable
+  local current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit") or 50
+  local new_limit = current_limit + 50 -- Expand by 50 more commits
+  
+  -- Get current cursor position to restore it
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  local current_line = vim.api.nvim_get_current_line()
+  
+  -- Show message to user
+  vim.api.nvim_echo({ { string.format("Expanding log view to %d commits...", new_limit), "MoreMsg" } }, false, {})
+  
+  -- Refresh log with new limit
+  M.show_log({ limit = new_limit })
+  
+  -- Try to restore cursor position to the same commit
+  vim.schedule(function()
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    for i, line in ipairs(lines) do
+      if line == current_line then
+        vim.api.nvim_win_set_cursor(0, { i, cursor_pos[2] })
+        return
+      end
+    end
+    -- If exact line not found, try to restore by line number (might be off due to new commits)
+    if cursor_pos[1] <= #lines then
+      vim.api.nvim_win_set_cursor(0, cursor_pos)
+    end
+  end)
+end
+
 -- Main function to show log view
 function M.show_log(options)
   options = options or { limit = 50 }
@@ -398,8 +440,8 @@ function M.show_log(options)
   -- Use native jj output with ANSI processing
   local header_lines = {
     "",
-    "# jj Log View",
-    "# Navigate: j/k, Enter=show commit, d=diff, e=edit, n=new, r=rebase, q=quit, ?=help",
+    string.format("# jj Log View (showing %d commits)", options.limit),
+    "# Navigate: j/k, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, ?=help",
     "",
   }
 
@@ -419,6 +461,9 @@ function M.show_log(options)
     vim.cmd("highlight default JjLogSubHeader ctermfg=8 guifg=Gray cterm=italic gui=italic")
   end)
 
+  -- Store current limit in buffer variable for expand functionality
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", options.limit)
+  
   -- Setup keymaps for interaction
   setup_log_keymaps(bufnr, commit_data)
 
