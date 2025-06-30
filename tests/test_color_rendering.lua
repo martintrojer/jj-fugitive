@@ -57,7 +57,9 @@ end
 
 -- Check jj version and track file if needed
 local version_output = vim.fn.system({ "jj", "--version" })
-local has_file_cmd = version_output and version_output:match("jj 0%.1[6-9]") or version_output:match("jj 0%.[2-9]") or version_output:match("jj [1-9]")
+local has_file_cmd = version_output and version_output:match("jj 0%.1[6-9]")
+  or version_output:match("jj 0%.[2-9]")
+  or version_output:match("jj [1-9]")
 
 if has_file_cmd then
   -- Track the file in newer jj versions

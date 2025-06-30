@@ -273,7 +273,8 @@ function M.show_file_diff_sidebyside(filename)
   local original_content = main_module.run_jj_command_from_module({ "show", "@-:" .. filename })
   if not original_content then
     -- Fallback for newer versions with file command
-    original_content = main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
+    original_content =
+      main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
   end
   if not original_content then
     -- File might be newly added, so original content is empty
