@@ -64,6 +64,7 @@ jobs:
         curl -L https://github.com/martinvonz/jj/releases/download/v0.15.1/jj-v0.15.1-x86_64-unknown-linux-musl.tar.gz -o jj.tar.gz
         tar -xzf jj.tar.gz
         sudo mv jj /usr/local/bin/
+        rm jj.tar.gz  # Clean up large file before jj init
         jj --version
     
     - name: Set up test repository
