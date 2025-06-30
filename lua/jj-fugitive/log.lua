@@ -426,7 +426,8 @@ end
 
 -- Main function to show log view
 function M.show_log(options)
-  options = options or { limit = 50 }
+  options = options or {}
+  options.limit = options.limit or 50
 
   local log_output, err = get_jj_log(options)
   if not log_output then
