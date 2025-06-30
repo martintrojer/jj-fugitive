@@ -131,16 +131,22 @@ for test_file in "${test_files[@]}"; do
         # In CI mode, show all output in real-time
         echo "   🔍 Running with verbose output..."
         # Try different execution methods for CI compatibility
-        if [[ "$test_file" == *.lua ]] && [[ "${CI:-}" == "true" ]]; then
-            echo "   🔧 Using nvim --headless -l for CI compatibility..."
+        echo "   🔍 CI check: CI=${CI:-unset}, GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}"
+        echo "   🔍 File extension check: $test_file"
+        
+        if [[ "$test_file" == *.lua ]]; then
+            echo "   🔧 Detected Lua file - using nvim --headless -l"
+            echo "   📄 Command: nvim --headless -l $test_file"
             if nvim --headless -l "$test_file"; then
                 echo "   ✅ PASSED"
                 ((passed_count++))
             else
-                echo "   ❌ FAILED"
+                exit_code=$?
+                echo "   ❌ FAILED (exit code: $exit_code)"
                 failed_tests+=("$test_name")
             fi
         else
+            echo "   🔧 Non-Lua file - using direct execution"
             if "$test_file"; then
                 echo "   ✅ PASSED"
                 ((passed_count++))
