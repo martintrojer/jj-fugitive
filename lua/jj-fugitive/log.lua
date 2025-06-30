@@ -257,6 +257,83 @@ local function show_commit_diff(commit_id)
   end, { buffer = bufnr, noremap = true, silent = true })
 end
 
+-- Expand log view with more commits
+local function expand_log_view(bufnr)
+  -- Get current limit from buffer variable
+  local current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit") or 50
+  local new_limit = current_limit + 50 -- Expand by 50 more commits
+
+  -- Get current cursor position to restore it
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  local current_line = vim.api.nvim_get_current_line()
+
+  -- Show message to user
+  vim.api.nvim_echo(
+    { { string.format("Expanding log view to %d commits...", new_limit), "MoreMsg" } },
+    false,
+    {}
+  )
+
+  -- Get new log output with expanded limit
+  local log_output, err = get_jj_log({ limit = new_limit })
+  if not log_output then
+    vim.api.nvim_err_writeln(err)
+    return
+  end
+
+  -- Extract commit data for interactive features
+  local commit_data = extract_commit_ids_from_log(log_output)
+  if #commit_data == 0 then
+    vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
+    return
+  end
+
+  -- Update header with new count
+  local header_lines = {
+    "",
+    string.format("# jj Log View (showing %d commits)", new_limit),
+    "# Navigate: j/k, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, ?=help",
+    "",
+  }
+
+  -- Process the new content using ANSI module
+  local processed_lines, all_highlights = ansi.process_diff_content(log_output, header_lines)
+
+  -- Update buffer content in-place
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+
+  -- Apply highlights
+  ansi.setup_diff_highlighting(bufnr, all_highlights, {
+    prefix = "JjLog",
+    custom_syntax = {
+      ["^# jj Log View$"] = "JjLogHeader",
+      ["^# Navigate:.*$"] = "JjLogSubHeader",
+    },
+  })
+
+  -- Update buffer variable with new limit
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", new_limit)
+
+  -- Note: No need to update keymaps since they are already set up and buffer-local
+
+  -- Try to restore cursor position to the same commit
+  vim.schedule(function()
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    for i, line in ipairs(lines) do
+      if line == current_line then
+        vim.api.nvim_win_set_cursor(0, { i, cursor_pos[2] })
+        return
+      end
+    end
+    -- If exact line not found, try to restore by line number (might be off due to new commits)
+    local max_line = #lines
+    local safe_line = math.min(cursor_pos[1], max_line)
+    vim.api.nvim_win_set_cursor(0, { safe_line, cursor_pos[2] })
+  end)
+end
+
 -- Setup log buffer keymaps
 local function setup_log_keymaps(bufnr, commit_data)
   local opts = { noremap = true, silent = true, buffer = bufnr }
@@ -386,84 +463,6 @@ local function setup_log_keymaps(bufnr, commit_data)
       vim.api.nvim_win_close(help_win, true)
     end, { buffer = help_buf, noremap = true, silent = true })
   end, opts)
-end
-
--- Expand log view with more commits
-local function expand_log_view(bufnr)
-  -- Get current limit from buffer variable
-  local current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit") or 50
-  local new_limit = current_limit + 50 -- Expand by 50 more commits
-
-  -- Get current cursor position to restore it
-  local cursor_pos = vim.api.nvim_win_get_cursor(0)
-  local current_line = vim.api.nvim_get_current_line()
-
-  -- Show message to user
-  vim.api.nvim_echo(
-    { { string.format("Expanding log view to %d commits...", new_limit), "MoreMsg" } },
-    false,
-    {}
-  )
-
-  -- Get new log output with expanded limit
-  local log_output, err = get_jj_log({ limit = new_limit })
-  if not log_output then
-    vim.api.nvim_err_writeln(err)
-    return
-  end
-
-  -- Extract commit data for interactive features
-  local commit_data = extract_commit_ids_from_log(log_output)
-  if #commit_data == 0 then
-    vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
-    return
-  end
-
-  -- Update header with new count
-  local header_lines = {
-    "",
-    string.format("# jj Log View (showing %d commits)", new_limit),
-    "# Navigate: j/k, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, ?=help",
-    "",
-  }
-
-  -- Process the new content using ANSI module
-  local processed_lines, all_highlights = ansi.process_diff_content(log_output, header_lines)
-
-  -- Update buffer content in-place
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-
-  -- Apply highlights
-  ansi.setup_diff_highlighting(bufnr, all_highlights, {
-    prefix = "JjLog",
-    custom_syntax = {
-      ["^# jj Log View$"] = "JjLogHeader",
-      ["^# Navigate:.*$"] = "JjLogSubHeader",
-    },
-  })
-
-  -- Update buffer variable with new limit
-  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", new_limit)
-
-  -- Update keymaps with new commit data
-  setup_log_keymaps(bufnr, commit_data)
-
-  -- Try to restore cursor position to the same commit
-  vim.schedule(function()
-    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-    for i, line in ipairs(lines) do
-      if line == current_line then
-        vim.api.nvim_win_set_cursor(0, { i, cursor_pos[2] })
-        return
-      end
-    end
-    -- If exact line not found, try to restore by line number (might be off due to new commits)
-    local max_line = #lines
-    local safe_line = math.min(cursor_pos[1], max_line)
-    vim.api.nvim_win_set_cursor(0, { safe_line, cursor_pos[2] })
-  end)
 end
 
 -- Main function to show log view
