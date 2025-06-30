@@ -3,20 +3,32 @@ set -e
 
 # Parse command line arguments
 TESTS_ONLY=false
-if [[ "$1" == "--tests-only" ]]; then
-    TESTS_ONLY=true
-elif [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
-    echo "Usage: $0 [--tests-only]"
-    echo ""
-    echo "Options:"
-    echo "  --tests-only    Skip linting and formatting, run only functional tests"
-    echo "  --help, -h      Show this help message"
-    echo ""
-    echo "Examples:"
-    echo "  $0              Run full suite (linting, formatting, tests)"
-    echo "  $0 --tests-only Run only functional tests (for CI)"
-    exit 0
-fi
+FORCE_VERBOSE=false
+
+for arg in "$@"; do
+    case $arg in
+        --tests-only)
+            TESTS_ONLY=true
+            ;;
+        --verbose|-v)
+            FORCE_VERBOSE=true
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--tests-only] [--verbose]"
+            echo ""
+            echo "Options:"
+            echo "  --tests-only    Skip linting and formatting, run only functional tests"
+            echo "  --verbose, -v   Show full test output (automatically enabled in CI)"
+            echo "  --help, -h      Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  $0              Run full suite (linting, formatting, tests)"
+            echo "  $0 --tests-only Run only functional tests (for CI)"
+            echo "  $0 --verbose    Run with full output for debugging"
+            exit 0
+            ;;
+    esac
+done
 
 echo "🚀 === jj-fugitive Test Suite ==="
 echo ""
@@ -62,6 +74,18 @@ fi
 echo "🔧 Running functional tests..."
 echo ""
 
+# Check if we should use verbose output
+VERBOSE_OUTPUT="false"
+if [[ "${CI:-}" == "true" ]] || [[ "${GITHUB_ACTIONS:-}" == "true" ]] || [[ "$FORCE_VERBOSE" == "true" ]]; then
+    VERBOSE_OUTPUT="true"
+    if [[ "${CI:-}" == "true" ]] || [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        echo "🔍 CI environment detected - enabling verbose output"
+    else
+        echo "🔍 Verbose mode enabled - showing full test output"
+    fi
+    echo ""
+fi
+
 # Discover and run all test files
 test_count=0
 passed_count=0
@@ -103,22 +127,35 @@ for test_file in "${test_files[@]}"; do
     ((test_count++))
     
     # Run the test and capture output
-    if "$test_file" > /tmp/test_output_$$.log 2>&1; then
-        echo "   ✅ PASSED"
-        ((passed_count++))
-        # Show brief success message from test output
-        if grep -q "All.*tests passed" /tmp/test_output_$$.log; then
-            grep "All.*tests passed" /tmp/test_output_$$.log | head -1 | sed 's/^/   🎉 /'
+    if [[ "$VERBOSE_OUTPUT" == "true" ]]; then
+        # In CI mode, show all output in real-time
+        echo "   🔍 Running with verbose output..."
+        if "$test_file"; then
+            echo "   ✅ PASSED"
+            ((passed_count++))
+        else
+            echo "   ❌ FAILED"
+            failed_tests+=("$test_name")
         fi
     else
-        echo "   ❌ FAILED"
-        failed_tests+=("$test_name")
-        echo "   📄 Error output:"
-        sed 's/^/      /' /tmp/test_output_$$.log
+        # Normal mode - capture output and show only on failure
+        if "$test_file" > /tmp/test_output_$$.log 2>&1; then
+            echo "   ✅ PASSED"
+            ((passed_count++))
+            # Show brief success message from test output
+            if grep -q "All.*tests passed" /tmp/test_output_$$.log; then
+                grep "All.*tests passed" /tmp/test_output_$$.log | head -1 | sed 's/^/   🎉 /'
+            fi
+        else
+            echo "   ❌ FAILED"
+            failed_tests+=("$test_name")
+            echo "   📄 Error output:"
+            sed 's/^/      /' /tmp/test_output_$$.log
+        fi
+        
+        # Clean up temp file
+        rm -f /tmp/test_output_$$.log
     fi
-    
-    # Clean up temp file
-    rm -f /tmp/test_output_$$.log
     echo ""
 done
 
@@ -134,12 +171,22 @@ if [[ ${#demo_files[@]} -gt 0 ]]; then
         if [[ -x "$demo_file" ]]; then
             demo_name=$(basename "$demo_file" .lua)
             echo "🎪 Running demo: $demo_name"
-            if "$demo_file" > /tmp/demo_output_$$.log 2>&1; then
-                echo "   ✅ Demo completed successfully"
+            if [[ "$VERBOSE_OUTPUT" == "true" ]]; then
+                # In CI mode, show demo output directly
+                if "$demo_file"; then
+                    echo "   ✅ Demo completed successfully"
+                else
+                    echo "   ⚠️  Demo had issues (non-critical)"
+                fi
             else
-                echo "   ⚠️  Demo had issues (non-critical)"
+                # Normal mode - capture demo output
+                if "$demo_file" > /tmp/demo_output_$$.log 2>&1; then
+                    echo "   ✅ Demo completed successfully"
+                else
+                    echo "   ⚠️  Demo had issues (non-critical)"
+                fi
+                rm -f /tmp/demo_output_$$.log
             fi
-            rm -f /tmp/demo_output_$$.log
         fi
     done
 else
