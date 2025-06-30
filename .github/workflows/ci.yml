@@ -78,8 +78,7 @@ jobs:
         mkdir -p subdir
         echo "subdir content" > subdir/file.txt
         
-        # Track and commit test files properly
-        jj file track test.txt test2.txt subdir/file.txt
+        # In jj v0.15.1, files are automatically tracked, just commit them
         jj commit -m "Add test files for CI testing"
         
         # Verify setup

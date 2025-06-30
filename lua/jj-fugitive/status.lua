@@ -199,18 +199,25 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      -- Check if file is already tracked
+      -- Check if jj version supports file commands
       local main_module = require("jj-fugitive.init")
-      local track_status = main_module.run_jj_command_from_module({ "file", "show", filename })
-
-      if track_status and track_status:match("Tracked") then
-        -- File is tracked, untrack it
-        main_module.run_jj_command_from_module({ "file", "untrack", filename })
-        vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
+      local version_result = main_module.run_jj_command_from_module({ "--version" })
+      local has_file_cmd = version_result and version_result:match("jj 0%.1[6-9]") or version_result:match("jj 0%.[2-9]") or version_result:match("jj [1-9]")
+      
+      if has_file_cmd then
+        local track_status = main_module.run_jj_command_from_module({ "file", "show", filename })
+        if track_status and track_status:match("Tracked") then
+          -- File is tracked, untrack it
+          main_module.run_jj_command_from_module({ "file", "untrack", filename })
+          vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
+        else
+          -- File is not tracked, track it
+          main_module.run_jj_command_from_module({ "file", "track", filename })
+          vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
+        end
       else
-        -- File is not tracked, track it
-        main_module.run_jj_command_from_module({ "file", "track", filename })
-        vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
+        -- Older jj version - files are auto-tracked, show info message
+        vim.api.nvim_echo({ { "File tracking not supported in jj v0.15.x (files auto-tracked)", "WarningMsg" } }, false, {})
       end
       M.show_status()
     end
@@ -222,8 +229,15 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       local main_module = require("jj-fugitive.init")
-      main_module.run_jj_command_from_module({ "file", "track", filename })
-      vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
+      local version_result = main_module.run_jj_command_from_module({ "--version" })
+      local has_file_cmd = version_result and version_result:match("jj 0%.1[6-9]") or version_result:match("jj 0%.[2-9]") or version_result:match("jj [1-9]")
+      
+      if has_file_cmd then
+        main_module.run_jj_command_from_module({ "file", "track", filename })
+        vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
+      else
+        vim.api.nvim_echo({ { "File tracking not supported in jj v0.15.x (files auto-tracked)", "WarningMsg" } }, false, {})
+      end
       M.show_status()
     end
   end, opts)
@@ -234,8 +248,15 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       local main_module = require("jj-fugitive.init")
-      main_module.run_jj_command_from_module({ "file", "untrack", filename })
-      vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
+      local version_result = main_module.run_jj_command_from_module({ "--version" })
+      local has_file_cmd = version_result and version_result:match("jj 0%.1[6-9]") or version_result:match("jj 0%.[2-9]") or version_result:match("jj [1-9]")
+      
+      if has_file_cmd then
+        main_module.run_jj_command_from_module({ "file", "untrack", filename })
+        vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
+      else
+        vim.api.nvim_echo({ { "File tracking not supported in jj v0.15.x (files auto-tracked)", "WarningMsg" } }, false, {})
+      end
       M.show_status()
     end
   end, opts)

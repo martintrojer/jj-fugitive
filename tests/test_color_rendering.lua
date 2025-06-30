@@ -5,7 +5,14 @@
 if os.getenv("CI") then
   print("🔍 CI Environment Detected - Starting color rendering tests")
   print("📍 Working directory: " .. vim.fn.getcwd())
-  print("📍 Neovim version: " .. vim.version().major .. "." .. vim.version().minor .. "." .. vim.version().patch)
+  print(
+    "📍 Neovim version: "
+      .. vim.version().major
+      .. "."
+      .. vim.version().minor
+      .. "."
+      .. vim.version().patch
+  )
 end
 
 -- Test basic Neovim functionality before proceeding
@@ -48,13 +55,24 @@ if file then
   file:close()
 end
 
--- Track the file in jj
-local track_result = vim.fn.system({ "jj", "file", "track", test_file })
-local track_exit_code = vim.v.shell_error
-if track_exit_code ~= 0 then
+-- Check jj version and track file if needed
+local version_output = vim.fn.system({ "jj", "--version" })
+local has_file_cmd = version_output and version_output:match("jj 0%.1[6-9]") or version_output:match("jj 0%.[2-9]") or version_output:match("jj [1-9]")
+
+if has_file_cmd then
+  -- Track the file in newer jj versions
+  local track_result = vim.fn.system({ "jj", "file", "track", test_file })
+  local track_exit_code = vim.v.shell_error
+  if track_exit_code ~= 0 then
+    if os.getenv("CI") then
+      print("⚠️  jj file track failed with exit code: " .. track_exit_code)
+      print("⚠️  Output: " .. track_result)
+    end
+  end
+else
+  -- Older jj versions auto-track files
   if os.getenv("CI") then
-    print("⚠️  jj file track failed with exit code: " .. track_exit_code)
-    print("⚠️  Output: " .. track_result)
+    print("ℹ️  Using jj v0.15.x - files are auto-tracked")
   end
 end
 
