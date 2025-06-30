@@ -20,6 +20,22 @@ print("🚀 === jj-fugitive Improved Diff Tests ===")
 -- Test detailed improved diff functionality
 -- These tests check specific ANSI output and buffer behavior
 
+-- Create a test file to ensure we have changes to test with
+local test_file = "test_improved_diff.txt"
+local file = io.open(test_file, "w")
+if file then
+  file:write("Original line 1\nOriginal line 2\nOriginal line 3\n")
+  file:close()
+end
+vim.fn.system({ "jj", "file", "track", test_file })
+
+-- Modify the file to create changes
+file = io.open(test_file, "w")
+if file then
+  file:write("Modified line 1\nOriginal line 2\nNew line 4\n")
+  file:close()
+end
+
 -- Test 1: Load diff module
 local diff_module = require("jj-fugitive.diff")
 assert_test("Diff module loaded", diff_module ~= nil, "Could not load diff module")
@@ -171,6 +187,11 @@ for _, result in ipairs(test_results) do
     passed = passed + 1
   end
 end
+
+-- Cleanup
+pcall(function()
+  os.remove(test_file)
+end)
 
 print(string.format("Passed: %d/%d tests", passed, total))
 

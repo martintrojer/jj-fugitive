@@ -22,8 +22,14 @@ local commit_output =
   vim.fn.system({ "jj", "log", "--limit", "1", "--template", "change_id.short()" })
 local commit_id = vim.trim(commit_output):gsub("^@%s*", "")
 
--- Use an existing file with changes (we know test files have changes)
-local test_file = "tests/test_diff_functionality.lua"
+-- Create a test file to ensure we have changes to test with
+local test_file = "test_git_format_consistency.txt"
+local file = io.open(test_file, "w")
+if file then
+  file:write("Line 1\nLine 2\nLine 3\n")
+  file:close()
+end
+vim.fn.system({ "jj", "file", "track", test_file })
 
 if commit_id and #commit_id > 0 then
   print("   Testing with commit ID: " .. commit_id)
