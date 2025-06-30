@@ -288,6 +288,22 @@ local function expand_log_view(bufnr)
     return
   end
 
+  -- Check if we actually got more commits
+  local current_commit_count = 0
+  local current_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  for _, line in ipairs(current_lines) do
+    if not line:match("^#") and line ~= "" and line:match("[◆@○]") then
+      current_commit_count = current_commit_count + 1
+    end
+  end
+
+  if #commit_data <= current_commit_count then
+    vim.api.nvim_echo({ 
+      { string.format("Already showing all %d commits available", #commit_data), "WarningMsg" } 
+    }, false, {})
+    return
+  end
+
   -- Update header with new count
   local header_lines = {
     "",
