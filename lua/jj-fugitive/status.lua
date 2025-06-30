@@ -92,8 +92,9 @@ local function format_status_buffer(status_info)
 
   table.insert(lines, "")
   table.insert(lines, "# Commands:")
-  table.insert(lines, "# <CR> = open file, o = open split, D = diff, dv = vertical diff")
-  table.insert(lines, "# cc = commit, new = create new change, l = log view")
+  table.insert(lines, "# <CR> = open file, o = open split, gO = vsplit, O = tab, = = diff")
+  table.insert(lines, "# - = toggle track, s = track, u = untrack, D = diff, dv = vdiff")
+  table.insert(lines, "# cc = commit, ca = amend, ce = extend, cn = new, l = log view")
   table.insert(lines, "# R = reload status, q = close, g? = help")
 
   return lines
@@ -141,11 +142,102 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     end
   end, opts)
 
+  -- Commit amend (vim-fugitive ca)
+  vim.keymap.set("n", "ca", function()
+    local main_module = require("jj-fugitive.init")
+    -- Get current commit description
+    local current_desc = main_module.run_jj_command_from_module({
+      "log",
+      "-r",
+      "@",
+      "--no-graph",
+      "-T",
+      "description",
+    })
+    if current_desc then
+      current_desc = current_desc:gsub("^%s*", ""):gsub("%s*$", "") -- trim whitespace
+    end
+
+    local commit_msg = vim.fn.input("Amend commit message: ", current_desc or "")
+    if commit_msg and commit_msg ~= "" then
+      main_module.run_jj_command_from_module({ "describe", "-m", commit_msg })
+      vim.api.nvim_echo({ { "Amended commit description", "MoreMsg" } }, false, {})
+      M.show_status()
+    end
+  end, opts)
+
+  -- Commit extend (vim-fugitive ce) - add changes to current commit
+  vim.keymap.set("n", "ce", function()
+    local main_module = require("jj-fugitive.init")
+    -- In jj, this is like doing a describe + commit in one step
+    local commit_msg = vim.fn.input("Extend commit message: ")
+    if commit_msg and commit_msg ~= "" then
+      main_module.run_jj_command_from_module({ "commit", "-m", commit_msg })
+      vim.api.nvim_echo({ { "Extended commit with changes", "MoreMsg" } }, false, {})
+      M.show_status()
+    end
+  end, opts)
+
+  -- Commit new (vim-fugitive cn) - create new commit after current
+  vim.keymap.set("n", "cn", function()
+    local main_module = require("jj-fugitive.init")
+    main_module.run_jj_command_from_module({ "new" })
+    vim.api.nvim_echo({ { "Created new commit", "MoreMsg" } }, false, {})
+    M.show_status()
+  end, opts)
+
   -- Create new change
   vim.keymap.set("n", "new", function()
     local main_module = require("jj-fugitive.init")
     main_module.run_jj_command_from_module({ "new" })
     M.show_status()
+  end, opts)
+
+  -- File tracking operations (vim-fugitive staging equivalents)
+  -- Primary toggle - track/untrack file (vim-fugitive uses -)
+  vim.keymap.set("n", "-", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      -- Check if file is already tracked
+      local main_module = require("jj-fugitive.init")
+      local track_status = main_module.run_jj_command_from_module({ "file", "show", filename })
+
+      if track_status and track_status:match("Tracked") then
+        -- File is tracked, untrack it
+        main_module.run_jj_command_from_module({ "file", "untrack", filename })
+        vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
+      else
+        -- File is not tracked, track it
+        main_module.run_jj_command_from_module({ "file", "track", filename })
+        vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
+      end
+      M.show_status()
+    end
+  end, opts)
+
+  -- Track file for next commit (vim-fugitive 's' equivalent)
+  vim.keymap.set("n", "s", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      local main_module = require("jj-fugitive.init")
+      main_module.run_jj_command_from_module({ "file", "track", filename })
+      vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
+      M.show_status()
+    end
+  end, opts)
+
+  -- Untrack file (vim-fugitive 'u' equivalent)
+  vim.keymap.set("n", "u", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      local main_module = require("jj-fugitive.init")
+      main_module.run_jj_command_from_module({ "file", "untrack", filename })
+      vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
+      M.show_status()
+    end
   end, opts)
 
   -- Diff file under cursor (vim-fugitive uses D)
@@ -237,6 +329,33 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     end
   end, opts)
 
+  -- Open file in vertical split (vim-fugitive gO)
+  vim.keymap.set("n", "gO", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      vim.cmd("vsplit " .. vim.fn.fnameescape(filename))
+    end
+  end, opts)
+
+  -- Open file in new tab (vim-fugitive O)
+  vim.keymap.set("n", "O", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      vim.cmd("tabedit " .. vim.fn.fnameescape(filename))
+    end
+  end, opts)
+
+  -- Inline diff toggle (vim-fugitive =)
+  vim.keymap.set("n", "=", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      require("jj-fugitive.diff").show_file_diff_sidebyside(filename)
+    end
+  end, opts)
+
   -- Launch log view (use 'l' for log)
   vim.keymap.set("n", "l", function()
     require("jj-fugitive.log").show_log()
@@ -250,12 +369,23 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       "File operations:",
       "  <CR>    - Open file in editor",
       "  o       - Open file in split",
+      "  gO      - Open file in vertical split",
+      "  O       - Open file in new tab",
       "  D       - Show diff for file",
       "  dv      - Vertical diff split",
       "  ds      - Horizontal diff split",
+      "  =       - Inline diff toggle (side-by-side)",
+      "",
+      "File tracking (vim-fugitive staging equivalents):",
+      "  -       - Toggle file tracking (primary operation)",
+      "  s       - Track file for next commit",
+      "  u       - Untrack file",
       "",
       "jj operations:",
       "  cc      - Create commit",
+      "  ca      - Amend commit message (vim-fugitive)",
+      "  ce      - Extend commit with changes (vim-fugitive)",
+      "  cn      - Create new commit after current (vim-fugitive)",
       "  new     - Create new change",
       "",
       "Navigation & misc:",

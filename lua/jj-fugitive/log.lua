@@ -308,7 +308,7 @@ local function expand_log_view(bufnr)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", new_limit),
-    "# Navigate: j/k, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, ?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, g?=help",
     "",
   }
 
@@ -414,6 +414,78 @@ local function setup_log_keymaps(bufnr, commit_data)
     expand_log_view(bufnr)
   end, opts)
 
+  -- Navigate to parent revision (vim-fugitive P)
+  vim.keymap.set("n", "P", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    if commit_id then
+      local main_module = require("jj-fugitive.init")
+      local parent_result = main_module.run_jj_command_from_module({
+        "log",
+        "-r",
+        commit_id .. "-",
+        "--limit",
+        "1",
+        "--no-graph",
+      })
+      if parent_result then
+        local parent_id = parent_result:match("([a-f0-9]+)$")
+        if parent_id then
+          -- Find and move cursor to parent commit line
+          local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+          for i, buf_line in ipairs(lines) do
+            if buf_line:find(parent_id, 1, true) then
+              vim.api.nvim_win_set_cursor(0, { i, 0 })
+              vim.api.nvim_echo({ { "Moved to parent: " .. parent_id, "MoreMsg" } }, false, {})
+              return
+            end
+          end
+          vim.api.nvim_echo(
+            { { "Parent commit not visible in current log view", "WarningMsg" } },
+            false,
+            {}
+          )
+        end
+      end
+    end
+  end, opts)
+
+  -- Navigate to next (child) revision (vim-fugitive N)
+  vim.keymap.set("n", "N", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    if commit_id then
+      local main_module = require("jj-fugitive.init")
+      local child_result = main_module.run_jj_command_from_module({
+        "log",
+        "-r",
+        commit_id .. "+",
+        "--limit",
+        "1",
+        "--no-graph",
+      })
+      if child_result then
+        local child_id = child_result:match("([a-f0-9]+)$")
+        if child_id then
+          -- Find and move cursor to child commit line
+          local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+          for i, buf_line in ipairs(lines) do
+            if buf_line:find(child_id, 1, true) then
+              vim.api.nvim_win_set_cursor(0, { i, 0 })
+              vim.api.nvim_echo({ { "Moved to child: " .. child_id, "MoreMsg" } }, false, {})
+              return
+            end
+          end
+          vim.api.nvim_echo(
+            { { "Child commit not visible in current log view", "WarningMsg" } },
+            false,
+            {}
+          )
+        end
+      end
+    end
+  end, opts)
+
   -- Show help (vim-fugitive standard)
   vim.keymap.set("n", "g?", function()
     local help_lines = {
@@ -422,6 +494,8 @@ local function setup_log_keymaps(bufnr, commit_data)
       "Navigation:",
       "  j/k       - Move up/down through commits",
       "  gg/G      - Go to first/last commit",
+      "  P         - Navigate to parent revision (vim-fugitive)",
+      "  N         - Navigate to next/child revision (vim-fugitive)",
       "",
       "Commit Actions:",
       "  Enter/o   - Show commit details and changes",
@@ -503,7 +577,7 @@ function M.show_log(options)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", options.limit),
-    "# Navigate: j/k, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, ?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, g?=help",
     "",
   }
 

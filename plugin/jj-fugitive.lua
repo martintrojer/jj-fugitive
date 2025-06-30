@@ -13,4 +13,3 @@ end, {
     return jj_fugitive.complete(arglead, cmdline, cursorpos)
   end,
 })
-
