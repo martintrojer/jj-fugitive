@@ -122,19 +122,17 @@ if status_module then
   end
 end
 
--- Test 5: Test :J status command (skip in CI due to timing issues)
-if not os.getenv("CI") then
-  local initial_buf_count = #vim.api.nvim_list_bufs()
+-- Test 5: Test :J status command
+local initial_buf_count = #vim.api.nvim_list_bufs()
 
-  pcall(function()
-    vim.cmd("J status")
-  end)
+pcall(function()
+  vim.cmd("J status")
+end)
 
-  local final_buf_count = #vim.api.nvim_list_bufs()
-  local j_status_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
+local final_buf_count = #vim.api.nvim_list_bufs()
+local j_status_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
 
-  assert_test("J status command works", j_status_created_buffer, ":J status command failed")
-end
+assert_test("J status command works", j_status_created_buffer, ":J status command failed")
 
 -- Summary
 print("\n📊 === Test Results Summary ===")

@@ -108,19 +108,17 @@ if log_module then
   end
 end
 
--- Test 5: Test main plugin integration (skip in CI due to timing issues)
-if not os.getenv("CI") then
-  local initial_buf_count = #vim.api.nvim_list_bufs()
+-- Test 5: Test main plugin integration
+local initial_buf_count = #vim.api.nvim_list_bufs()
 
-  pcall(function()
-    vim.cmd("J log --limit 3")
-  end)
+pcall(function()
+  vim.cmd("J log --limit 3")
+end)
 
-  local final_buf_count = #vim.api.nvim_list_bufs()
-  local j_log_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
+local final_buf_count = #vim.api.nvim_list_bufs()
+local j_log_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
 
-  assert_test("J log command works", j_log_created_buffer, ":J log command failed")
-end
+assert_test("J log command works", j_log_created_buffer, ":J log command failed")
 
 -- Summary
 print("\n📊 === Test Results Summary ===")

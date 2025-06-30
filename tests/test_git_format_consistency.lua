@@ -22,8 +22,8 @@ local commit_output =
   vim.fn.system({ "jj", "log", "--limit", "1", "--template", "change_id.short()" })
 local commit_id = vim.trim(commit_output):gsub("^@%s*", "")
 
--- Use an existing file with changes (we know TODO.md has changes)
-local test_file = "TODO.md"
+-- Use an existing file with changes (we know test files have changes)
+local test_file = "tests/test_diff_functionality.lua"
 
 if commit_id and #commit_id > 0 then
   print("   Testing with commit ID: " .. commit_id)
