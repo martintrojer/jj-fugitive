@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+# Temporarily disable set -e to debug CI issue
+# set -e
 
 # Parse command line arguments
 TESTS_ONLY=false
@@ -125,7 +126,9 @@ for test_file in "${test_files[@]}"; do
     echo "   File: $test_file"
     echo "   🔍 DEBUG: Before running test - CI=${CI:-unset}, VERBOSE_OUTPUT=$VERBOSE_OUTPUT"
     
-    ((test_count++))
+    echo "   🔍 DEBUG: About to increment test_count (current value: $test_count)"
+    test_count=$((test_count + 1))
+    echo "   🔍 DEBUG: test_count incremented to: $test_count"
     
     # Run the test and capture output
     echo "   🔍 DEBUG: About to check VERBOSE_OUTPUT condition"
@@ -143,7 +146,7 @@ for test_file in "${test_files[@]}"; do
             echo "   🔍 DEBUG: About to execute nvim command"
             if nvim --headless -l "$test_file"; then
                 echo "   ✅ PASSED"
-                ((passed_count++))
+                passed_count=$((passed_count + 1))
             else
                 exit_code=$?
                 echo "   ❌ FAILED (exit code: $exit_code)"
@@ -154,7 +157,7 @@ for test_file in "${test_files[@]}"; do
             echo "   🔧 Non-Lua file - using direct execution"
             if "$test_file"; then
                 echo "   ✅ PASSED"
-                ((passed_count++))
+                passed_count=$((passed_count + 1))
             else
                 echo "   ❌ FAILED"
                 failed_tests+=("$test_name")
@@ -165,7 +168,7 @@ for test_file in "${test_files[@]}"; do
         # Normal mode - capture output and show only on failure
         if "$test_file" > /tmp/test_output_$$.log 2>&1; then
             echo "   ✅ PASSED"
-            ((passed_count++))
+            passed_count=$((passed_count + 1))
             # Show brief success message from test output
             if grep -q "All.*tests passed" /tmp/test_output_$$.log; then
                 grep "All.*tests passed" /tmp/test_output_$$.log | head -1 | sed 's/^/   🎉 /'
@@ -222,7 +225,8 @@ echo ""
 echo "📊 === Test Results Summary ==="
 echo "Total tests run: $test_count"
 echo "Passed: $passed_count"
-echo "Failed: $((test_count - passed_count))"
+failed_count=$((test_count - passed_count))
+echo "Failed: $failed_count"
 echo ""
 
 if [[ $passed_count -eq $test_count ]]; then
