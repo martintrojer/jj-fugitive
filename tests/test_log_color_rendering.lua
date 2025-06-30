@@ -98,9 +98,17 @@ if log_module then
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
       if vim.api.nvim_buf_is_valid(bufnr) then
         local name = vim.api.nvim_buf_get_name(bufnr)
-        if name:match("jj%-log$") then
-          log_buffer = bufnr
-          break
+        -- Check for jj-log buffer (name might be empty in headless mode)
+        if name:match("jj%-log") or name == "" then
+          -- Additional check: look for jj log content in buffer
+          local lines = vim.api.nvim_buf_get_lines(bufnr, 0, 5, false)
+          for _, line in ipairs(lines) do
+            if line:match("jj Log View") then
+              log_buffer = bufnr
+              break
+            end
+          end
+          if log_buffer then break end
         end
       end
     end
@@ -111,27 +119,20 @@ if log_module then
       local lines = vim.api.nvim_buf_get_lines(log_buffer, 0, -1, false)
       local content = table.concat(lines, "\n")
 
-      -- Test 5: Verify log buffer has expected content
-      local has_log_content = content:match("jj Log View") and content:match("Commit ID")
+      -- Test 5: Verify log buffer has expected content (native jj format)
+      local has_log_content = content:match("jj Log View") and (content:match("@") or content:match("◆") or content:match("○"))
       assert_test("Log buffer has expected content", has_log_content, "Log view content not found")
 
-      -- Test 6: Verify we can extract a commit ID from a line
+      -- Test 6: Verify we can extract a commit ID from a line (native format)
       local commit_line = nil
       for _, line in ipairs(lines) do
-        if line:match("|") and not line:match("Commit ID") and not line:match("Description") then
-          -- This should be a commit line
-          local first_part = line:match("^([^|]+)")
-          if first_part then
-            first_part = vim.trim(first_part)
-            local tokens = {}
-            for token in first_part:gmatch("%S+") do
-              table.insert(tokens, token)
-            end
-            if #tokens >= 3 then -- icon, symbol, commit_id
-              commit_line = line
-              commit_id = tokens[#tokens]
-              break
-            end
+        -- Look for native jj commit lines (with @ ◆ ○ symbols)
+        if not line:match("^#") and line ~= "" and (line:match("@") or line:match("◆") or line:match("○")) then
+          -- Extract 8-character hex commit ID from end of line
+          local commit_id = line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
+          if commit_id then
+            commit_line = line
+            break
           end
         end
       end
