@@ -123,16 +123,13 @@ for test_file in "${test_files[@]}"; do
     test_name=$(basename "$test_file" .lua)
     echo "🧪 Running: $test_name"
     echo "   File: $test_file"
-    echo "   🔍 DEBUG: Before running test - CI=${CI:-unset}, VERBOSE_OUTPUT=$VERBOSE_OUTPUT"
     
     ((test_count++))
     
     # Run the test and capture output
-    echo "   🔍 DEBUG: About to check VERBOSE_OUTPUT condition"
     if [[ "$VERBOSE_OUTPUT" == "true" ]]; then
         # In CI mode, show all output in real-time
         echo "   🔍 Running with verbose output..."
-        echo "   🔍 DEBUG: Inside verbose block"
         # Try different execution methods for CI compatibility
         echo "   🔍 CI check: CI=${CI:-unset}, GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}"
         echo "   🔍 File extension check: $test_file"
@@ -140,14 +137,12 @@ for test_file in "${test_files[@]}"; do
         if [[ "$test_file" == *.lua ]]; then
             echo "   🔧 Detected Lua file - using nvim --headless -l"
             echo "   📄 Command: nvim --headless -l $test_file"
-            echo "   🔍 DEBUG: About to execute nvim command"
             if nvim --headless -l "$test_file"; then
                 echo "   ✅ PASSED"
                 ((passed_count++))
             else
                 exit_code=$?
                 echo "   ❌ FAILED (exit code: $exit_code)"
-                echo "   🔍 DEBUG: nvim command failed with exit code: $exit_code"
                 failed_tests+=("$test_name")
             fi
         else
@@ -161,7 +156,6 @@ for test_file in "${test_files[@]}"; do
             fi
         fi
     else
-        echo "   🔍 DEBUG: NOT in verbose mode - VERBOSE_OUTPUT=$VERBOSE_OUTPUT"
         # Normal mode - capture output and show only on failure
         if "$test_file" > /tmp/test_output_$$.log 2>&1; then
             echo "   ✅ PASSED"

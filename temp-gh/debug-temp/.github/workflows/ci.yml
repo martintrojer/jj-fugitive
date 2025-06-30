@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for jj compatibility
+    
+    - name: Install Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.1"
+    
+    - name: Install LuaRocks
+      uses: leafo/gh-actions-luarocks@v4
+    
+    - name: Install luacheck
+      run: luarocks install luacheck
+    
+    - name: Run luacheck
+      run: luacheck .
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for jj compatibility
+    
+    - name: Install stylua
+      uses: JohnnyMorganz/stylua-action@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        version: latest
+        args: --check .
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        neovim_version: ['nightly', 'stable']
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for jj compatibility
+    
+    - name: Install Neovim
+      uses: rhysd/action-setup-vim@v1
+      with:
+        neovim: true
+        version: ${{ matrix.neovim_version == 'stable' && 'stable' || 'nightly' }}
+    
+    - name: Install jj (Jujutsu)
+      run: |
+        curl -L https://github.com/martinvonz/jj/releases/download/v0.15.1/jj-v0.15.1-x86_64-unknown-linux-musl.tar.gz -o jj.tar.gz
+        tar -xzf jj.tar.gz
+        sudo mv jj /usr/local/bin/
+        rm jj.tar.gz  # Clean up large file before jj init
+        jj --version
+    
+    - name: Set up test repository
+      run: |
+        # Initialize jj in the existing git repository (checkout already provides full history)
+        jj git init --colocate .
+        
+        # Create test files for comprehensive testing
+        echo "test content" > test.txt
+        echo "modified content" > test2.txt
+        mkdir -p subdir
+        echo "subdir content" > subdir/file.txt
+        
+        # In jj v0.15.1, files are automatically tracked, just commit them
+        jj commit -m "Add test files for CI testing"
+        
+        # Verify setup
+        echo "=== Repository Status ==="
+        jj status
+        echo "=== Log ==="
+        jj log --limit 3
+    
+    - name: Run comprehensive test suite
+      run: |
+        export CI=true
+        
+        # Make test runner executable
+        chmod +x tests/run_tests.sh
+        
+        # Debug: Check Neovim installation
+        echo "=== Neovim Debug ==="
+        nvim --version
+        which nvim
+        
+        # Debug: Test basic Neovim execution
+        echo "=== Basic Neovim Test ==="
+        echo 'print("Neovim works")' | nvim --headless -l -
+        
+        # Run tests only (skip linting/formatting - handled by separate jobs)
+        ./tests/run_tests.sh --tests-only
