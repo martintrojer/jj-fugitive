@@ -133,22 +133,17 @@ end
 
 -- Test 7: Check that JHelp command was created
 local jhelp_exists = false
-for _, cmd in ipairs(vim.api.nvim_get_commands({})) do
-  if cmd[1] == "JHelp" then
-    jhelp_exists = true
-    break
-  end
+local commands = vim.api.nvim_get_commands({})
+if commands["JHelp"] then
+  jhelp_exists = true
 end
 
 assert_test("JHelp command created", jhelp_exists, "JHelp command should be available")
 
 -- Test 8: Check that JHelpPopup command was created
 local jhelpPopup_exists = false
-for _, cmd in ipairs(vim.api.nvim_get_commands({})) do
-  if cmd[1] == "JHelpPopup" then
-    jhelpPopup_exists = true
-    break
-  end
+if commands["JHelpPopup"] then
+  jhelpPopup_exists = true
 end
 
 assert_test(

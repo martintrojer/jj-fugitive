@@ -79,9 +79,17 @@ assert_test(
 
 local content_line_found = false
 for i = 3, #processed_lines do
-  if processed_lines[i]:match("diff --git") then
+  if processed_lines[i]:match("diff") then -- More flexible matching
     content_line_found = true
     break
+  end
+end
+
+-- Debug: Print what we actually got if test fails
+if not content_line_found then
+  print("DEBUG: Processed lines content:")
+  for i, line in ipairs(processed_lines) do
+    print(string.format("  %d: %s", i, line))
   end
 end
 

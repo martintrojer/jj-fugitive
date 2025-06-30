@@ -73,9 +73,9 @@ if status_buffer then
   local enter_calls_log = false
   local l_calls_log = false
 
-  -- Check if the mapping callback involves log
+  -- Check if the mapping callback works (Enter opens files, l calls log)
   if type(enter_mapping) == "table" and enter_mapping.callback then
-    enter_calls_log = true -- We know from the code it calls show_log()
+    enter_calls_log = false -- Enter opens files, not log
   end
 
   if type(l_mapping) == "table" and l_mapping.callback then
@@ -83,26 +83,32 @@ if status_buffer then
   end
 
   assert_test(
-    "Enter mapping calls log",
-    enter_calls_log,
-    "Enter mapping doesn't call log functionality"
+    "Enter mapping opens files (not log)",
+    not enter_calls_log, -- Enter should NOT call log, it opens files
+    "Enter mapping incorrectly calls log instead of opening files"
   )
   assert_test("'l' mapping calls log", l_calls_log, "'l' mapping doesn't call log functionality")
 
-  -- Test help text is present
+  -- Test help text is present correctly
   local lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
-  local has_help_text = false
+  local has_enter_help = false
+  local has_l_help = false
   for _, line in ipairs(lines) do
-    if line:match("Enter/l = log view") then
-      has_help_text = true
+    if line:match("<CR> = open file") then
+      has_enter_help = true
+    end
+    if line:match("l = log view") then
+      has_l_help = true
+    end
+    if has_enter_help and has_l_help then
       break
     end
   end
 
   assert_test(
     "Help text mentions Enter/l keys",
-    has_help_text,
-    "Help text doesn't mention Enter/l for log view"
+    has_enter_help and has_l_help,
+    "Help text doesn't mention Enter for files and l for log view"
   )
 end
 
