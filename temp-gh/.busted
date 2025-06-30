@@ -1,9 +1,0 @@
-return {
-  default = {
-    output = "utfTerminal",
-    pattern = "_spec",
-    ROOT = {"."},
-    lpath = "lua/?.lua;lua/?/init.lua",
-    ["exclude-tags"] = "skip",
-  }
-}
