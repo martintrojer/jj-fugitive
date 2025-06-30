@@ -108,7 +108,9 @@ if log_module then
               break
             end
           end
-          if log_buffer then break end
+          if log_buffer then
+            break
+          end
         end
       end
     end
@@ -120,17 +122,24 @@ if log_module then
       local content = table.concat(lines, "\n")
 
       -- Test 5: Verify log buffer has expected content (native jj format)
-      local has_log_content = content:match("jj Log View") and (content:match("@") or content:match("◆") or content:match("○"))
+      local has_log_content = content:match("jj Log View")
+        and (content:match("@") or content:match("◆") or content:match("○"))
       assert_test("Log buffer has expected content", has_log_content, "Log view content not found")
 
       -- Test 6: Verify we can extract a commit ID from a line (native format)
       local commit_line = nil
+      local extracted_commit_id = nil
       for _, line in ipairs(lines) do
         -- Look for native jj commit lines (with @ ◆ ○ symbols)
-        if not line:match("^#") and line ~= "" and (line:match("@") or line:match("◆") or line:match("○")) then
+        if
+          not line:match("^#")
+          and line ~= ""
+          and (line:match("@") or line:match("◆") or line:match("○"))
+        then
           -- Extract 8-character hex commit ID from end of line
-          local commit_id = line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
-          if commit_id then
+          extracted_commit_id =
+            line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
+          if extracted_commit_id then
             commit_line = line
             break
           end
@@ -143,8 +152,8 @@ if log_module then
         "No valid commit line found"
       )
 
-      if commit_line and commit_id then
-        print("   Found commit ID: " .. commit_id)
+      if commit_line and extracted_commit_id then
+        print("   Found commit ID: " .. extracted_commit_id)
         print("   Commit line: " .. commit_line:sub(1, 60) .. "...")
 
         -- We can't easily test the actual color rendering in headless mode,
