@@ -1,8 +1,24 @@
 #!/usr/bin/env -S nvim --headless -l
 
 -- Test color rendering functionality
-vim.cmd("set rtp+=.")
-vim.cmd("runtime plugin/jj-fugitive.lua")
+-- Add CI environment debugging
+if os.getenv("CI") then
+  print("🔍 CI Environment Detected - Starting color rendering tests")
+  print("📍 Working directory: " .. vim.fn.getcwd())
+  print("📍 Neovim version: " .. vim.version().major .. "." .. vim.version().minor .. "." .. vim.version().patch)
+end
+
+-- Test basic Neovim functionality before proceeding
+local status_ok, error_msg = pcall(function()
+  vim.cmd("set rtp+=.")
+  vim.cmd("runtime plugin/jj-fugitive.lua")
+end)
+
+if not status_ok then
+  print("❌ FATAL: Failed to initialize Neovim or plugin")
+  print("❌ Error: " .. tostring(error_msg))
+  os.exit(1)
+end
 
 local test_results = {}
 local function assert_test(name, condition, message)
@@ -33,7 +49,14 @@ if file then
 end
 
 -- Track the file in jj
-vim.fn.system({ "jj", "file", "track", test_file })
+local track_result = vim.fn.system({ "jj", "file", "track", test_file })
+local track_exit_code = vim.v.shell_error
+if track_exit_code ~= 0 then
+  if os.getenv("CI") then
+    print("⚠️  jj file track failed with exit code: " .. track_exit_code)
+    print("⚠️  Output: " .. track_result)
+  end
+end
 
 -- Modify the file to create additions and deletions
 file = io.open(test_file, "w")
@@ -44,6 +67,13 @@ end
 
 -- Test 2: Get colored diff output
 local jj_diff_colored = vim.fn.system({ "jj", "diff", "--color", "always", test_file })
+local diff_exit_code = vim.v.shell_error
+if diff_exit_code ~= 0 then
+  if os.getenv("CI") then
+    print("⚠️  jj diff failed with exit code: " .. diff_exit_code)
+    print("⚠️  Output: " .. jj_diff_colored)
+  end
+end
 local has_ansi_codes = jj_diff_colored:match("\27%[[0-9;]*m")
 assert_test(
   "jj diff produces ANSI color codes",

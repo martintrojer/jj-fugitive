@@ -78,8 +78,15 @@ jobs:
         mkdir -p subdir
         echo "subdir content" > subdir/file.txt
         
-        # Create a test commit
-        jj describe -m "Add test files for CI testing"
+        # Track and commit test files properly
+        jj file track test.txt test2.txt subdir/file.txt
+        jj commit -m "Add test files for CI testing"
+        
+        # Verify setup
+        echo "=== Repository Status ==="
+        jj status
+        echo "=== Log ==="
+        jj log --limit 3
     
     - name: Run comprehensive test suite
       run: |
