@@ -1,6 +1,23 @@
 #!/bin/bash
 set -e
 
+# Parse command line arguments
+TESTS_ONLY=false
+if [[ "$1" == "--tests-only" ]]; then
+    TESTS_ONLY=true
+elif [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    echo "Usage: $0 [--tests-only]"
+    echo ""
+    echo "Options:"
+    echo "  --tests-only    Skip linting and formatting, run only functional tests"
+    echo "  --help, -h      Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0              Run full suite (linting, formatting, tests)"
+    echo "  $0 --tests-only Run only functional tests (for CI)"
+    exit 0
+fi
+
 echo "🚀 === jj-fugitive Test Suite ==="
 echo ""
 
@@ -14,25 +31,31 @@ fi
 echo "✅ Running in jj repository"
 echo ""
 
-# Run Lua linting
-echo "📝 Running Lua linting..."
-if command -v luacheck >/dev/null 2>&1; then
-    luacheck .
-    echo "✅ Lua linting passed"
-else
-    echo "⚠️  luacheck not found, skipping Lua linting"
-fi
-echo ""
+# Skip linting and formatting if --tests-only flag is provided
+if [[ "$TESTS_ONLY" == "false" ]]; then
+    # Run Lua linting
+    echo "📝 Running Lua linting..."
+    if command -v luacheck >/dev/null 2>&1; then
+        luacheck .
+        echo "✅ Lua linting passed"
+    else
+        echo "⚠️  luacheck not found, skipping Lua linting"
+    fi
+    echo ""
 
-# Run Lua formatting check
-echo "🎨 Checking Lua formatting..."
-if command -v stylua >/dev/null 2>&1; then
-    stylua --check .
-    echo "✅ Lua formatting check passed"
+    # Run Lua formatting check
+    echo "🎨 Checking Lua formatting..."
+    if command -v stylua >/dev/null 2>&1; then
+        stylua --check .
+        echo "✅ Lua formatting check passed"
+    else
+        echo "⚠️  stylua not found, skipping Lua formatting check"
+    fi
+    echo ""
 else
-    echo "⚠️  stylua not found, skipping Lua formatting check"
+    echo "⏭️  Skipping linting and formatting (--tests-only mode)"
+    echo ""
 fi
-echo ""
 
 
 # Run functional tests

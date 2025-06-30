@@ -88,5 +88,5 @@ jobs:
         # Make test runner executable
         chmod +x tests/run_tests.sh
         
-        # Run all tests using intelligent discovery
-        ./tests/run_tests.sh
+        # Run tests only (skip linting/formatting - handled by separate jobs)
+        ./tests/run_tests.sh --tests-only

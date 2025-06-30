@@ -145,6 +145,13 @@ brew install jj           # Jujutsu CLI (if not already installed)
 # Includes: linting, formatting, all 22 functional tests
 ./tests/run_tests.sh
 
+# Run only functional tests (skip linting/formatting)
+# Useful for CI or when linting/formatting are handled separately
+./tests/run_tests.sh --tests-only
+
+# Show help with all options
+./tests/run_tests.sh --help
+
 # Run specific test categories
 ./tests/test_status_functionality.lua      # Status view tests
 ./tests/test_log_functionality.lua         # Log view tests  
