@@ -18,7 +18,7 @@ end
 print("🚀 === jj-fugitive Documentation Tests ===")
 
 -- Test 1: Check if doc directory exists
-local doc_dir = "/Users/martintrojer/hacking/jj-fugitive/doc"
+local doc_dir = vim.fn.getcwd() .. "/doc"
 local doc_exists = vim.fn.isdirectory(doc_dir) == 1
 assert_test("doc/ directory exists", doc_exists, "doc/ directory should exist for vim help files")
 

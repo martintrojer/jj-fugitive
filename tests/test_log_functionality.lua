@@ -97,11 +97,12 @@ if log_module then
       )
 
       -- Test enhanced formatting
-      local has_icons = content:match("[📜📋💡]")
+      local has_header = content:match("# jj Log View")
+      local has_navigation = content:match("Navigate:")
       assert_test(
         "Log buffer has enhanced visual formatting",
-        has_icons,
-        "Log buffer missing visual icons"
+        has_header and has_navigation,
+        "Log buffer missing header or navigation instructions"
       )
     end
   end
