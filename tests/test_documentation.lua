@@ -62,7 +62,7 @@ if help_exists then
   end
 
   -- Test command documentation
-  local commands = { ":J", ":JHelp", ":JHelpPopup" }
+  local commands = { ":J" }
   for _, cmd in ipairs(commands) do
     assert_test(
       string.format("Help file documents %s command", cmd),

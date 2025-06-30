@@ -32,13 +32,6 @@ COMMANDS                                                *jj-fugitive-commands*
 :J log [options]        Show revision history in interactive log view.
                         Supports jj log options like --limit and -r.
 
-                                                                      *:JHelp*
-:JHelp [command]        Show inline help for jj commands and flags,
-                        extracted from jj --help output.
-
-                                                                 *:JHelpPopup*
-:JHelpPopup             Show help popup for current command line context
-                        (useful during :J command input).
 
 ==============================================================================
 STATUS BUFFER                                          *jj-fugitive-status*
