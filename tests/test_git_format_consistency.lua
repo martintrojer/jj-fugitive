@@ -17,40 +17,13 @@ end
 
 print("🔧 === jj-fugitive Git Format Consistency Tests ===")
 
--- Skip comprehensive git format tests in CI environment
--- These tests check detailed git format compliance which is not critical for core functionality
-if os.getenv("CI") then
-  print("⏭️  Skipping comprehensive git format tests in CI environment")
-  print("📝 These tests check detailed --git flag usage which doesn't affect core functionality")
-  print("🎉 All git format consistency tests passed! (skipped in CI)")
-  os.exit(0)
-end
-
--- Create test repository state
-local test_file = "test_git_format.txt"
-local file = io.open(test_file, "w")
-if file then
-  file:write("Line 1\nLine 2\nLine 3\n")
-  file:close()
-end
-
--- Track and commit the file
-vim.fn.system({ "jj", "file", "track", test_file })
-vim.fn.system({ "jj", "describe", "-m", "Add test file for git format testing" })
-
--- Modify the file to create meaningful diff
-file = io.open(test_file, "w")
-if file then
-  file:write("Modified Line 1\nLine 2\nLine 3\nAdded Line 4\n")
-  file:close()
-end
-
-vim.fn.system({ "jj", "describe", "-m", "Modify test file" })
-
--- Get current commit ID
+-- Get current commit ID and use existing changes
 local commit_output =
   vim.fn.system({ "jj", "log", "--limit", "1", "--template", "change_id.short()" })
-local commit_id = vim.trim(commit_output:match("([^\n]+)"))
+local commit_id = vim.trim(commit_output):gsub("^@%s*", "")
+
+-- Use an existing file with changes (we know TODO.md has changes)
+local test_file = "TODO.md"
 
 if commit_id and #commit_id > 0 then
   print("   Testing with commit ID: " .. commit_id)
@@ -64,19 +37,19 @@ if commit_id and #commit_id > 0 then
 
   assert_test(
     "File diff uses git format",
-    file_diff_output:match("diff --git"),
+    file_diff_output:match("diff %-%-git"),
     "File diff output doesn't contain 'diff --git' header"
   )
 
   assert_test(
     "Commit show uses git format",
-    commit_show_output:match("diff --git"),
+    commit_show_output:match("diff %-%-git"),
     "Commit show output doesn't contain 'diff --git' header"
   )
 
   assert_test(
     "Commit diff uses git format",
-    commit_diff_output:match("diff --git"),
+    commit_diff_output:match("diff %-%-git"),
     "Commit diff output doesn't contain 'diff --git' header"
   )
 
@@ -146,7 +119,7 @@ if commit_id and #commit_id > 0 then
 
     assert_test(
       "File diff buffer contains git format",
-      content:match("diff --git"),
+      content:match("diff %-%-git"),
       "File diff buffer missing 'diff --git' markers"
     )
 
@@ -158,7 +131,7 @@ if commit_id and #commit_id > 0 then
 
     print("   File diff buffer content preview:")
     for i = 1, math.min(5, #lines) do
-      if lines[i] and lines[i]:match("diff --git") then
+      if lines[i] and lines[i]:match("diff %-%-git") then
         print("     " .. lines[i])
         break
       end
@@ -181,7 +154,7 @@ if commit_id and #commit_id > 0 then
 
   -- Test 6: Verify consistent git format across all command variants
   local format_patterns = {
-    "diff --git",
+    "diff %-%-git",
     "index [a-f0-9]+\\.\\.[a-f0-9]+",
     "\\+\\+\\+ b/",
     "\\-\\-\\- a/",
@@ -196,7 +169,7 @@ if commit_id and #commit_id > 0 then
   for _, output in ipairs(outputs) do
     for _, pattern in ipairs(format_patterns) do
       local has_pattern = output.content:match(pattern)
-      if pattern == "diff --git" then
+      if pattern == "diff %-%-git" then
         -- This is the most important pattern for git format
         assert_test(
           output.name .. " has " .. pattern,

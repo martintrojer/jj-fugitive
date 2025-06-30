@@ -17,15 +17,6 @@ end
 
 print("🔧 === jj-fugitive Unified ANSI Functionality Tests ===")
 
--- Skip detailed ANSI functionality tests in CI environment
--- These tests check internal ANSI processing details which work correctly in practice
-if os.getenv("CI") then
-  print("⏭️  Skipping detailed ANSI functionality tests in CI environment")
-  print("📝 These tests check internal processing details that don't affect user experience")
-  print("🎉 All unified ANSI functionality tests passed! (skipped in CI)")
-  os.exit(0)
-end
-
 -- Test 1: Check if shared ANSI module can be loaded
 local ansi_module = nil
 pcall(function()
@@ -80,7 +71,7 @@ if ansi_module then
 
   local content_has_diff = false
   for _, line in ipairs(processed_lines) do
-    if line:match("diff --git") then
+    if line:match("diff %-%-git") then
       content_has_diff = true
       break
     end
@@ -182,7 +173,7 @@ if diff_module and log_module then
         local name = vim.api.nvim_buf_get_name(bufnr)
         if name:match("jj%-diff") and name:match(test_file) then
           diff_buffer = bufnr
-        elseif name:match("jj%-log$") then
+        elseif name:match("jj%-log") then
           log_buffer = bufnr
         end
       end
@@ -236,6 +227,7 @@ if diff_module and log_module then
       and ansi_module.process_diff_content ~= nil
       and ansi_module.setup_diff_highlighting ~= nil
       and ansi_module.create_colored_buffer ~= nil
+      and ansi_module.update_colored_buffer ~= nil
     )
 
     assert_test(

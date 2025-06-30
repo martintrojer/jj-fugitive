@@ -251,4 +251,27 @@ function M.create_colored_buffer(content, buffer_name, header_lines, options)
   return bufnr
 end
 
+-- Update existing buffer with new colored content
+function M.update_colored_buffer(bufnr, content, header_lines, options)
+  options = options or {}
+
+  -- Make buffer modifiable temporarily
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+
+  -- Clear existing content
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {})
+
+  -- Clear existing highlights
+  vim.api.nvim_buf_clear_namespace(bufnr, -1, 0, -1)
+
+  -- Process content and extract ANSI colors
+  local processed_lines, highlights = M.process_diff_content(content, header_lines, options)
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
+
+  -- Setup highlighting with parsed ANSI colors
+  M.setup_diff_highlighting(bufnr, highlights, options)
+
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+end
+
 return M

@@ -103,8 +103,31 @@ local function get_commit_from_line(line, commit_data)
   return commit_id
 end
 
+-- Setup keymaps for commit detail view with navigation back to log
+local function setup_commit_detail_keymaps(bufnr)
+  local opts = { buffer = bufnr, noremap = true, silent = true }
+
+  -- Back to log view
+  vim.keymap.set("n", "b", function()
+    local has_previous = pcall(vim.api.nvim_buf_get_var, bufnr, "jj_previous_view")
+    if has_previous then
+      local log_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
+      M.show_log({ limit = log_limit, update_current = true })
+    else
+      M.show_log()
+    end
+  end, opts)
+
+  -- Quit
+  vim.keymap.set("n", "q", function()
+    vim.cmd("bdelete")
+  end, opts)
+end
+
 -- Show commit details with consistent diff formatting
-local function show_commit_details(commit_id)
+local function show_commit_details(commit_id, opts)
+  opts = opts or {}
+
   if not commit_id then
     vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
     return
@@ -123,10 +146,44 @@ local function show_commit_details(commit_id)
     "",
     "# Commit: " .. commit_id,
     "# Details and changes for this commit",
+    "# Press 'b' to go back to log view, 'q' to quit",
     "",
   }
 
   local bufname = string.format("jj-show: %s", commit_id)
+
+  -- If update_current is true, update the current buffer instead of creating new window
+  if opts.update_current then
+    local current_bufnr = vim.api.nvim_get_current_buf()
+    local current_bufname = vim.api.nvim_buf_get_name(current_bufnr)
+
+    -- Only update if we're in a jj-related buffer
+    if current_bufname:match("jj%-") then
+      -- Store original buffer info for navigation back
+      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", "log")
+      local log_limit = 50
+      pcall(function()
+        log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")
+      end)
+      vim.api.nvim_buf_set_var(current_bufnr, "jj_log_limit", log_limit)
+
+      -- Update buffer content
+      ansi.update_colored_buffer(current_bufnr, result, header_lines, {
+        prefix = "JjShow",
+        custom_syntax = {
+          ["^# Commit:.*$"] = "JjShowHeader",
+          ["^# Details.*$"] = "JjShowSubHeader",
+        },
+      })
+
+      -- Update buffer name
+      vim.api.nvim_buf_set_name(current_bufnr, bufname)
+
+      -- Setup navigation keymaps
+      setup_commit_detail_keymaps(current_bufnr)
+      return
+    end
+  end
 
   -- Use shared utility to create colored buffer with consistent formatting
   local bufnr = ansi.create_colored_buffer(result, bufname, header_lines, {
@@ -162,7 +219,7 @@ local function edit_at_commit(commit_id)
 
   vim.api.nvim_echo({ { "Editing at commit " .. commit_id, "MoreMsg" } }, false, {})
   -- Refresh the log view
-  M.show_log()
+  M.show_log({ update_current = true })
 end
 
 -- Create new commit after selected commit (jj new)
@@ -180,7 +237,7 @@ local function new_after_commit(commit_id)
 
   vim.api.nvim_echo({ { "Created new commit after " .. commit_id, "MoreMsg" } }, false, {})
   -- Refresh the log view
-  M.show_log()
+  M.show_log({ update_current = true })
 end
 
 -- Rebase onto commit (jj rebase)
@@ -204,11 +261,13 @@ local function rebase_onto_commit(commit_id)
 
   vim.api.nvim_echo({ { "Rebased onto " .. commit_id, "MoreMsg" } }, false, {})
   -- Refresh the log view
-  M.show_log()
+  M.show_log({ update_current = true })
 end
 
 -- Show diff for commit with consistent formatting to regular diff view
-local function show_commit_diff(commit_id)
+local function show_commit_diff(commit_id, opts)
+  opts = opts or {}
+
   if not commit_id then
     vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
     return
@@ -233,10 +292,44 @@ local function show_commit_diff(commit_id)
     "",
     "# Commit Diff: " .. commit_id,
     "# Changes in this commit vs parent",
+    "# Press 'b' to go back to log view, 'q' to quit",
     "",
   }
 
   local bufname = string.format("jj-diff: %s", commit_id)
+
+  -- If update_current is true, update the current buffer instead of creating new window
+  if opts.update_current then
+    local current_bufnr = vim.api.nvim_get_current_buf()
+    local current_bufname = vim.api.nvim_buf_get_name(current_bufnr)
+
+    -- Only update if we're in a jj-related buffer
+    if current_bufname:match("jj%-") then
+      -- Store original buffer info for navigation back
+      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", "log")
+      local log_limit = 50
+      pcall(function()
+        log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")
+      end)
+      vim.api.nvim_buf_set_var(current_bufnr, "jj_log_limit", log_limit)
+
+      -- Update buffer content
+      ansi.update_colored_buffer(current_bufnr, result, header_lines, {
+        prefix = "JjDiff",
+        custom_syntax = {
+          ["^# Commit Diff:.*$"] = "JjDiffFileHeader",
+          ["^# Changes.*$"] = "JjDiffChangeHeader",
+        },
+      })
+
+      -- Update buffer name
+      vim.api.nvim_buf_set_name(current_bufnr, bufname)
+
+      -- Setup navigation keymaps
+      setup_commit_detail_keymaps(current_bufnr)
+      return
+    end
+  end
 
   -- Use shared utility to create colored buffer with consistent formatting
   local bufnr = ansi.create_colored_buffer(result, bufname, header_lines, {
@@ -358,13 +451,13 @@ local function setup_log_keymaps(bufnr, commit_data)
   vim.keymap.set("n", "<CR>", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
-    show_commit_details(commit_id)
+    show_commit_details(commit_id, { update_current = true })
   end, opts)
 
   vim.keymap.set("n", "o", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
-    show_commit_details(commit_id)
+    show_commit_details(commit_id, { update_current = true })
   end, opts)
 
   -- Edit at commit
@@ -392,7 +485,7 @@ local function setup_log_keymaps(bufnr, commit_data)
   vim.keymap.set("n", "d", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
-    show_commit_diff(commit_id)
+    show_commit_diff(commit_id, { update_current = true })
   end, opts)
 
   -- Close log view
@@ -581,15 +674,46 @@ function M.show_log(options)
     "",
   }
 
-  -- Create buffer with native jj log output and ANSI color processing
   local bufname = "jj-log"
-  local bufnr = ansi.create_colored_buffer(log_output, bufname, header_lines, {
-    prefix = "JjLog",
-    custom_syntax = {
-      ["^# jj Log View$"] = "JjLogHeader",
-      ["^# Navigate:.*$"] = "JjLogSubHeader",
-    },
-  })
+  local bufnr
+
+  -- If update_current is true, update the current buffer instead of creating new one
+  if options.update_current then
+    bufnr = vim.api.nvim_get_current_buf()
+    local current_bufname = vim.api.nvim_buf_get_name(bufnr)
+
+    -- Only update if we're in a jj-related buffer
+    if current_bufname:match("jj%-") then
+      -- Update buffer content
+      ansi.update_colored_buffer(bufnr, log_output, header_lines, {
+        prefix = "JjLog",
+        custom_syntax = {
+          ["^# jj Log View$"] = "JjLogHeader",
+          ["^# Navigate:.*$"] = "JjLogSubHeader",
+        },
+      })
+
+      -- Update buffer name
+      vim.api.nvim_buf_set_name(bufnr, bufname)
+
+      -- Clear old buffer variables
+      pcall(vim.api.nvim_buf_del_var, bufnr, "jj_previous_view")
+    else
+      -- Fallback to creating new buffer if not in jj buffer
+      options.update_current = false
+    end
+  end
+
+  if not options.update_current then
+    -- Create buffer with native jj log output and ANSI color processing
+    bufnr = ansi.create_colored_buffer(log_output, bufname, header_lines, {
+      prefix = "JjLog",
+      custom_syntax = {
+        ["^# jj Log View$"] = "JjLogHeader",
+        ["^# Navigate:.*$"] = "JjLogSubHeader",
+      },
+    })
+  end
 
   -- Apply custom header highlighting after buffer creation
   vim.api.nvim_buf_call(bufnr, function()
@@ -603,20 +727,22 @@ function M.show_log(options)
   -- Setup keymaps for interaction
   setup_log_keymaps(bufnr, commit_data)
 
-  -- Open in current window or split
-  local existing_win = nil
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.api.nvim_win_get_buf(win) == bufnr then
-      existing_win = win
-      break
+  if not options.update_current then
+    -- Open in current window or split
+    local existing_win = nil
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_buf(win) == bufnr then
+        existing_win = win
+        break
+      end
     end
-  end
 
-  if existing_win then
-    vim.api.nvim_set_current_win(existing_win)
-  else
-    vim.cmd("split")
-    vim.api.nvim_set_current_buf(bufnr)
+    if existing_win then
+      vim.api.nvim_set_current_win(existing_win)
+    else
+      vim.cmd("split")
+      vim.api.nvim_set_current_buf(bufnr)
+    end
   end
 
   -- Position cursor on first commit line (skip headers)
