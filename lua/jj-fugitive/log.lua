@@ -298,8 +298,8 @@ local function expand_log_view(bufnr)
   end
 
   if #commit_data <= current_commit_count then
-    vim.api.nvim_echo({ 
-      { string.format("Already showing all %d commits available", #commit_data), "WarningMsg" } 
+    vim.api.nvim_echo({
+      { string.format("Already showing all %d commits available", #commit_data), "WarningMsg" },
     }, false, {})
     return
   end
