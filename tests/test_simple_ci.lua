@@ -1,4 +1,6 @@
--- Simple CI test without shebang
+#!/usr/bin/env -S nvim --headless -l
+
+-- Simple CI test
 print("🚀 Simple CI Test Starting")
 print("✅ Lua execution works")
 
