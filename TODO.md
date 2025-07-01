@@ -1,0 +1,2 @@
+- interactive commands (for example J describe) hangs, they should open the editor in a new buffer
+- new need split (including interactive) in the status view
