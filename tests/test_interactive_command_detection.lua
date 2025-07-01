@@ -1,5 +1,7 @@
 #!/usr/bin/env -S nvim --headless -l
 
+-- luacheck: ignore 122
+
 -- Test interactive command detection logic
 vim.cmd("set rtp+=.")
 vim.cmd("runtime plugin/jj-fugitive.lua")
@@ -26,11 +28,9 @@ assert_test("Main module loading", main_module ~= nil, "Could not require jj-fug
 
 -- Test 2: Test describe command detection (interactive by default)
 local describe_interactive = false
-local before_buf_count = #vim.api.nvim_list_bufs()
 pcall(function()
   vim.cmd("J describe")
 end)
-local after_buf_count = #vim.api.nvim_list_bufs()
 
 -- Check if a describe buffer was created
 for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
@@ -45,8 +45,8 @@ for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
 end
 
 assert_test(
-  "Describe command detected as interactive", 
-  describe_interactive, 
+  "Describe command detected as interactive",
+  describe_interactive,
   "Should detect 'describe' as interactive and create editor buffer"
 )
 
@@ -54,12 +54,12 @@ assert_test(
 local describe_with_message_non_interactive = false
 pcall(function()
   -- This should execute normally without interactive message
-  local result = vim.fn.system({"jj", "describe", "-m", "test message", "--no-edit"})
+  vim.fn.system({ "jj", "describe", "-m", "test message", "--no-edit" })
   describe_with_message_non_interactive = vim.v.shell_error == 0
 end)
 assert_test(
-  "Describe with -m flag not interactive", 
-  describe_with_message_non_interactive, 
+  "Describe with -m flag not interactive",
+  describe_with_message_non_interactive,
   "describe -m should execute normally without interception"
 )
 
@@ -82,20 +82,20 @@ for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
 end
 
 assert_test(
-  "Commit command detected as interactive", 
-  commit_interactive, 
+  "Commit command detected as interactive",
+  commit_interactive,
   "Should detect 'commit' as interactive and create editor buffer"
 )
 
 -- Test 5: Test commit with -m flag (not interactive)
 local commit_with_message_non_interactive = false
 pcall(function()
-  local result = vim.fn.system({"jj", "commit", "-m", "test commit"})
+  vim.fn.system({ "jj", "commit", "-m", "test commit" })
   commit_with_message_non_interactive = vim.v.shell_error == 0
 end)
 assert_test(
-  "Commit with -m flag not interactive", 
-  commit_with_message_non_interactive, 
+  "Commit with -m flag not interactive",
+  commit_with_message_non_interactive,
   "commit -m should execute normally without interception"
 )
 
@@ -108,14 +108,14 @@ pcall(function()
       split_interactive = true
     end
   end
-  
+
   vim.cmd("J split")
-  
+
   vim.api.nvim_err_writeln = original_err_writeln
 end)
 assert_test(
-  "Split command detected as interactive", 
-  split_interactive, 
+  "Split command detected as interactive",
+  split_interactive,
   "Should detect 'split' as always interactive"
 )
 
@@ -128,14 +128,14 @@ pcall(function()
       diffedit_interactive = true
     end
   end
-  
+
   vim.cmd("J diffedit")
-  
+
   vim.api.nvim_err_writeln = original_err_writeln
 end)
 assert_test(
-  "Diffedit command detected as interactive", 
-  diffedit_interactive, 
+  "Diffedit command detected as interactive",
+  diffedit_interactive,
   "Should detect 'diffedit' as always interactive"
 )
 
@@ -148,27 +148,27 @@ pcall(function()
       resolve_interactive = true
     end
   end
-  
+
   vim.cmd("J resolve")
-  
+
   vim.api.nvim_err_writeln = original_err_writeln
 end)
 assert_test(
-  "Resolve command detected as interactive", 
-  resolve_interactive, 
+  "Resolve command detected as interactive",
+  resolve_interactive,
   "Should detect 'resolve' as interactive"
 )
 
 -- Test 9: Test resolve with --list flag (not interactive)
 local resolve_list_non_interactive = false
 pcall(function()
-  local result = vim.fn.system({"jj", "resolve", "--list"})
+  vim.fn.system({ "jj", "resolve", "--list" })
   -- resolve --list should work even if there are no conflicts
   resolve_list_non_interactive = true -- We just check it doesn't get intercepted
 end)
 assert_test(
-  "Resolve with --list flag not interactive", 
-  resolve_list_non_interactive, 
+  "Resolve with --list flag not interactive",
+  resolve_list_non_interactive,
   "resolve --list should execute normally without interception"
 )
 
@@ -179,8 +179,8 @@ pcall(function()
   status_works = true
 end)
 assert_test(
-  "Non-interactive commands still work", 
-  status_works, 
+  "Non-interactive commands still work",
+  status_works,
   "Status command should still work normally"
 )
 
@@ -203,8 +203,8 @@ for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
 end
 
 assert_test(
-  "Desc alias detected as interactive", 
-  desc_interactive, 
+  "Desc alias detected as interactive",
+  desc_interactive,
   "Should detect 'desc' alias as interactive and create editor buffer"
 )
 

@@ -509,7 +509,9 @@ function M.commit_interactive(cmd_parts)
 end
 
 function M.split_interactive(cmd_parts) -- luacheck: ignore cmd_parts
-  vim.api.nvim_err_writeln("Interactive split requires diff editor integration (not yet implemented)")
+  vim.api.nvim_err_writeln(
+    "Interactive split requires diff editor integration (not yet implemented)"
+  )
   vim.api.nvim_echo({
     { "Alternative: Use ", "Normal" },
     { "jj split -i ", "String" },
@@ -518,7 +520,9 @@ function M.split_interactive(cmd_parts) -- luacheck: ignore cmd_parts
 end
 
 function M.diffedit_interactive(cmd_parts) -- luacheck: ignore cmd_parts
-  vim.api.nvim_err_writeln("Interactive diffedit requires diff editor integration (not yet implemented)")
+  vim.api.nvim_err_writeln(
+    "Interactive diffedit requires diff editor integration (not yet implemented)"
+  )
   vim.api.nvim_echo({
     { "Alternative: Use ", "Normal" },
     { "jj diffedit ", "String" },
@@ -527,7 +531,9 @@ function M.diffedit_interactive(cmd_parts) -- luacheck: ignore cmd_parts
 end
 
 function M.resolve_interactive(cmd_parts) -- luacheck: ignore cmd_parts
-  vim.api.nvim_err_writeln("Interactive resolve requires merge tool integration (not yet implemented)")
+  vim.api.nvim_err_writeln(
+    "Interactive resolve requires merge tool integration (not yet implemented)"
+  )
   vim.api.nvim_echo({
     { "Alternative: Use ", "Normal" },
     { "jj resolve ", "String" },

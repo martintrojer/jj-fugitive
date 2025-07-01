@@ -30,8 +30,8 @@ if main_module then
   describe_interactive_exists = type(main_module.describe_interactive) == "function"
 end
 assert_test(
-  "describe_interactive function exists", 
-  describe_interactive_exists, 
+  "describe_interactive function exists",
+  describe_interactive_exists,
   "describe_interactive should be a function"
 )
 
@@ -39,12 +39,10 @@ assert_test(
 local describe_buffer_created = false
 local describe_buffer = nil
 if main_module and main_module.describe_interactive then
-  local initial_buf_count = #vim.api.nvim_list_bufs()
-  
   pcall(function()
-    main_module.describe_interactive({"describe"})
+    main_module.describe_interactive({ "describe" })
   end)
-  
+
   -- Look for describe buffer
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_valid(bufnr) then
@@ -58,8 +56,8 @@ if main_module and main_module.describe_interactive then
   end
 end
 assert_test(
-  "describe_interactive creates buffer", 
-  describe_buffer_created, 
+  "describe_interactive creates buffer",
+  describe_buffer_created,
   "Should create a describe buffer"
 )
 
@@ -68,38 +66,34 @@ if describe_buffer then
   local buftype = vim.api.nvim_buf_get_option(describe_buffer, "buftype")
   local filetype = vim.api.nvim_buf_get_option(describe_buffer, "filetype")
   local modifiable = vim.api.nvim_buf_get_option(describe_buffer, "modifiable")
-  
+
   assert_test(
-    "Buffer has correct buftype", 
-    buftype == "acwrite", 
+    "Buffer has correct buftype",
+    buftype == "acwrite",
     "buftype should be 'acwrite', got: " .. buftype
   )
-  
+
   assert_test(
-    "Buffer has correct filetype", 
-    filetype == "gitcommit", 
+    "Buffer has correct filetype",
+    filetype == "gitcommit",
     "filetype should be 'gitcommit', got: " .. filetype
   )
-  
-  assert_test(
-    "Buffer is modifiable", 
-    modifiable == true, 
-    "Buffer should be modifiable for editing"
-  )
+
+  assert_test("Buffer is modifiable", modifiable == true, "Buffer should be modifiable for editing")
 end
 
 -- Test 5: Test buffer content includes help comments
 if describe_buffer then
   local lines = vim.api.nvim_buf_get_lines(describe_buffer, 0, -1, false)
   local content = table.concat(lines, "\n")
-  
+
   local has_help_comment = content:match("# Enter description for revision")
   local has_save_instruction = content:match("# Save to apply changes")
   local has_ignore_comment = content:match("# Lines starting with # are ignored")
-  
+
   assert_test(
-    "Buffer has help comments", 
-    has_help_comment and has_save_instruction and has_ignore_comment, 
+    "Buffer has help comments",
+    has_help_comment and has_save_instruction and has_ignore_comment,
     "Buffer should contain helpful comment lines"
   )
 end
@@ -108,14 +102,14 @@ end
 local describe_revision_success = false
 if main_module and main_module.describe_interactive then
   local success, err = pcall(function()
-    main_module.describe_interactive({"describe", "@"})
+    main_module.describe_interactive({ "describe", "@" })
   end)
   -- Even if it fails due to jj command issues, it shouldn't crash Lua
   describe_revision_success = success or (err and not err:match("attempt to"))
 end
 assert_test(
-  "describe_interactive works with revision argument", 
-  describe_revision_success, 
+  "describe_interactive works with revision argument",
+  describe_revision_success,
   "Should handle describe with revision argument without Lua errors"
 )
 
@@ -130,8 +124,8 @@ if describe_buffer then
   autocmd_set = #autocmds > 0
 end
 assert_test(
-  "BufWriteCmd autocmd is set", 
-  autocmd_set, 
+  "BufWriteCmd autocmd is set",
+  autocmd_set,
   "Should have BufWriteCmd autocmd for save functionality"
 )
 
@@ -140,8 +134,8 @@ if describe_buffer then
   local name = vim.api.nvim_buf_get_name(describe_buffer)
   local has_correct_name = name:match("jj%-describe%-@") ~= nil
   assert_test(
-    "Buffer has correct name format", 
-    has_correct_name, 
+    "Buffer has correct name format",
+    has_correct_name,
     "Buffer name should match 'jj-describe-@' pattern"
   )
 end
@@ -149,22 +143,17 @@ end
 -- Test 9: Test error handling for invalid revision
 local invalid_revision_handled = false
 if main_module and main_module.describe_interactive then
-  -- Count buffers before
-  local before_count = #vim.api.nvim_list_bufs()
-  
   pcall(function()
-    main_module.describe_interactive({"describe", "nonexistent-revision"})
+    main_module.describe_interactive({ "describe", "nonexistent-revision" })
   end)
-  
-  -- Should not create new buffer for invalid revision
-  local after_count = #vim.api.nvim_list_bufs()
+
   -- We can't easily test this without actually having an invalid revision
   -- So we'll just check that the function doesn't crash
   invalid_revision_handled = true
 end
 assert_test(
-  "Invalid revision handled gracefully", 
-  invalid_revision_handled, 
+  "Invalid revision handled gracefully",
+  invalid_revision_handled,
   "Should handle invalid revisions without crashing"
 )
 
@@ -172,14 +161,14 @@ assert_test(
 local multiple_revisions_handled = false
 if main_module and main_module.describe_interactive then
   local success, err = pcall(function()
-    main_module.describe_interactive({"describe", "@", "some-other-rev"})
+    main_module.describe_interactive({ "describe", "@", "some-other-rev" })
   end)
   -- Even if it fails due to jj command issues, it shouldn't crash Lua
   multiple_revisions_handled = success or (err and not err:match("attempt to"))
 end
 assert_test(
-  "Multiple revisions handled", 
-  multiple_revisions_handled, 
+  "Multiple revisions handled",
+  multiple_revisions_handled,
   "Should handle multiple revisions without Lua errors"
 )
 

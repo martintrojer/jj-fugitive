@@ -1,5 +1,7 @@
 #!/usr/bin/env -S nvim --headless -l
 
+-- luacheck: ignore 122
+
 -- Test remaining interactive command functionality (split, diffedit, resolve)
 vim.cmd("set rtp+=.")
 vim.cmd("runtime plugin/jj-fugitive.lua")
@@ -30,8 +32,8 @@ if main_module then
   split_interactive_exists = type(main_module.split_interactive) == "function"
 end
 assert_test(
-  "split_interactive function exists", 
-  split_interactive_exists, 
+  "split_interactive function exists",
+  split_interactive_exists,
   "split_interactive should be a function"
 )
 
@@ -41,8 +43,8 @@ if main_module then
   diffedit_interactive_exists = type(main_module.diffedit_interactive) == "function"
 end
 assert_test(
-  "diffedit_interactive function exists", 
-  diffedit_interactive_exists, 
+  "diffedit_interactive function exists",
+  diffedit_interactive_exists,
   "diffedit_interactive should be a function"
 )
 
@@ -52,8 +54,8 @@ if main_module then
   resolve_interactive_exists = type(main_module.resolve_interactive) == "function"
 end
 assert_test(
-  "resolve_interactive function exists", 
-  resolve_interactive_exists, 
+  "resolve_interactive function exists",
+  resolve_interactive_exists,
   "resolve_interactive should be a function"
 )
 
@@ -64,13 +66,13 @@ if main_module and main_module.split_interactive then
   -- Capture error message
   local original_err_writeln = vim.api.nvim_err_writeln
   local original_echo = vim.api.nvim_echo
-  
+
   vim.api.nvim_err_writeln = function(msg)
     if msg:match("Interactive split requires diff editor integration") then
       split_error_message = true
     end
   end
-  
+
   vim.api.nvim_echo = function(chunks, _, _)
     for _, chunk in ipairs(chunks) do
       if chunk[1]:match("jj split %-i") then
@@ -79,23 +81,23 @@ if main_module and main_module.split_interactive then
       end
     end
   end
-  
+
   pcall(function()
-    main_module.split_interactive({"split"})
+    main_module.split_interactive({ "split" })
   end)
-  
+
   -- Restore original functions
   vim.api.nvim_err_writeln = original_err_writeln
   vim.api.nvim_echo = original_echo
 end
 assert_test(
-  "split_interactive shows error message", 
-  split_error_message, 
+  "split_interactive shows error message",
+  split_error_message,
   "Should show helpful error message about diff editor integration"
 )
 assert_test(
-  "split_interactive shows alternative", 
-  split_echo_message, 
+  "split_interactive shows alternative",
+  split_echo_message,
   "Should show alternative terminal command"
 )
 
@@ -105,13 +107,13 @@ local diffedit_echo_message = false
 if main_module and main_module.diffedit_interactive then
   local original_err_writeln = vim.api.nvim_err_writeln
   local original_echo = vim.api.nvim_echo
-  
+
   vim.api.nvim_err_writeln = function(msg)
     if msg:match("Interactive diffedit requires diff editor integration") then
       diffedit_error_message = true
     end
   end
-  
+
   vim.api.nvim_echo = function(chunks, _, _)
     for _, chunk in ipairs(chunks) do
       if chunk[1]:match("jj diffedit") then
@@ -120,22 +122,22 @@ if main_module and main_module.diffedit_interactive then
       end
     end
   end
-  
+
   pcall(function()
-    main_module.diffedit_interactive({"diffedit"})
+    main_module.diffedit_interactive({ "diffedit" })
   end)
-  
+
   vim.api.nvim_err_writeln = original_err_writeln
   vim.api.nvim_echo = original_echo
 end
 assert_test(
-  "diffedit_interactive shows error message", 
-  diffedit_error_message, 
+  "diffedit_interactive shows error message",
+  diffedit_error_message,
   "Should show helpful error message about diff editor integration"
 )
 assert_test(
-  "diffedit_interactive shows alternative", 
-  diffedit_echo_message, 
+  "diffedit_interactive shows alternative",
+  diffedit_echo_message,
   "Should show alternative terminal command"
 )
 
@@ -145,13 +147,13 @@ local resolve_echo_message = false
 if main_module and main_module.resolve_interactive then
   local original_err_writeln = vim.api.nvim_err_writeln
   local original_echo = vim.api.nvim_echo
-  
+
   vim.api.nvim_err_writeln = function(msg)
     if msg:match("Interactive resolve requires merge tool integration") then
       resolve_error_message = true
     end
   end
-  
+
   vim.api.nvim_echo = function(chunks, _, _)
     for _, chunk in ipairs(chunks) do
       if chunk[1]:match("jj resolve") then
@@ -160,22 +162,22 @@ if main_module and main_module.resolve_interactive then
       end
     end
   end
-  
+
   pcall(function()
-    main_module.resolve_interactive({"resolve"})
+    main_module.resolve_interactive({ "resolve" })
   end)
-  
+
   vim.api.nvim_err_writeln = original_err_writeln
   vim.api.nvim_echo = original_echo
 end
 assert_test(
-  "resolve_interactive shows error message", 
-  resolve_error_message, 
+  "resolve_interactive shows error message",
+  resolve_error_message,
   "Should show helpful error message about merge tool integration"
 )
 assert_test(
-  "resolve_interactive shows alternative", 
-  resolve_echo_message, 
+  "resolve_interactive shows alternative",
+  resolve_echo_message,
   "Should show alternative terminal command"
 )
 
@@ -183,13 +185,13 @@ assert_test(
 local split_with_args_handled = false
 if main_module and main_module.split_interactive then
   pcall(function()
-    main_module.split_interactive({"split", "-r", "@"})
+    main_module.split_interactive({ "split", "-r", "@" })
     split_with_args_handled = true
   end)
 end
 assert_test(
-  "split_interactive handles arguments", 
-  split_with_args_handled, 
+  "split_interactive handles arguments",
+  split_with_args_handled,
   "Should handle split command with arguments without crashing"
 )
 
@@ -197,13 +199,13 @@ assert_test(
 local diffedit_with_args_handled = false
 if main_module and main_module.diffedit_interactive then
   pcall(function()
-    main_module.diffedit_interactive({"diffedit", "-r", "@"})
+    main_module.diffedit_interactive({ "diffedit", "-r", "@" })
     diffedit_with_args_handled = true
   end)
 end
 assert_test(
-  "diffedit_interactive handles arguments", 
-  diffedit_with_args_handled, 
+  "diffedit_interactive handles arguments",
+  diffedit_with_args_handled,
   "Should handle diffedit command with arguments without crashing"
 )
 
@@ -211,34 +213,33 @@ assert_test(
 local resolve_with_args_handled = false
 if main_module and main_module.resolve_interactive then
   pcall(function()
-    main_module.resolve_interactive({"resolve", "file.txt"})
+    main_module.resolve_interactive({ "resolve", "file.txt" })
     resolve_with_args_handled = true
   end)
 end
 assert_test(
-  "resolve_interactive handles arguments", 
-  resolve_with_args_handled, 
+  "resolve_interactive handles arguments",
+  resolve_with_args_handled,
   "Should handle resolve command with arguments without crashing"
 )
 
 -- Test 11: Test that functions don't create any buffers
-local no_buffers_created = true
 local initial_buf_count = #vim.api.nvim_list_bufs()
 
 if main_module then
   pcall(function()
-    main_module.split_interactive({"split"})
-    main_module.diffedit_interactive({"diffedit"})
-    main_module.resolve_interactive({"resolve"})
+    main_module.split_interactive({ "split" })
+    main_module.diffedit_interactive({ "diffedit" })
+    main_module.resolve_interactive({ "resolve" })
   end)
 end
 
 local final_buf_count = #vim.api.nvim_list_bufs()
-no_buffers_created = final_buf_count == initial_buf_count
+local no_buffers_created = final_buf_count == initial_buf_count
 
 assert_test(
-  "No buffers created by error functions", 
-  no_buffers_created, 
+  "No buffers created by error functions",
+  no_buffers_created,
   "Error message functions should not create any buffers"
 )
 
@@ -249,7 +250,7 @@ if main_module then
   local split_has_consistent_format = false
   local diffedit_has_consistent_format = false
   local resolve_has_consistent_format = false
-  
+
   local original_err_writeln = vim.api.nvim_err_writeln
   vim.api.nvim_err_writeln = function(msg)
     if msg:match("split") and msg:match("not yet implemented") then
@@ -262,22 +263,22 @@ if main_module then
       resolve_has_consistent_format = true
     end
   end
-  
+
   pcall(function()
-    main_module.split_interactive({"split"})
-    main_module.diffedit_interactive({"diffedit"})
-    main_module.resolve_interactive({"resolve"})
+    main_module.split_interactive({ "split" })
+    main_module.diffedit_interactive({ "diffedit" })
+    main_module.resolve_interactive({ "resolve" })
   end)
-  
+
   vim.api.nvim_err_writeln = original_err_writeln
-  
-  consistent_error_format = split_has_consistent_format and 
-                           diffedit_has_consistent_format and 
-                           resolve_has_consistent_format
+
+  consistent_error_format = split_has_consistent_format
+    and diffedit_has_consistent_format
+    and resolve_has_consistent_format
 end
 assert_test(
-  "Error message format is consistent", 
-  consistent_error_format, 
+  "Error message format is consistent",
+  consistent_error_format,
   "All error messages should follow consistent format"
 )
 
