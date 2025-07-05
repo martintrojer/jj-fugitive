@@ -261,6 +261,10 @@ jj status
 # View history
 jj log
 
+# View history with more commits (jj log by default shows limited commits)
+jj log -r ..         # Show all commits from root to current
+jj log -r .. --limit 20   # Show last 20 commits from full history
+
 # Move between revisions
 jj next    # Move to child revision
 jj prev    # Move to parent revision
@@ -280,6 +284,12 @@ jj git push --bookmark main
 - Always update the `main` bookmark before pushing: `jj bookmark set main`
 - Use `--bookmark` flag to push specific branches to GitHub
 - The working copy becomes immutable after pushing, so jj creates a new commit on top
+
+#### jj Log Viewing
+- **IMPORTANT**: `jj log` by default shows only recent commits
+- **Always use `-r ..` to see more history**: `jj log -r ..` shows all commits from root
+- **Combine with --limit**: `jj log -r .. --limit 50` for controlled output
+- This is crucial for understanding the full repository history
 
 #### Development Workflow
 - **Always run tests before committing**: `./tests/run_tests.sh`
