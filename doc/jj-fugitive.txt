@@ -10,7 +10,8 @@ INTRODUCTION                                        *jj-fugitive-introduction*
 
 jj-fugitive provides a vim-fugitive-like interface for Jujutsu (jj), the
 version control system. It brings familiar vim-fugitive workflows to jj's
-revision-centric model.
+revision-centric model with enhanced features like multi-level completion,
+improved diff navigation, and native jj log integration.
 
 ==============================================================================
 COMMANDS                                                *jj-fugitive-commands*
@@ -19,38 +20,80 @@ COMMANDS                                                *jj-fugitive-commands*
 :J                      Show jj status in an interactive buffer. Equivalent
                         to |:J| |status|.
 
-:J {command}            Execute arbitrary jj command. Enhanced commands like
-                        |status|, |diff|, and |log| open in interactive
-                        buffers, while others execute directly.
+:J {command}            Execute arbitrary jj command with multi-level smart
+                        completion. Enhanced commands like |status|, |diff|,
+                        and |log| open in interactive buffers.
 
-:J status               Open interactive status buffer with file staging
-                        and diff capabilities.
+:J status               Open interactive status buffer with improved diff
+                        navigation and file operations.
 
 :J diff [file]          Show diff for current file or specified file in
-                        enhanced diff view with native jj colorization.
+                        enhanced diff view with toggle functionality.
 
-:J log [options]        Show revision history in interactive log view.
-                        Supports jj log options like --limit and -r.
+:J log [options]        Show revision history in native jj log view with
+                        authentic formatting. Supports all jj log options.
 
+                                                                      *:JHelp*
+:JHelp [command]        Show contextual help for jj commands with inline
+                        documentation and usage examples.
+
+==============================================================================
+COMPLETION                                          *jj-fugitive-completion*
+
+jj-fugitive provides multi-level intelligent completion for the |:J| command:
+
+MULTI-LEVEL COMPLETION                           *jj-fugitive-multi-completion*
+
+Tab completion works at every nesting level:
+
+Level 1: Commands
+    :J <Tab>                Shows all jj commands (status, log, commit, etc.)
+
+Level 2: Subcommands  
+    :J git <Tab>            Shows git subcommands (push, fetch, pull, etc.)
+    :J bookmark <Tab>       Shows bookmark subcommands (list, create, etc.)
+
+Level 3: Flags
+    :J git push <Tab>       Shows git push flags (--bookmark, --branch, etc.)
+    :J bookmark create <Tab> Shows bookmark create flags (--revision, etc.)
+
+COMPLETION FEATURES                             *jj-fugitive-completion-features*
+
+- Context-aware suggestions for bookmarks, files, and revisions
+- Intelligent filtering and partial matching
+- Help integration with flag descriptions
+- Fallback mechanisms for robust operation across environments
 
 ==============================================================================
 STATUS BUFFER                                          *jj-fugitive-status*
 
-The status buffer (|:J| or |:J| |status|) provides an interactive interface
-for managing your working copy changes.
+The status buffer (|:J| or |:J| |status|) provides an enhanced interactive
+interface for managing your working copy changes with improved diff navigation.
 
 MAPPINGS                                            *jj-fugitive-status-maps*
 
-File Operations:
-<CR>                    Open file under cursor
-o                       Open file in horizontal split
-D                       Show diff for file under cursor
-dv                      Show vertical diff split for file under cursor  
-ds                      Show horizontal diff split for file under cursor
+File Operations (IMPROVED):
+<CR>                    Show diff for file (vim-fugitive standard)
+o                       Open file in editor  
+s                       Open file in horizontal split
+v                       Open file in vertical split
+t                       Open file in new tab
 
-jj Operations:
+Diff Operations:
+d                       Show unified diff for file
+D                       Show side-by-side diff for file
+<Tab>                   Toggle between unified/side-by-side diff views
+
+jj File Operations:
+r                       Restore file from parent revision (jj restore)
+a                       Absorb changes into mutable ancestors (jj absorb)
+
+jj Workflow Operations:
 cc                      Create commit (prompts for commit message)
-new                     Create new change (jj new)
+ca                      Amend current commit description  
+ce                      Extend commit with current changes
+cn                      Create new commit after current
+new                     Create new working copy change (jj new)
 
 Navigation & Misc:
 l                       Show log view
@@ -59,12 +102,58 @@ q                       Close status window
 g?                      Show help
 
 ==============================================================================
+LOG BUFFER                                                *jj-fugitive-log*
+
+The log buffer shows revision history in native jj format with authentic
+symbols and interactive navigation capabilities.
+
+MAPPINGS                                               *jj-fugitive-log-maps*
+
+Commit Navigation:
+<CR>                    Show commit details and changes
+o                       Show commit details and changes (alternative)
+d                       Show unified diff for this commit
+D                       Show side-by-side diff for this commit
+<Tab>                   Toggle between diff and commit details
+
+Commit Operations:
+e                       Edit at this commit (jj edit)
+n                       Create new commit after this one (jj new)
+r                       Rebase current commit onto this one (jj rebase)
+A                       Abandon commit (jj abandon)
+s                       Squash commit into its parent (jj squash)
+S                       Split commit into two (jj split)
+y                       Duplicate commit (jj duplicate)
+
+View Operations:
+=, +                    Expand log view (show 50 more commits)
+P                       Navigate to parent revision
+N                       Navigate to next/child revision
+R                       Refresh log view
+q                       Close log view
+g?                      Show help
+
+VISUAL INDICATORS                                    *jj-fugitive-log-visual*
+
+@                       Current working copy
+◆                       Commit node
+○                       Empty or merge commit  
+│                       Vertical connection
+~                       Elided commits
+[Colors]                Native jj colorization preserved
+
+==============================================================================
 DIFF BUFFER                                              *jj-fugitive-diff*
 
-Diff buffers show file changes using jj's native colorization and support
-multiple diff formats.
+Diff buffers show file changes with enhanced navigation and toggle
+functionality. Both unified and side-by-side formats are supported.
 
 MAPPINGS                                              *jj-fugitive-diff-maps*
+
+View Toggle (NEW):
+<Tab>                   Toggle between unified and side-by-side view
+s                       Switch to side-by-side view
+u                       Switch to unified view
 
 Navigation:
 [c                      Jump to previous change
@@ -72,7 +161,6 @@ Navigation:
 
 Operations:
 q                       Close diff view
-s                       Switch to side-by-side view
 f                       Select diff format (git, color-words, etc.)
 r                       Refresh diff
 o                       Open file in editor
@@ -80,53 +168,92 @@ g?                      Show help
 
 DIFF FORMATS                                        *jj-fugitive-diff-formats*
 
-jj-fugitive supports multiple diff formats:
+jj-fugitive supports multiple diff formats through the 'f' key:
 - Git format (default) - Standard git-style diff output
-- Color words - Word-level highlighting of changes
+- Color words - Word-level highlighting of changes  
 - Default jj format - Native jj diff output
 - Context variations - Different amounts of context lines
 - Whitespace options - Ignore whitespace changes
 
-==============================================================================
-LOG BUFFER                                                *jj-fugitive-log*
+SIDE-BY-SIDE VIEW                                   *jj-fugitive-diff-sidebyside*
 
-The log buffer shows revision history in an interactive format with visual
-indicators for different types of commits.
-
-MAPPINGS                                               *jj-fugitive-log-maps*
-
-Commit Actions:
-<CR>                    Show commit details and changes
-o                       Show commit details and changes (alternative)
-e                       Edit at this commit (jj edit)
-n                       Create new commit after this one (jj new)
-r                       Rebase current commit onto this one (jj rebase)
-d                       Show diff for this commit
-
-View Actions:
-R                       Refresh log view
-q                       Close log view
-g?                      Show help
-
-VISUAL INDICATORS                                    *jj-fugitive-log-visual*
-
-👉                       Current working copy
-🔀                       Merge commit
-📍                       Commit with description
-⚪                       Commit without description
+Side-by-side diff view shows:
+- Left pane: Original file content (parent revision)
+- Right pane: Current file content (working copy)  
+- Native vim diff highlighting and navigation
+- Synchronized scrolling between panes
 
 ==============================================================================
-COMPLETION                                          *jj-fugitive-completion*
+ENHANCED FEATURES                                    *jj-fugitive-enhanced*
 
-jj-fugitive provides intelligent command completion for the |:J| command:
+IMPROVED DIFF NAVIGATION                          *jj-fugitive-diff-navigation*
 
-- Command names completion (status, diff, log, etc.)
-- Flag completion with descriptions extracted from jj --help
-- Context-aware suggestions (bookmarks, files, etc.)
-- Inline help display with |:JHelp| and |:JHelpPopup|
+Major improvements to diff access and navigation:
 
-Tab completion works in the command line, and help can be displayed
-contextually during command input.
+1. Status Buffer Changes:
+   - <CR> now shows diff (vim-fugitive standard, was: open file)
+   - Logical file opening keys: o=open, s=split, v=vsplit, t=tab
+   - Simplified diff keys: d=unified, D=side-by-side (was: dv, ds, =)
+   - Universal Tab key toggles between diff views
+
+2. Log Buffer Changes:
+   - d=diff, D=side-by-side diff for commits
+   - Tab toggles between diff and commit details
+   - Enhanced commit operations with proper keybindings
+
+3. Diff Buffer Changes:
+   - Tab toggles between unified/side-by-side views
+   - Quick access: s=side-by-side, u=unified
+   - Improved navigation and format selection
+
+NATIVE JJ INTEGRATION                              *jj-fugitive-native*
+
+jj-fugitive preserves authentic jj behavior:
+
+- Native log formatting with original symbols (@, ◆, ○, │, ~)
+- ANSI color processing maintains jj's colorization
+- jj-specific operations: restore, absorb, squash, abandon
+- Change-centric workflow (no staging area like git)
+- Repository detection from any subdirectory
+
+MULTI-LEVEL COMPLETION                            *jj-fugitive-completion-detail*
+
+Advanced completion system supports:
+
+- Command completion at every nesting level
+- Subcommand discovery (git, bookmark, config, etc.)
+- Flag completion with help descriptions
+- Partial matching and intelligent filtering
+- Robust fallback mechanisms for CI/different environments
+
+==============================================================================
+WORKFLOW EXAMPLES                                    *jj-fugitive-workflows*
+
+BASIC STATUS WORKFLOW                              *jj-fugitive-workflow-status*
+
+    :J                  " Open status view
+    <CR>                " Show diff for file under cursor (NEW!)
+    d                   " Show unified diff
+    D                   " Show side-by-side diff  
+    <Tab>               " Toggle between diff views
+    cc                  " Commit changes
+
+ENHANCED LOG EXPLORATION                           *jj-fugitive-workflow-log*
+
+    :J log              " Open native jj log view
+    <CR>                " Show commit details
+    d                   " Show commit diff
+    <Tab>               " Toggle diff/details
+    =                   " Expand view (more commits)
+    e                   " Edit at commit
+
+ADVANCED COMPLETION                               *jj-fugitive-workflow-completion*
+
+    :J <Tab>            " See all commands
+    :J git <Tab>        " See git subcommands  
+    :J git push <Tab>   " See push flags
+    :J bookmark <Tab>   " See bookmark subcommands
+    :J log -T <Tab>     " See template options
 
 ==============================================================================
 CONFIGURATION                                      *jj-fugitive-configuration*
@@ -136,7 +263,7 @@ automatically detects jj repositories and adapts to your workflow.
 
 REQUIREMENTS                                        *jj-fugitive-requirements*
 
-- Neovim with Lua support
+- Neovim 0.8+ with Lua support
 - jj CLI tool installed and accessible in PATH
 - A jj repository (initialized with `jj init` or `jj git clone`)
 
@@ -145,40 +272,21 @@ INTEGRATION                                          *jj-fugitive-integration*
 
 VIM-FUGITIVE COMPATIBILITY                         *jj-fugitive-vim-fugitive*
 
-jj-fugitive follows vim-fugitive conventions for familiar workflows:
+jj-fugitive follows vim-fugitive conventions with jj adaptations:
 
-- Status buffer mappings (R for reload, D for diff, etc.)
-- Universal g? help key across all buffers
-- File operations using <CR>, o for opening files
+- Status buffer: <CR> shows diff, vim-fugitive standard keybindings
+- Universal g? help key across all buffers  
 - Diff navigation with [c and ]c
 - Buffer-local keybindings for context-sensitive operations
+- Familiar file operations (o, s, v, t for open, split, vsplit, tab)
 
-REPOSITORY DETECTION                               *jj-fugitive-repository*
+JJ-SPECIFIC ENHANCEMENTS                           *jj-fugitive-jj-specific*
 
-jj-fugitive automatically detects jj repositories by walking up the directory
-tree from the current buffer's location, looking for .jj directories. Commands
-are executed from the repository root for consistency.
-
-==============================================================================
-EXAMPLES                                                *jj-fugitive-examples*
-
-Basic Workflow:
-    :J                  " Open status view
-    " Navigate to a file, press D to see diff
-    " Press cc to commit changes
-    " Press l to view log
-
-Diff Exploration:
-    :J diff myfile.lua  " View diff for specific file
-    " Press f to try different diff formats
-    " Press s for side-by-side view
-    " Press [c and ]c to navigate changes
-
-Log Investigation:
-    :J log --limit 10   " View recent 10 commits
-    " Press <CR> on a commit to see details
-    " Press e to edit at that commit
-    " Press d to see commit diff
+- Change-centric workflow (no staging area)
+- Native jj commands: restore, absorb, squash, abandon, split, duplicate
+- Authentic jj log formatting and symbols
+- Multi-level command completion for jj's rich command structure
+- Repository detection works from any subdirectory
 
 ==============================================================================
 TROUBLESHOOTING                                  *jj-fugitive-troubleshooting*
@@ -192,29 +300,54 @@ Common Issues:
 Command not found:
     Verify jj is installed and in your PATH: `jj --version`
 
+Completion not working:
+    Ensure you're using :J command. Tab completion is context-aware and
+    may provide different results based on command structure.
+
 Keybindings not working:
     Ensure you're in a jj-fugitive buffer. Keybindings are buffer-local.
     Press g? in any jj-fugitive buffer to see available commands.
 
+Side-by-side diff error:
+    Ensure you have a specific file selected. Side-by-side diff requires
+    a file context to show original vs. current content.
+
 For more help:
     :JHelp              " General help
-    :JHelp <command>    " Help for specific command
+    :JHelp <command>    " Help for specific command  
     g?                  " Buffer-specific help
+
+==============================================================================
+TESTING                                                *jj-fugitive-testing*
+
+jj-fugitive includes comprehensive testing:
+
+- 29 test files covering all functionality
+- Unit tests for core components
+- Integration tests for cross-component functionality  
+- End-to-end workflow simulation
+- CI testing across different environments
+- Automated test discovery and execution
+
+Run tests with: ./tests/run_tests.sh
 
 ==============================================================================
 ABOUT                                                      *jj-fugitive-about*
 
 jj-fugitive brings the familiar vim-fugitive experience to Jujutsu, adapting
-the proven patterns to jj's unique revision-centric workflow. 
+proven patterns to jj's unique revision-centric workflow with modern
+enhancements.
 
 The plugin emphasizes:
-- Familiar vim-fugitive keybindings and patterns
-- Native jj output and colorization 
-- Interactive buffers for common operations
-- Contextual help and intelligent completion
+- Familiar vim-fugitive keybindings adapted for jj
+- Native jj output preservation and colorization
+- Interactive buffers for common operations  
+- Multi-level intelligent completion
+- Enhanced diff navigation and toggle functionality
+- Comprehensive testing and robust CI compatibility
 
-Homepage: https://github.com/your-repo/jj-fugitive.nvim
-Report bugs: https://github.com/your-repo/jj-fugitive.nvim/issues
+Homepage: https://github.com/martintrojer/jj-fugitive.nvim
+Report bugs: https://github.com/martintrojer/jj-fugitive.nvim/issues
 
 ==============================================================================
 vim:tw=78:et:ft=help:norl:

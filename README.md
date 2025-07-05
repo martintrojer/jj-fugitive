@@ -4,15 +4,15 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 
 ## Features
 
-- **Smart completion system** - Intelligent tab completion for all jj commands and flags
-- **Interactive status buffer** - vim-fugitive-style interface with keybindings
-- **Enhanced diff viewer** - Both unified and side-by-side diff formats with visual improvements
-- **Interactive log view** - Enhanced log browser with commit operations (edit, new, rebase)
+- **Multi-level smart completion** - Intelligent tab completion for nested jj commands (`:J git <Tab>`, `:J bookmark <Tab>`)
+- **Improved diff navigation** - Intuitive keybindings with vim-fugitive compatibility (Enter shows diff, Tab toggles views)
+- **Enhanced diff viewer** - Both unified and side-by-side diff formats with seamless toggle functionality
+- **Interactive status buffer** - vim-fugitive-style interface with logical file operations (o=open, s=split, v=vsplit, t=tab)
+- **Native jj log view** - Authentic jj formatting with symbols (@, ◆, ○, │, ~) and interactive navigation
 - **Repository-aware commands** - Works seamlessly from any subdirectory within a jj repository
-- **Seamless jj integration** - Direct access to all jj functionality
-- **Familiar command interface** - Inspired by vim-fugitive for easy adoption
+- **Seamless jj integration** - Direct access to all jj functionality with modern syntax support
+- **ANSI color processing** - Preserves authentic jj colorization across all views
 - **Auto-refresh** - Status buffer updates automatically after state changes
-- **Comprehensive testing** - Thoroughly tested functionality with extensive test suite
 
 ## Requirements
 
@@ -62,61 +62,83 @@ jj git clone https://github.com/martintrojer/jj-fugitive.nvim ~/.local/share/nvi
 
 ## Usage Examples
 
-### The `:J` Command with Smart Completion
+### Multi-Level Smart Completion
 
-The `:J` command provides intelligent tab completion for all jj operations:
+The `:J` command provides intelligent tab completion at every nesting level:
 
 ```vim
 " Show status (default)
 :J
 
-" Smart completion - press space or tab to see available commands
-:J <space>          " → Shows: abandon, absorb, bookmark, commit, diff, log, status...
-:J s<tab>           " → Shows: show, squash, status...
-:J status <space>   " → Shows: --help, --repository, --at-operation...
-:J commit --<tab>   " → Shows: --message, --author, --help...
+" Level 1: Commands
+:J <space>                " → Shows: abandon, absorb, bookmark, commit, diff, log, status...
+:J s<tab>                 " → Shows: show, squash, status...
+
+" Level 2: Subcommands
+:J git <tab>              " → Shows: push, fetch, pull, clone, remote...
+:J bookmark <tab>         " → Shows: list, create, delete, set, move...
+
+" Level 3: Flags
+:J git push <tab>         " → Shows: --bookmark, --branch, --help...
+:J bookmark create <tab>  " → Shows: --revision, --help...
 
 " Run any jj command with full argument support
 :J log -T compact
 :J commit -m "Fix bug"
 :J new -m "Start feature"
-:J bookmark set main
-:J abandon
+:J git push --bookmark main
+:J bookmark create feature --revision @
 ```
 
-### Interactive Status Buffer
+### Interactive Status Buffer (Improved!)
 
 ```vim
 " Open interactive status buffer
 :J
 :J status
 
-" Keybindings in status buffer:
-" r        - Reload status
+" Enhanced keybindings in status buffer:
+" <CR>     - Show diff for file (NEW: vim-fugitive standard)
+" o        - Open file in editor
+" s        - Open file in horizontal split
+" v        - Open file in vertical split
+" t        - Open file in new tab
+" d        - Show unified diff for file
+" D        - Show side-by-side diff for file
+" Tab      - Toggle between unified/side-by-side diff
+" r        - Restore file from parent revision (jj restore)
+" a        - Absorb changes into mutable ancestors (jj absorb)
 " cc       - Commit with message
-" new      - Create new change
-" dd       - Show diff for file under cursor
-" o        - Open file under cursor
-" q / gq   - Close status buffer
+" ca       - Amend current commit description
+" l        - Show log view
+" R        - Reload status
+" q        - Close status buffer
+" g?       - Show help
 ```
 
-### Interactive Log View
+### Native jj Log View
 
 ```vim
-" Show interactive log with enhanced formatting
+" Show interactive log with authentic jj formatting
 :J log
 
-" In log buffer:
-" Enter/o  - Show commit details
-" e        - Edit at commit (jj edit)
+" In log buffer (preserves native jj symbols: @, ◆, ○, │, ~):
+" <CR>/o   - Show commit details and changes
+" d        - Show unified diff for this commit
+" D        - Show side-by-side diff for this commit
+" Tab      - Toggle between diff and commit details
+" e        - Edit at this commit (jj edit)
 " n        - Create new commit after this one (jj new)
 " r        - Rebase current commit onto this one (jj rebase)
-" d        - Show diff for commit
+" A        - Abandon commit (jj abandon)
+" s        - Squash commit into its parent (jj squash)
+" =, +     - Expand log view (show 50 more commits)
+" R        - Refresh log view
 " q        - Close log view
-" ?        - Show detailed help
+" g?       - Show help
 ```
 
-### Enhanced Diff Viewer
+### Enhanced Diff Viewer with Toggle Functionality
 
 ```vim
 " Show diff for current buffer
@@ -126,18 +148,24 @@ The `:J` command provides intelligent tab completion for all jj operations:
 :J diff src/main.rs
 
 " In diff buffer:
-" s        - Toggle between unified and side-by-side view
-" q        - Close diff buffer
+" Tab      - Toggle between unified and side-by-side view
+" s        - Switch to side-by-side view
+" u        - Switch to unified view
+" f        - Select diff format (git, color-words, etc.)
+" [c       - Previous change
+" ]c       - Next change
+" r        - Refresh diff
 " o        - Open file in editor
-" ?        - Show help
+" q        - Close diff buffer
+" g?       - Show help
 ```
 
 ## Documentation
 
 See the [doc/](doc/) folder for comprehensive documentation:
 
-- **[User Guide](doc/README.md)** - Complete usage documentation
-- **[Status Buffer](doc/jstatus.md)** - Detailed `:JStatus` guide with keybindings
+- **[User Guide](doc/README.md)** - Complete usage documentation with current features
+- **[Enhanced Diff](doc/enhanced-diff.md)** - Detailed diff improvements and migration guide
 - **[Development](doc/development.md)** - Setup, testing, and contribution guide
 - **[Vim Help](doc/jj-fugitive.txt)** - Integrated vim help (`:help jj-fugitive`)
 
