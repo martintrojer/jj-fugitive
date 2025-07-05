@@ -1,0 +1,20 @@
+﻿2025-07-05T12:34:28.6530459Z ##[group]Run JohnnyMorganz/stylua-action@v4
+2025-07-05T12:34:28.6531720Z with:
+2025-07-05T12:34:28.6532881Z   token: ***
+2025-07-05T12:34:28.6533678Z   version: latest
+2025-07-05T12:34:28.6534533Z   args: --check .
+2025-07-05T12:34:28.6535568Z ##[endgroup]
+2025-07-05T12:34:29.3811146Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/cc9f4292-6b43-4488-ad3c-4472b7b41283
+2025-07-05T12:34:29.4847640Z [command]/usr/bin/chmod +x /home/runner/work/_temp/17231a94-cff7-4249-9335-0f43dfdc96fa/stylua
+2025-07-05T12:34:29.4891891Z [command]/home/runner/work/_temp/17231a94-cff7-4249-9335-0f43dfdc96fa/stylua --check .
+2025-07-05T12:34:29.5256940Z Diff in ./lua/jj-fugitive/diff.lua:
+2025-07-05T12:34:29.5259960Z 282 282  |   -- Get the original file content (before changes)
+2025-07-05T12:34:29.5260809Z 283 283  |   local main_module = require("jj-fugitive.init")
+2025-07-05T12:34:29.5261697Z 284 284  |   -- Use modern jj file show command for getting file content at specific revision
+2025-07-05T12:34:29.5262911Z 285      |-  local original_content = main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
+2025-07-05T12:34:29.5263845Z     285  |+  local original_content =
+2025-07-05T12:34:29.5264539Z     286  |+    main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
+2025-07-05T12:34:29.5265498Z 286 287  |   if not original_content then
+2025-07-05T12:34:29.5266134Z 287 288  |     -- File might be newly added, so original content is empty
+2025-07-05T12:34:29.5268069Z 288 289  |     original_content = ""
+2025-07-05T12:34:29.5909297Z ##[error]The process '/home/runner/work/_temp/17231a94-cff7-4249-9335-0f43dfdc96fa/stylua' failed with exit code 1

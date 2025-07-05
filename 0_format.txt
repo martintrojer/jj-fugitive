@@ -1,0 +1,139 @@
+﻿2025-07-05T12:34:27.0695893Z Current runner version: '2.325.0'
+2025-07-05T12:34:27.0724366Z ##[group]Runner Image Provisioner
+2025-07-05T12:34:27.0725453Z Hosted Compute Agent
+2025-07-05T12:34:27.0726031Z Version: 20250620.352
+2025-07-05T12:34:27.0726590Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-07-05T12:34:27.0727361Z Build Date: 2025-06-20T19:27:17Z
+2025-07-05T12:34:27.0727963Z ##[endgroup]
+2025-07-05T12:34:27.0728507Z ##[group]Operating System
+2025-07-05T12:34:27.0729155Z Ubuntu
+2025-07-05T12:34:27.0729645Z 24.04.2
+2025-07-05T12:34:27.0730103Z LTS
+2025-07-05T12:34:27.0731140Z ##[endgroup]
+2025-07-05T12:34:27.0732099Z ##[group]Runner Image
+2025-07-05T12:34:27.0732786Z Image: ubuntu-24.04
+2025-07-05T12:34:27.0733281Z Version: 20250622.1.0
+2025-07-05T12:34:27.0734358Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250622.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-05T12:34:27.0736170Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250622.1
+2025-07-05T12:34:27.0737214Z ##[endgroup]
+2025-07-05T12:34:27.0738310Z ##[group]GITHUB_TOKEN Permissions
+2025-07-05T12:34:27.0740526Z Contents: read
+2025-07-05T12:34:27.0741079Z Metadata: read
+2025-07-05T12:34:27.0741548Z Packages: read
+2025-07-05T12:34:27.0742128Z ##[endgroup]
+2025-07-05T12:34:27.0744211Z Secret source: Actions
+2025-07-05T12:34:27.0745169Z Prepare workflow directory
+2025-07-05T12:34:27.1082259Z Prepare all required actions
+2025-07-05T12:34:27.1121082Z Getting action download info
+2025-07-05T12:34:27.4045913Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-05T12:34:27.4047064Z Version: 4.2.2
+2025-07-05T12:34:27.4048039Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-05T12:34:27.4049222Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-05T12:34:27.4050052Z ##[endgroup]
+2025-07-05T12:34:27.4850239Z Download action repository 'JohnnyMorganz/stylua-action@v4' (SHA:479972f01e665acfcba96ada452c36608bdbbb5e)
+2025-07-05T12:34:27.8828882Z Complete job name: format
+2025-07-05T12:34:27.9584288Z ##[group]Run actions/checkout@v4
+2025-07-05T12:34:27.9585350Z with:
+2025-07-05T12:34:27.9585770Z   fetch-depth: 0
+2025-07-05T12:34:27.9586224Z   repository: martintrojer/jj-fugitive
+2025-07-05T12:34:27.9586903Z   token: ***
+2025-07-05T12:34:27.9587312Z   ssh-strict: true
+2025-07-05T12:34:27.9587720Z   ssh-user: git
+2025-07-05T12:34:27.9588144Z   persist-credentials: true
+2025-07-05T12:34:27.9588611Z   clean: true
+2025-07-05T12:34:27.9589031Z   sparse-checkout-cone-mode: true
+2025-07-05T12:34:27.9589519Z   fetch-tags: false
+2025-07-05T12:34:27.9589941Z   show-progress: true
+2025-07-05T12:34:27.9590353Z   lfs: false
+2025-07-05T12:34:27.9590740Z   submodules: false
+2025-07-05T12:34:27.9591154Z   set-safe-directory: true
+2025-07-05T12:34:27.9591993Z ##[endgroup]
+2025-07-05T12:34:28.0672807Z Syncing repository: martintrojer/jj-fugitive
+2025-07-05T12:34:28.0674851Z ##[group]Getting Git version info
+2025-07-05T12:34:28.0676272Z Working directory is '/home/runner/work/jj-fugitive/jj-fugitive'
+2025-07-05T12:34:28.0677823Z [command]/usr/bin/git version
+2025-07-05T12:34:28.0730450Z git version 2.49.0
+2025-07-05T12:34:28.0770901Z ##[endgroup]
+2025-07-05T12:34:28.0799462Z Temporarily overriding HOME='/home/runner/work/_temp/1bbad9c1-f255-4044-bfdd-b77d06a7a180' before making global git config changes
+2025-07-05T12:34:28.0801154Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-05T12:34:28.0807261Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:28.0848761Z Deleting the contents of '/home/runner/work/jj-fugitive/jj-fugitive'
+2025-07-05T12:34:28.0853138Z ##[group]Initializing the repository
+2025-07-05T12:34:28.0859551Z [command]/usr/bin/git init /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:28.0925712Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-05T12:34:28.0927377Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-05T12:34:28.0929244Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-05T12:34:28.0930337Z hint:
+2025-07-05T12:34:28.0930961Z hint: 	git config --global init.defaultBranch <name>
+2025-07-05T12:34:28.0931547Z hint:
+2025-07-05T12:34:28.0932099Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-05T12:34:28.0932992Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-05T12:34:28.0933682Z hint:
+2025-07-05T12:34:28.0934075Z hint: 	git branch -m <name>
+2025-07-05T12:34:28.0934826Z Initialized empty Git repository in /home/runner/work/jj-fugitive/jj-fugitive/.git/
+2025-07-05T12:34:28.0946567Z [command]/usr/bin/git remote add origin https://github.com/martintrojer/jj-fugitive
+2025-07-05T12:34:28.0982760Z ##[endgroup]
+2025-07-05T12:34:28.0983494Z ##[group]Disabling automatic garbage collection
+2025-07-05T12:34:28.0988927Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-05T12:34:28.1021837Z ##[endgroup]
+2025-07-05T12:34:28.1022498Z ##[group]Setting up auth
+2025-07-05T12:34:28.1031813Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-05T12:34:28.1067443Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-05T12:34:28.1370463Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-05T12:34:28.1401946Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-05T12:34:28.1626667Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-05T12:34:28.1661698Z ##[endgroup]
+2025-07-05T12:34:28.1662961Z ##[group]Fetching the repository
+2025-07-05T12:34:28.1680410Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2025-07-05T12:34:28.5963101Z From https://github.com/martintrojer/jj-fugitive
+2025-07-05T12:34:28.5965265Z  * [new branch]      fix-repository-detection -> origin/fix-repository-detection
+2025-07-05T12:34:28.5966803Z  * [new branch]      main       -> origin/main
+2025-07-05T12:34:28.6001310Z [command]/usr/bin/git branch --list --remote origin/main
+2025-07-05T12:34:28.6026026Z   origin/main
+2025-07-05T12:34:28.6035304Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2025-07-05T12:34:28.6056803Z 88615cf2a8d9018c87077c13d365a043e254e257
+2025-07-05T12:34:28.6063582Z ##[endgroup]
+2025-07-05T12:34:28.6065429Z ##[group]Determining the checkout info
+2025-07-05T12:34:28.6066951Z ##[endgroup]
+2025-07-05T12:34:28.6070458Z [command]/usr/bin/git sparse-checkout disable
+2025-07-05T12:34:28.6110927Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-05T12:34:28.6138919Z ##[group]Checking out the ref
+2025-07-05T12:34:28.6140669Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-07-05T12:34:28.6247213Z Switched to a new branch 'main'
+2025-07-05T12:34:28.6249284Z branch 'main' set up to track 'origin/main'.
+2025-07-05T12:34:28.6256236Z ##[endgroup]
+2025-07-05T12:34:28.6289915Z [command]/usr/bin/git log -1 --format=%H
+2025-07-05T12:34:28.6312381Z 88615cf2a8d9018c87077c13d365a043e254e257
+2025-07-05T12:34:28.6530479Z ##[group]Run JohnnyMorganz/stylua-action@v4
+2025-07-05T12:34:28.6531724Z with:
+2025-07-05T12:34:28.6532885Z   token: ***
+2025-07-05T12:34:28.6533681Z   version: latest
+2025-07-05T12:34:28.6534537Z   args: --check .
+2025-07-05T12:34:28.6535573Z ##[endgroup]
+2025-07-05T12:34:29.3811186Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/cc9f4292-6b43-4488-ad3c-4472b7b41283
+2025-07-05T12:34:29.4847699Z [command]/usr/bin/chmod +x /home/runner/work/_temp/17231a94-cff7-4249-9335-0f43dfdc96fa/stylua
+2025-07-05T12:34:29.4891917Z [command]/home/runner/work/_temp/17231a94-cff7-4249-9335-0f43dfdc96fa/stylua --check .
+2025-07-05T12:34:29.5257004Z Diff in ./lua/jj-fugitive/diff.lua:
+2025-07-05T12:34:29.5259983Z 282 282  |   -- Get the original file content (before changes)
+2025-07-05T12:34:29.5260821Z 283 283  |   local main_module = require("jj-fugitive.init")
+2025-07-05T12:34:29.5261722Z 284 284  |   -- Use modern jj file show command for getting file content at specific revision
+2025-07-05T12:34:29.5263024Z 285      |-  local original_content = main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
+2025-07-05T12:34:29.5263852Z     285  |+  local original_content =
+2025-07-05T12:34:29.5264565Z     286  |+    main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
+2025-07-05T12:34:29.5265507Z 286 287  |   if not original_content then
+2025-07-05T12:34:29.5266143Z 287 288  |     -- File might be newly added, so original content is empty
+2025-07-05T12:34:29.5268085Z 288 289  |     original_content = ""
+2025-07-05T12:34:29.5909357Z ##[error]The process '/home/runner/work/_temp/17231a94-cff7-4249-9335-0f43dfdc96fa/stylua' failed with exit code 1
+2025-07-05T12:34:29.6058872Z Post job cleanup.
+2025-07-05T12:34:29.6997932Z [command]/usr/bin/git version
+2025-07-05T12:34:29.7034235Z git version 2.49.0
+2025-07-05T12:34:29.7079904Z Temporarily overriding HOME='/home/runner/work/_temp/bf12d0e8-4a61-418b-a383-712d1beebd91' before making global git config changes
+2025-07-05T12:34:29.7081266Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-05T12:34:29.7086653Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:29.7131303Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-05T12:34:29.7164500Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-05T12:34:29.7388585Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-05T12:34:29.7409915Z http.https://github.com/.extraheader
+2025-07-05T12:34:29.7421872Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-05T12:34:29.7453906Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-05T12:34:29.7773853Z Cleaning up orphan processes

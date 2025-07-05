@@ -1,0 +1,42 @@
+﻿2025-07-05T12:34:29.6724503Z ##[group]Run # Initialize jj in the existing git repository (checkout already provides full history)
+2025-07-05T12:34:29.6725333Z [36;1m# Initialize jj in the existing git repository (checkout already provides full history)[0m
+2025-07-05T12:34:29.6725815Z [36;1mjj git init --colocate .[0m
+2025-07-05T12:34:29.6726077Z [36;1m[0m
+2025-07-05T12:34:29.6726349Z [36;1m# Create test files for comprehensive testing[0m
+2025-07-05T12:34:29.6726687Z [36;1mecho "test content" > test.txt[0m
+2025-07-05T12:34:29.6726984Z [36;1mecho "modified content" > test2.txt[0m
+2025-07-05T12:34:29.6727283Z [36;1mmkdir -p subdir[0m
+2025-07-05T12:34:29.6727553Z [36;1mecho "subdir content" > subdir/file.txt[0m
+2025-07-05T12:34:29.6727846Z [36;1m[0m
+2025-07-05T12:34:29.6728127Z [36;1m# In jj v0.15.1, files are automatically tracked, just commit them[0m
+2025-07-05T12:34:29.6728525Z [36;1mjj commit -m "Add test files for CI testing"[0m
+2025-07-05T12:34:29.6729062Z [36;1m[0m
+2025-07-05T12:34:29.6729276Z [36;1m# Verify setup[0m
+2025-07-05T12:34:29.6729567Z [36;1mecho "=== Repository Status ==="[0m
+2025-07-05T12:34:29.6729849Z [36;1mjj status[0m
+2025-07-05T12:34:29.6730069Z [36;1mecho "=== Log ==="[0m
+2025-07-05T12:34:29.6730317Z [36;1mjj log --limit 3[0m
+2025-07-05T12:34:29.6788170Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:34:29.6788452Z ##[endgroup]
+2025-07-05T12:34:29.7056093Z Done importing changes from the underlying Git repo.
+2025-07-05T12:34:29.7146546Z The following remote branches aren't associated with the existing local branches:
+2025-07-05T12:34:29.7147382Z   main@origin
+2025-07-05T12:34:29.7148019Z Hint: Run `jj branch track main@origin` to keep local branches updated on future pulls.
+2025-07-05T12:34:29.7150181Z Initialized repo in "."
+2025-07-05T12:34:29.7590159Z Working copy now at: rurywvyo fb910a6e (empty) (no description set)
+2025-07-05T12:34:29.7591131Z Parent commit      : nkvnytxq 89e0fab5 Add test files for CI testing
+2025-07-05T12:34:29.7609443Z Name and email not configured. Until configured, your commits will be created with the empty identity, and can't be pushed to remotes. To configure, run:
+2025-07-05T12:34:29.7610321Z   jj config set --user user.name "Some One"
+2025-07-05T12:34:29.7610710Z   jj config set --user user.email "someone@example.com"
+2025-07-05T12:34:29.7611095Z === Repository Status ===
+2025-07-05T12:34:29.7769584Z The working copy is clean
+2025-07-05T12:34:29.7781438Z Working copy : rurywvyo fb910a6e (empty) (no description set)
+2025-07-05T12:34:29.7782266Z Parent commit: nkvnytxq 89e0fab5 Add test files for CI testing
+2025-07-05T12:34:29.7795314Z === Log ===
+2025-07-05T12:34:29.7977703Z @  rurywvyo (no email set) 2025-07-05 12:34:29.000 +00:00 fb910a6e
+2025-07-05T12:34:29.7978436Z │  (empty) (no description set)
+2025-07-05T12:34:29.7979141Z ◉  nkvnytxq (no email set) 2025-07-05 12:34:29.000 +00:00 HEAD@git 89e0fab5
+2025-07-05T12:34:29.7979606Z │  Add test files for CI testing
+2025-07-05T12:34:29.7980131Z ◉  lpvsxpvs martin.trojer@gmail.com 2025-07-05 13:34:15.000 +01:00 main main@origin 88615cf2
+2025-07-05T12:34:29.7980764Z │  Fix side-by-side diff view error with modern jj syntax
+2025-07-05T12:34:29.7981113Z ~

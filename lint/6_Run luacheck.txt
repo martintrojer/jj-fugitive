@@ -1,0 +1,49 @@
+﻿2025-07-05T12:35:11.7607837Z ##[group]Run luacheck .
+2025-07-05T12:35:11.7608359Z [36;1mluacheck .[0m
+2025-07-05T12:35:11.7664017Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:35:11.7664249Z env:
+2025-07-05T12:35:11.7664434Z   MSYS: winsymlinks:nativestrict
+2025-07-05T12:35:11.7665381Z   LUA_PATH: ;;/home/runner/.luarocks/share/lua/5.1/?.lua;/home/runner/.luarocks/share/lua/5.1/?/init.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?/init.lua
+2025-07-05T12:35:11.7666599Z   LUA_CPATH: ;;/home/runner/.luarocks/lib/lua/5.1/?.so;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/lib/lua/5.1/?.so
+2025-07-05T12:35:11.7667094Z ##[endgroup]
+2025-07-05T12:35:12.2157147Z Checking lua/jj-fugitive/ansi.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2158160Z Checking lua/jj-fugitive/completion.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2158885Z Checking lua/jj-fugitive/diff.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2159671Z Checking lua/jj-fugitive/init.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2160346Z Checking lua/jj-fugitive/log.lua                  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2160998Z Checking lua/jj-fugitive/status.lua               [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2161690Z Checking plugin/jj-fugitive.lua                   [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2162403Z Checking tests/demo_enhanced_diff.lua             [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2163112Z Checking tests/demo_log_view.lua                  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2163848Z Checking tests/manual_test.lua                    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2164550Z Checking tests/test_ci_debug.lua                  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2165286Z Checking tests/test_color_rendering.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2166028Z Checking tests/test_commit_extraction.lua         [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2166781Z Checking tests/test_commit_interactive.lua        [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2167503Z Checking tests/test_completion_enhancement.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2168397Z Checking tests/test_completion_functionality.lua  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2169164Z Checking tests/test_describe_interactive.lua      [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2169904Z Checking tests/test_documentation.lua             [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2170636Z Checking tests/test_format_consistency.lua        [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2171348Z Checking tests/test_git_format_consistency.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2172024Z Checking tests/test_improved_diff.lua             [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2172772Z Checking tests/test_improved_diff_navigation.lua  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2173551Z Checking tests/test_interactive_command_detection.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2174346Z Checking tests/test_log_color_rendering.lua       [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2175103Z Checking tests/test_log_enter_functionality.lua   [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2175860Z Checking tests/test_log_expand_functionality.lua  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2176577Z Checking tests/test_log_functionality.lua         [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2177041Z Checking tests/test_multi_level_completion.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2177477Z Checking tests/test_native_log_view.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2177939Z Checking tests/test_remaining_interactive_commands.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2178627Z Checking tests/test_repository_detection.lua      [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2179078Z Checking tests/test_simple_ci.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2180045Z Checking tests/test_status_enter_l_keys.lua       [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2181086Z Checking tests/test_status_features.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2181803Z Checking tests/test_status_functionality.lua      [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2182268Z Checking tests/test_status_keybindings_simple.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2182733Z Checking tests/test_unified_ansi_functionality.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2200975Z Checking tests/test_user_experience_simulation.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2201871Z Checking tests/test_vim_fugitive_alignment.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2202175Z 
+2025-07-05T12:35:12.2202409Z Total: [0m[0m[1m0[0m warnings / [0m[0m[1m0[0m errors in 39 files

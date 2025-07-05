@@ -1,0 +1,614 @@
+﻿2025-07-05T12:34:26.3144274Z Current runner version: '2.325.0'
+2025-07-05T12:34:26.3178358Z ##[group]Runner Image Provisioner
+2025-07-05T12:34:26.3179767Z Hosted Compute Agent
+2025-07-05T12:34:26.3180657Z Version: 20250620.352
+2025-07-05T12:34:26.3181570Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-07-05T12:34:26.3182905Z Build Date: 2025-06-20T19:27:17Z
+2025-07-05T12:34:26.3183800Z ##[endgroup]
+2025-07-05T12:34:26.3184645Z ##[group]Operating System
+2025-07-05T12:34:26.3185684Z Ubuntu
+2025-07-05T12:34:26.3186550Z 24.04.2
+2025-07-05T12:34:26.3187216Z LTS
+2025-07-05T12:34:26.3188428Z ##[endgroup]
+2025-07-05T12:34:26.3189320Z ##[group]Runner Image
+2025-07-05T12:34:26.3190196Z Image: ubuntu-24.04
+2025-07-05T12:34:26.3191132Z Version: 20250622.1.0
+2025-07-05T12:34:26.3192865Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250622.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-05T12:34:26.3195805Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250622.1
+2025-07-05T12:34:26.3197509Z ##[endgroup]
+2025-07-05T12:34:26.3199703Z ##[group]GITHUB_TOKEN Permissions
+2025-07-05T12:34:26.3202298Z Contents: read
+2025-07-05T12:34:26.3203264Z Metadata: read
+2025-07-05T12:34:26.3204146Z Packages: read
+2025-07-05T12:34:26.3204907Z ##[endgroup]
+2025-07-05T12:34:26.3208217Z Secret source: Actions
+2025-07-05T12:34:26.3209359Z Prepare workflow directory
+2025-07-05T12:34:26.3690260Z Prepare all required actions
+2025-07-05T12:34:26.3746774Z Getting action download info
+2025-07-05T12:34:26.6068677Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-05T12:34:26.6069884Z Version: 4.2.2
+2025-07-05T12:34:26.6070934Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-05T12:34:26.6072057Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-05T12:34:26.6072877Z ##[endgroup]
+2025-07-05T12:34:26.6884527Z Download action repository 'leafo/gh-actions-lua@v10' (SHA:35bcb06abec04ec87df82e08caa84d545348536e)
+2025-07-05T12:34:27.4183850Z Download action repository 'leafo/gh-actions-luarocks@v4' (SHA:e65774a6386cb4f24e293dca7fc4ff89165b64c5)
+2025-07-05T12:34:27.7715001Z Complete job name: lint
+2025-07-05T12:34:27.8515270Z ##[group]Run actions/checkout@v4
+2025-07-05T12:34:27.8516580Z with:
+2025-07-05T12:34:27.8517314Z   fetch-depth: 0
+2025-07-05T12:34:27.8518512Z   repository: martintrojer/jj-fugitive
+2025-07-05T12:34:27.8519889Z   token: ***
+2025-07-05T12:34:27.8520641Z   ssh-strict: true
+2025-07-05T12:34:27.8521430Z   ssh-user: git
+2025-07-05T12:34:27.8522249Z   persist-credentials: true
+2025-07-05T12:34:27.8523149Z   clean: true
+2025-07-05T12:34:27.8523956Z   sparse-checkout-cone-mode: true
+2025-07-05T12:34:27.8524950Z   fetch-tags: false
+2025-07-05T12:34:27.8525769Z   show-progress: true
+2025-07-05T12:34:27.8526589Z   lfs: false
+2025-07-05T12:34:27.8527351Z   submodules: false
+2025-07-05T12:34:27.8528421Z   set-safe-directory: true
+2025-07-05T12:34:27.8529654Z ##[endgroup]
+2025-07-05T12:34:27.9680362Z Syncing repository: martintrojer/jj-fugitive
+2025-07-05T12:34:27.9683301Z ##[group]Getting Git version info
+2025-07-05T12:34:27.9684816Z Working directory is '/home/runner/work/jj-fugitive/jj-fugitive'
+2025-07-05T12:34:27.9686927Z [command]/usr/bin/git version
+2025-07-05T12:34:27.9704029Z git version 2.49.0
+2025-07-05T12:34:27.9732108Z ##[endgroup]
+2025-07-05T12:34:27.9755677Z Temporarily overriding HOME='/home/runner/work/_temp/f29a3ab2-87db-445b-bd91-05cbe647e8a3' before making global git config changes
+2025-07-05T12:34:27.9761287Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-05T12:34:27.9765344Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:27.9798316Z Deleting the contents of '/home/runner/work/jj-fugitive/jj-fugitive'
+2025-07-05T12:34:27.9802260Z ##[group]Initializing the repository
+2025-07-05T12:34:27.9806967Z [command]/usr/bin/git init /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:27.9864398Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-05T12:34:27.9867087Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-05T12:34:27.9869659Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-05T12:34:27.9871461Z hint:
+2025-07-05T12:34:27.9872711Z hint: 	git config --global init.defaultBranch <name>
+2025-07-05T12:34:27.9874295Z hint:
+2025-07-05T12:34:27.9875647Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-05T12:34:27.9878470Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-05T12:34:27.9880024Z hint:
+2025-07-05T12:34:27.9880965Z hint: 	git branch -m <name>
+2025-07-05T12:34:27.9882955Z Initialized empty Git repository in /home/runner/work/jj-fugitive/jj-fugitive/.git/
+2025-07-05T12:34:27.9888467Z [command]/usr/bin/git remote add origin https://github.com/martintrojer/jj-fugitive
+2025-07-05T12:34:27.9921489Z ##[endgroup]
+2025-07-05T12:34:27.9924267Z ##[group]Disabling automatic garbage collection
+2025-07-05T12:34:27.9925757Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-05T12:34:27.9953500Z ##[endgroup]
+2025-07-05T12:34:27.9955018Z ##[group]Setting up auth
+2025-07-05T12:34:27.9959912Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-05T12:34:27.9991691Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-05T12:34:28.0316500Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-05T12:34:28.0349775Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-05T12:34:28.0568319Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-05T12:34:28.0604652Z ##[endgroup]
+2025-07-05T12:34:28.0607254Z ##[group]Fetching the repository
+2025-07-05T12:34:28.0625266Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2025-07-05T12:34:28.3727683Z From https://github.com/martintrojer/jj-fugitive
+2025-07-05T12:34:28.3730670Z  * [new branch]      fix-repository-detection -> origin/fix-repository-detection
+2025-07-05T12:34:28.3731713Z  * [new branch]      main       -> origin/main
+2025-07-05T12:34:28.3766074Z [command]/usr/bin/git branch --list --remote origin/main
+2025-07-05T12:34:28.3791204Z   origin/main
+2025-07-05T12:34:28.3800997Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2025-07-05T12:34:28.3821682Z 88615cf2a8d9018c87077c13d365a043e254e257
+2025-07-05T12:34:28.3827784Z ##[endgroup]
+2025-07-05T12:34:28.3829167Z ##[group]Determining the checkout info
+2025-07-05T12:34:28.3830348Z ##[endgroup]
+2025-07-05T12:34:28.3834453Z [command]/usr/bin/git sparse-checkout disable
+2025-07-05T12:34:28.3872219Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-05T12:34:28.3898651Z ##[group]Checking out the ref
+2025-07-05T12:34:28.3903046Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-07-05T12:34:28.3980939Z Switched to a new branch 'main'
+2025-07-05T12:34:28.3984055Z branch 'main' set up to track 'origin/main'.
+2025-07-05T12:34:28.3990619Z ##[endgroup]
+2025-07-05T12:34:28.4023236Z [command]/usr/bin/git log -1 --format=%H
+2025-07-05T12:34:28.4044702Z 88615cf2a8d9018c87077c13d365a043e254e257
+2025-07-05T12:34:28.4223964Z ##[group]Run leafo/gh-actions-lua@v10
+2025-07-05T12:34:28.4224374Z with:
+2025-07-05T12:34:28.4224712Z   luaVersion: 5.1
+2025-07-05T12:34:28.4225082Z   buildCache: true
+2025-07-05T12:34:28.4225378Z ##[endgroup]
+2025-07-05T12:34:38.7592766Z ##[warning]Failed to restore: getCacheEntry failed: Cache service responded with 503
+2025-07-05T12:34:38.7606585Z ##[notice]gh-actions-lua: No cache available, clean build
+2025-07-05T12:34:39.9090683Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/.lua-build -f /home/runner/work/_temp/6f032118-e5bd-42af-9d65-0ddbd485c205
+2025-07-05T12:34:39.9197583Z [command]/usr/bin/sudo apt-get install -q libreadline-dev libncurses-dev
+2025-07-05T12:34:40.7337412Z Reading package lists...
+2025-07-05T12:34:40.8994355Z Building dependency tree...
+2025-07-05T12:34:40.9006550Z Reading state information...
+2025-07-05T12:34:41.0389351Z libncurses-dev is already the newest version (6.4+20240113-1ubuntu2).
+2025-07-05T12:34:41.0390109Z libncurses-dev set to manually installed.
+2025-07-05T12:34:41.0390733Z Suggested packages:
+2025-07-05T12:34:41.0391099Z   readline-doc
+2025-07-05T12:34:41.0538349Z The following NEW packages will be installed:
+2025-07-05T12:34:41.0541762Z   libreadline-dev
+2025-07-05T12:34:41.0782785Z 0 upgraded, 1 newly installed, 0 to remove and 21 not upgraded.
+2025-07-05T12:34:41.0783495Z Need to get 167 kB of archives.
+2025-07-05T12:34:41.0784058Z After this operation, 814 kB of additional disk space will be used.
+2025-07-05T12:34:41.0784743Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2025-07-05T12:34:41.1149584Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libreadline-dev amd64 8.2-4build1 [167 kB]
+2025-07-05T12:34:41.3695180Z Fetched 167 kB in 0s (3097 kB/s)
+2025-07-05T12:34:41.3915074Z Selecting previously unselected package libreadline-dev:amd64.
+2025-07-05T12:34:41.4184355Z (Reading database ... 
+2025-07-05T12:34:41.4186341Z (Reading database ... 5%
+2025-07-05T12:34:41.4186866Z (Reading database ... 10%
+2025-07-05T12:34:41.4187174Z (Reading database ... 15%
+2025-07-05T12:34:41.4187457Z (Reading database ... 20%
+2025-07-05T12:34:41.4187740Z (Reading database ... 25%
+2025-07-05T12:34:41.4188264Z (Reading database ... 30%
+2025-07-05T12:34:41.4188559Z (Reading database ... 35%
+2025-07-05T12:34:41.4188843Z (Reading database ... 40%
+2025-07-05T12:34:41.4189147Z (Reading database ... 45%
+2025-07-05T12:34:41.4189452Z (Reading database ... 50%
+2025-07-05T12:34:41.4279098Z (Reading database ... 55%
+2025-07-05T12:34:41.4569011Z (Reading database ... 60%
+2025-07-05T12:34:41.4806374Z (Reading database ... 65%
+2025-07-05T12:34:41.5087930Z (Reading database ... 70%
+2025-07-05T12:34:41.5333376Z (Reading database ... 75%
+2025-07-05T12:34:41.5739884Z (Reading database ... 80%
+2025-07-05T12:34:41.6210647Z (Reading database ... 85%
+2025-07-05T12:34:41.6555966Z (Reading database ... 90%
+2025-07-05T12:34:41.7121673Z (Reading database ... 95%
+2025-07-05T12:34:41.7122164Z (Reading database ... 100%
+2025-07-05T12:34:41.7122637Z (Reading database ... 219349 files and directories currently installed.)
+2025-07-05T12:34:41.7166158Z Preparing to unpack .../libreadline-dev_8.2-4build1_amd64.deb ...
+2025-07-05T12:34:41.7194719Z Unpacking libreadline-dev:amd64 (8.2-4build1) ...
+2025-07-05T12:34:41.7675227Z Setting up libreadline-dev:amd64 (8.2-4build1) ...
+2025-07-05T12:34:41.7708963Z Processing triggers for install-info (7.1-3build2) ...
+2025-07-05T12:34:42.5371293Z 
+2025-07-05T12:34:42.5372029Z Running kernel seems to be up-to-date.
+2025-07-05T12:34:42.5372412Z 
+2025-07-05T12:34:42.5372556Z Restarting services...
+2025-07-05T12:34:42.5440565Z 
+2025-07-05T12:34:42.5441305Z Service restarts being deferred:
+2025-07-05T12:34:42.5443207Z  systemctl restart hosted-compute-agent.service
+2025-07-05T12:34:42.5443590Z 
+2025-07-05T12:34:42.5443757Z No containers need to be restarted.
+2025-07-05T12:34:42.5444038Z 
+2025-07-05T12:34:42.5444557Z No user sessions are running outdated binaries.
+2025-07-05T12:34:42.5444883Z 
+2025-07-05T12:34:42.5445572Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2025-07-05T12:34:43.3672444Z [command]/usr/bin/make -j linux
+2025-07-05T12:34:43.4056219Z cd src && /usr/bin/make linux
+2025-07-05T12:34:43.4075745Z make[1]: Entering directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:43.4076617Z /usr/bin/make all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-Wl,-E -ldl -lreadline -lhistory -lncurses"
+2025-07-05T12:34:43.4096242Z make[2]: Entering directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:43.4096929Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lapi.o lapi.c
+2025-07-05T12:34:43.4102505Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lcode.o lcode.c
+2025-07-05T12:34:43.4108702Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldebug.o ldebug.c
+2025-07-05T12:34:43.4109592Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldo.o ldo.c
+2025-07-05T12:34:43.4114328Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldump.o ldump.c
+2025-07-05T12:34:43.4118820Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lfunc.o lfunc.c
+2025-07-05T12:34:43.4123697Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lgc.o lgc.c
+2025-07-05T12:34:43.4135449Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o llex.o llex.c
+2025-07-05T12:34:43.4146068Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lmem.o lmem.c
+2025-07-05T12:34:43.4146929Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lobject.o lobject.c
+2025-07-05T12:34:43.4159694Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lopcodes.o lopcodes.c
+2025-07-05T12:34:43.4167933Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lparser.o lparser.c
+2025-07-05T12:34:43.4189244Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lstate.o lstate.c
+2025-07-05T12:34:43.4197698Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lstring.o lstring.c
+2025-07-05T12:34:43.4199177Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ltable.o ltable.c
+2025-07-05T12:34:43.4220680Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ltm.o ltm.c
+2025-07-05T12:34:43.4227141Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lundump.o lundump.c
+2025-07-05T12:34:43.4237128Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lvm.o lvm.c
+2025-07-05T12:34:43.4262295Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lzio.o lzio.c
+2025-07-05T12:34:43.4279261Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lauxlib.o lauxlib.c
+2025-07-05T12:34:43.4280362Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lbaselib.o lbaselib.c
+2025-07-05T12:34:43.4281294Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldblib.o ldblib.c
+2025-07-05T12:34:43.4356983Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o liolib.o liolib.c
+2025-07-05T12:34:43.4436957Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lmathlib.o lmathlib.c
+2025-07-05T12:34:43.4541932Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o loslib.o loslib.c
+2025-07-05T12:34:43.4597054Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ltablib.o ltablib.c
+2025-07-05T12:34:43.4598241Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lstrlib.o lstrlib.c
+2025-07-05T12:34:43.4599754Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o loadlib.o loadlib.c
+2025-07-05T12:34:43.4652413Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o linit.o linit.c
+2025-07-05T12:34:43.4653392Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lua.o lua.c
+2025-07-05T12:34:43.4673041Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o luac.o luac.c
+2025-07-05T12:34:43.4763383Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o print.o print.c
+2025-07-05T12:34:43.5829174Z ltablib.c: In function ‘addfield’:
+2025-07-05T12:34:43.5872507Z ltablib.c:137:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+2025-07-05T12:34:43.5881846Z   137 |   if (!lua_isstring(L, -1))
+2025-07-05T12:34:43.5908524Z       |   ^~
+2025-07-05T12:34:43.5919070Z ltablib.c:140:5: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+2025-07-05T12:34:43.5919857Z   140 |     luaL_addvalue(b);
+2025-07-05T12:34:43.6038613Z       |     ^~~~~~~~~~~~~
+2025-07-05T12:34:43.6133398Z lauxlib.c: In function ‘luaL_loadfile’:
+2025-07-05T12:34:43.6340008Z lauxlib.c:577:4: warning: this ‘while’ clause does not guard... [-Wmisleading-indentation]
+2025-07-05T12:34:43.6579432Z   577 |    while ((c = getc(lf.f)) != EOF && c != LUA_SIGNATURE[0]) ;
+2025-07-05T12:34:43.6580878Z       |    ^~~~~
+2025-07-05T12:34:43.6582213Z lauxlib.c:578:5: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘while’
+2025-07-05T12:34:43.6583186Z   578 |     lf.extraline = 0;
+2025-07-05T12:34:43.6583867Z       |     ^~
+2025-07-05T12:34:43.6584558Z ldump.c: In function ‘DumpString’:
+2025-07-05T12:34:43.6586296Z ldump.c:63:26: warning: the comparison will always evaluate as ‘false’ for the pointer operand in ‘s + 24’ must not be NULL [-Waddress]
+2025-07-05T12:34:43.6587438Z    63 |  if (s==NULL || getstr(s)==NULL)
+2025-07-05T12:34:43.6588215Z       |                          ^~
+2025-07-05T12:34:44.9297078Z ar rcu liblua.a lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o lundump.o lvm.o lzio.o lauxlib.o lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o lstrlib.o loadlib.o linit.o	# DLL needs all object files
+2025-07-05T12:34:44.9365028Z ar: `u' modifier ignored since `D' is the default (see `U')
+2025-07-05T12:34:56.0391697Z ranlib liblua.a
+2025-07-05T12:34:56.0932139Z gcc -o lua  lua.o liblua.a -lm -Wl,-E -ldl -lreadline -lhistory -lncurses
+2025-07-05T12:34:56.0935107Z gcc -o luac  luac.o print.o liblua.a -lm -Wl,-E -ldl -lreadline -lhistory -lncurses
+2025-07-05T12:34:56.1317798Z make[2]: Leaving directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:56.1320764Z make[1]: Leaving directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:56.1342842Z [command]/usr/bin/make -j INSTALL_TOP=/home/runner/work/jj-fugitive/jj-fugitive/.lua install
+2025-07-05T12:34:56.1370448Z cd src && mkdir -p /home/runner/work/jj-fugitive/jj-fugitive/.lua/bin /home/runner/work/jj-fugitive/jj-fugitive/.lua/include /home/runner/work/jj-fugitive/jj-fugitive/.lua/lib /home/runner/work/jj-fugitive/jj-fugitive/.lua/man/man1 /home/runner/work/jj-fugitive/jj-fugitive/.lua/share/lua/5.1 /home/runner/work/jj-fugitive/jj-fugitive/.lua/lib/lua/5.1
+2025-07-05T12:34:56.1391060Z cd src && install -p -m 0755 lua luac /home/runner/work/jj-fugitive/jj-fugitive/.lua/bin
+2025-07-05T12:34:56.1419808Z cd src && install -p -m 0644 lua.h luaconf.h lualib.h lauxlib.h ../etc/lua.hpp /home/runner/work/jj-fugitive/jj-fugitive/.lua/include
+2025-07-05T12:34:56.1439697Z cd src && install -p -m 0644 liblua.a /home/runner/work/jj-fugitive/jj-fugitive/.lua/lib
+2025-07-05T12:34:56.1460453Z cd doc && install -p -m 0644 lua.1 luac.1 /home/runner/work/jj-fugitive/jj-fugitive/.lua/man/man1
+2025-07-05T12:34:56.1484882Z ##[notice]gh-actions-lua: Storing into cache: lua:5.1.5:linux:x64:
+2025-07-05T12:34:56.1592041Z [command]/usr/bin/tar --posix -cf cache.tgz --exclude cache.tgz -P -C /home/runner/work/jj-fugitive/jj-fugitive --files-from manifest.txt -z
+2025-07-05T12:35:06.2989991Z ##[warning]Failed to save: reserveCache failed: Cache service responded with 503
+2025-07-05T12:35:06.3215297Z ##[group]Run leafo/gh-actions-luarocks@v4
+2025-07-05T12:35:06.3215584Z with:
+2025-07-05T12:35:06.3215751Z   luaRocksVersion: 3.8.0
+2025-07-05T12:35:06.3215946Z env:
+2025-07-05T12:35:06.3216108Z   MSYS: winsymlinks:nativestrict
+2025-07-05T12:35:06.3216319Z ##[endgroup]
+2025-07-05T12:35:06.9921679Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/.build-luarocks -f /home/runner/work/_temp/290daccd-c48e-463a-81f8-e82593c96684
+2025-07-05T12:35:07.0052738Z [command]/home/runner/work/_temp/.build-luarocks/luarocks-3.8.0/configure --with-lua=/home/runner/work/jj-fugitive/jj-fugitive/.lua --prefix=/home/runner/work/jj-fugitive/jj-fugitive/.luarocks
+2025-07-05T12:35:07.0181706Z 
+2025-07-05T12:35:07.0182437Z [1;36mConfiguring LuaRocks version 3.8.0...[0m
+2025-07-05T12:35:07.0182809Z 
+2025-07-05T12:35:07.0198993Z Lua version detected: [1;32m5.1[0m
+2025-07-05T12:35:07.0202242Z Lua interpreter found: [1;32m/home/runner/work/jj-fugitive/jj-fugitive/.lua/bin/lua[0m
+2025-07-05T12:35:07.0240277Z lua.h found: [1;32m/home/runner/work/jj-fugitive/jj-fugitive/.lua/include/lua.h[0m
+2025-07-05T12:35:07.0255905Z unzip found in PATH: [1;32m/usr/bin[0m
+2025-07-05T12:35:07.0403629Z 
+2025-07-05T12:35:07.0404184Z [1;36mDone configuring.[0m
+2025-07-05T12:35:07.0404448Z 
+2025-07-05T12:35:07.0407389Z LuaRocks will be installed at......: [1;32m/home/runner/work/jj-fugitive/jj-fugitive/.luarocks[0m
+2025-07-05T12:35:07.0410662Z LuaRocks will install rocks at.....: [1;32m/home/runner/work/jj-fugitive/jj-fugitive/.luarocks[0m
+2025-07-05T12:35:07.0413763Z LuaRocks configuration directory...: [1;32m/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/etc/luarocks[0m
+2025-07-05T12:35:07.0416062Z Using Lua from.....................: [1;32m/home/runner/work/jj-fugitive/jj-fugitive/.lua[0m
+2025-07-05T12:35:07.0416630Z 
+2025-07-05T12:35:07.0421891Z * Type [1mmake[0m and [1mmake install[0m:
+2025-07-05T12:35:07.0422525Z   to install to /home/runner/work/jj-fugitive/jj-fugitive/.luarocks as usual.
+2025-07-05T12:35:07.0424423Z * Type [1mmake bootstrap[0m:
+2025-07-05T12:35:07.0425028Z   to install LuaRocks into /home/runner/work/jj-fugitive/jj-fugitive/.luarocks as a rock.
+2025-07-05T12:35:07.0425428Z 
+2025-07-05T12:35:07.0443061Z [command]/usr/bin/make
+2025-07-05T12:35:07.0509521Z mkdir -p "build"
+2025-07-05T12:35:07.0545625Z mkdir -p .luarocks
+2025-07-05T12:35:07.0555778Z cp ./build/config-5.1.lua .luarocks/config-5.1.lua
+2025-07-05T12:35:07.0567831Z rm -f src/luarocks/core/hardcoded.lua
+2025-07-05T12:35:07.0575532Z echo "#!/bin/sh" > luarocks
+2025-07-05T12:35:07.0583215Z echo "unset LUA_PATH LUA_PATH_5_2 LUA_PATH_5_3 LUA_PATH_5_4 LUA_CPATH LUA_CPATH_5_2 LUA_CPATH_5_3 LUA_CPATH_5_4" >> luarocks
+2025-07-05T12:35:07.0592070Z echo 'LUAROCKS_SYSCONFDIR="/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/etc/luarocks" LUA_PATH="/home/runner/work/_temp/.build-luarocks/luarocks-3.8.0/src/?.lua;;" exec "/home/runner/work/jj-fugitive/jj-fugitive/.lua/bin/lua" "/home/runner/work/_temp/.build-luarocks/luarocks-3.8.0/src/bin/luarocks" --project-tree="/home/runner/work/_temp/.build-luarocks/luarocks-3.8.0/lua_modules" "$@"' >> luarocks
+2025-07-05T12:35:07.0596987Z chmod +rx ./luarocks
+2025-07-05T12:35:07.0605662Z ./luarocks init
+2025-07-05T12:35:07.0970362Z 
+2025-07-05T12:35:07.0970676Z Initializing project 'luarocks-3.8.0' for Lua 5.1 ...
+2025-07-05T12:35:07.0971217Z -----------------------------------------------------
+2025-07-05T12:35:07.1059051Z 
+2025-07-05T12:35:07.1059313Z Checking your Lua installation ...
+2025-07-05T12:35:07.1059739Z Adding entries to .gitignore ...
+2025-07-05T12:35:07.1060330Z Preparing ./.luarocks/ ...
+2025-07-05T12:35:07.1060711Z Wrote .luarocks/config-5.1.lua
+2025-07-05T12:35:07.1061073Z Preparing ./lua_modules/ ...
+2025-07-05T12:35:07.1061379Z ./luarocks already exists. Not overwriting it!
+2025-07-05T12:35:07.1061652Z Preparing ./lua for version 5.1...
+2025-07-05T12:35:07.1095984Z rm -f src/luarocks/core/hardcoded.lua
+2025-07-05T12:35:07.1105310Z echo "#!/bin/sh" > luarocks-admin
+2025-07-05T12:35:07.1111931Z echo "unset LUA_PATH LUA_PATH_5_2 LUA_PATH_5_3 LUA_PATH_5_4 LUA_CPATH LUA_CPATH_5_2 LUA_CPATH_5_3 LUA_CPATH_5_4" >> luarocks-admin
+2025-07-05T12:35:07.1119653Z echo 'LUAROCKS_SYSCONFDIR="/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/etc/luarocks" LUA_PATH="/home/runner/work/_temp/.build-luarocks/luarocks-3.8.0/src/?.lua;;" exec "/home/runner/work/jj-fugitive/jj-fugitive/.lua/bin/lua" "/home/runner/work/_temp/.build-luarocks/luarocks-3.8.0/src/bin/luarocks-admin" --project-tree="/home/runner/work/_temp/.build-luarocks/luarocks-3.8.0/lua_modules" "$@"' >> luarocks-admin
+2025-07-05T12:35:07.1125149Z chmod +rx ./luarocks-admin
+2025-07-05T12:35:07.1135505Z mkdir -p "build"
+2025-07-05T12:35:07.1152425Z (printf '#!/home/runner/work/jj-fugitive/jj-fugitive/.lua/bin/lua\n'\
+2025-07-05T12:35:07.1153032Z 'package.loaded["luarocks.core.hardcoded"] = { '\
+2025-07-05T12:35:07.1153578Z "$([ -n "" ] && printf 'FORCE_CONFIG = true, ')"\
+2025-07-05T12:35:07.1154004Z 'SYSCONFDIR = [[/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/etc/luarocks]] }\n'\
+2025-07-05T12:35:07.1154611Z 'package.path=[[/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?.lua;]] .. package.path\n'\
+2025-07-05T12:35:07.1155733Z 'local list = package.searchers or package.loaders; table.insert(list, 1, function(name) if name:match("^luarocks%%.") then return loadfile([[/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/]] .. name:gsub([[%%.]], [[/]]) .. [[.lua]]) end end)\n'; \
+2025-07-05T12:35:07.1156865Z tail -n +2 src/bin/luarocks \
+2025-07-05T12:35:07.1157080Z )> "build/luarocks"
+2025-07-05T12:35:07.1172795Z mkdir -p "build"
+2025-07-05T12:35:07.1189533Z (printf '#!/home/runner/work/jj-fugitive/jj-fugitive/.lua/bin/lua\n'\
+2025-07-05T12:35:07.1190192Z 'package.loaded["luarocks.core.hardcoded"] = { '\
+2025-07-05T12:35:07.1190673Z "$([ -n "" ] && printf 'FORCE_CONFIG = true, ')"\
+2025-07-05T12:35:07.1191462Z 'SYSCONFDIR = [[/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/etc/luarocks]] }\n'\
+2025-07-05T12:35:07.1192489Z 'package.path=[[/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?.lua;]] .. package.path\n'\
+2025-07-05T12:35:07.1194368Z 'local list = package.searchers or package.loaders; table.insert(list, 1, function(name) if name:match("^luarocks%%.") then return loadfile([[/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/]] .. name:gsub([[%%.]], [[/]]) .. [[.lua]]) end end)\n'; \
+2025-07-05T12:35:07.1195750Z tail -n +2 src/bin/luarocks-admin \
+2025-07-05T12:35:07.1195999Z )> "build/luarocks-admin"
+2025-07-05T12:35:07.1225990Z [command]/usr/bin/make install
+2025-07-05T12:35:07.1296754Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin"
+2025-07-05T12:35:07.1315001Z install "build/luarocks" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin/luarocks"
+2025-07-05T12:35:07.1335510Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin"
+2025-07-05T12:35:07.1351700Z install "build/luarocks-admin" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin/luarocks-admin"
+2025-07-05T12:35:07.1369916Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/etc/luarocks"
+2025-07-05T12:35:07.1386982Z install -m 644 "build/config-5.1.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/etc/luarocks/config-5.1.lua"
+2025-07-05T12:35:07.1407190Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.1424790Z install -m 644 "src/luarocks/search.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/search.lua"
+2025-07-05T12:35:07.1444717Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.1461395Z install -m 644 "src/luarocks/fetch.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch.lua"
+2025-07-05T12:35:07.1480813Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.1497830Z install -m 644 "src/luarocks/test.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/test.lua"
+2025-07-05T12:35:07.1517057Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1534120Z install -m 644 "src/luarocks/core/manif.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/manif.lua"
+2025-07-05T12:35:07.1553704Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1570202Z install -m 644 "src/luarocks/core/sysdetect.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/sysdetect.lua"
+2025-07-05T12:35:07.1590495Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1606864Z install -m 644 "src/luarocks/core/path.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/path.lua"
+2025-07-05T12:35:07.1626903Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1643167Z install -m 644 "src/luarocks/core/cfg.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/cfg.lua"
+2025-07-05T12:35:07.1662591Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1679198Z install -m 644 "src/luarocks/core/dir.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/dir.lua"
+2025-07-05T12:35:07.1699708Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1715999Z install -m 644 "src/luarocks/core/vers.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/vers.lua"
+2025-07-05T12:35:07.1735682Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1752243Z install -m 644 "src/luarocks/core/util.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/util.lua"
+2025-07-05T12:35:07.1773160Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core"
+2025-07-05T12:35:07.1789901Z install -m 644 "src/luarocks/core/persist.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/core/persist.lua"
+2025-07-05T12:35:07.1810086Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.1826708Z install -m 644 "src/luarocks/cmd/search.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/search.lua"
+2025-07-05T12:35:07.1846783Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.1863695Z install -m 644 "src/luarocks/cmd/which.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/which.lua"
+2025-07-05T12:35:07.1883504Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.1900140Z install -m 644 "src/luarocks/cmd/list.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/list.lua"
+2025-07-05T12:35:07.1920978Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.1937763Z install -m 644 "src/luarocks/cmd/test.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/test.lua"
+2025-07-05T12:35:07.1957855Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.1974752Z install -m 644 "src/luarocks/cmd/unpack.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/unpack.lua"
+2025-07-05T12:35:07.1994326Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2011231Z install -m 644 "src/luarocks/cmd/make.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/make.lua"
+2025-07-05T12:35:07.2031369Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2049141Z install -m 644 "src/luarocks/cmd/install.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/install.lua"
+2025-07-05T12:35:07.2069262Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2086595Z install -m 644 "src/luarocks/cmd/write_rockspec.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/write_rockspec.lua"
+2025-07-05T12:35:07.2106930Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2123711Z install -m 644 "src/luarocks/cmd/upload.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/upload.lua"
+2025-07-05T12:35:07.2143071Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2159709Z install -m 644 "src/luarocks/cmd/show.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/show.lua"
+2025-07-05T12:35:07.2180330Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2199514Z install -m 644 "src/luarocks/cmd/build.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/build.lua"
+2025-07-05T12:35:07.2220742Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2237315Z install -m 644 "src/luarocks/cmd/new_version.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/new_version.lua"
+2025-07-05T12:35:07.2257850Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2275087Z install -m 644 "src/luarocks/cmd/purge.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/purge.lua"
+2025-07-05T12:35:07.2295461Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2312858Z install -m 644 "src/luarocks/cmd/config.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/config.lua"
+2025-07-05T12:35:07.2332461Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2349202Z install -m 644 "src/luarocks/cmd/remove.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/remove.lua"
+2025-07-05T12:35:07.2369380Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2385418Z install -m 644 "src/luarocks/cmd/pack.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/pack.lua"
+2025-07-05T12:35:07.2404715Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2421497Z install -m 644 "src/luarocks/cmd/init.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/init.lua"
+2025-07-05T12:35:07.2441132Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2457583Z install -m 644 "src/luarocks/cmd/path.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/path.lua"
+2025-07-05T12:35:07.2476806Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2493249Z install -m 644 "src/luarocks/cmd/doc.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/doc.lua"
+2025-07-05T12:35:07.2512621Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2529393Z install -m 644 "src/luarocks/cmd/download.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/download.lua"
+2025-07-05T12:35:07.2550314Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd"
+2025-07-05T12:35:07.2566468Z install -m 644 "src/luarocks/cmd/lint.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd/lint.lua"
+2025-07-05T12:35:07.2586532Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.2603354Z install -m 644 "src/luarocks/fs.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs.lua"
+2025-07-05T12:35:07.2623070Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.2639672Z install -m 644 "src/luarocks/rockspecs.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/rockspecs.lua"
+2025-07-05T12:35:07.2659287Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/type"
+2025-07-05T12:35:07.2675684Z install -m 644 "src/luarocks/type/manifest.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/type/manifest.lua"
+2025-07-05T12:35:07.2695626Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/type"
+2025-07-05T12:35:07.2712026Z install -m 644 "src/luarocks/type/rockspec.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/type/rockspec.lua"
+2025-07-05T12:35:07.2731808Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.2747594Z install -m 644 "src/luarocks/deps.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/deps.lua"
+2025-07-05T12:35:07.2767246Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.2783687Z install -m 644 "src/luarocks/cmd.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/cmd.lua"
+2025-07-05T12:35:07.2803470Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.2819919Z install -m 644 "src/luarocks/require.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/require.lua"
+2025-07-05T12:35:07.2839607Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.2856274Z install -m 644 "src/luarocks/signing.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/signing.lua"
+2025-07-05T12:35:07.2876169Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.2892943Z install -m 644 "src/luarocks/fetch/hg_ssh.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/hg_ssh.lua"
+2025-07-05T12:35:07.2912581Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.2929104Z install -m 644 "src/luarocks/fetch/svn.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/svn.lua"
+2025-07-05T12:35:07.2948614Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.2964474Z install -m 644 "src/luarocks/fetch/cvs.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/cvs.lua"
+2025-07-05T12:35:07.2984221Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3000639Z install -m 644 "src/luarocks/fetch/git_https.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/git_https.lua"
+2025-07-05T12:35:07.3020567Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3037237Z install -m 644 "src/luarocks/fetch/sscm.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/sscm.lua"
+2025-07-05T12:35:07.3057754Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3075347Z install -m 644 "src/luarocks/fetch/git_ssh.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/git_ssh.lua"
+2025-07-05T12:35:07.3095479Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3112564Z install -m 644 "src/luarocks/fetch/git.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/git.lua"
+2025-07-05T12:35:07.3133128Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3149810Z install -m 644 "src/luarocks/fetch/hg_http.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/hg_http.lua"
+2025-07-05T12:35:07.3171274Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3187840Z install -m 644 "src/luarocks/fetch/git_file.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/git_file.lua"
+2025-07-05T12:35:07.3216747Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3233740Z install -m 644 "src/luarocks/fetch/hg.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/hg.lua"
+2025-07-05T12:35:07.3253138Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3269816Z install -m 644 "src/luarocks/fetch/hg_https.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/hg_https.lua"
+2025-07-05T12:35:07.3289485Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch"
+2025-07-05T12:35:07.3306596Z install -m 644 "src/luarocks/fetch/git_http.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fetch/git_http.lua"
+2025-07-05T12:35:07.3326306Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.3343217Z install -m 644 "src/luarocks/manif.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/manif.lua"
+2025-07-05T12:35:07.3362710Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.3379578Z install -m 644 "src/luarocks/build.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build.lua"
+2025-07-05T12:35:07.3399701Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/tools"
+2025-07-05T12:35:07.3416751Z install -m 644 "src/luarocks/tools/zip.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/tools/zip.lua"
+2025-07-05T12:35:07.3436210Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/tools"
+2025-07-05T12:35:07.3453398Z install -m 644 "src/luarocks/tools/patch.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/tools/patch.lua"
+2025-07-05T12:35:07.3472950Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/tools"
+2025-07-05T12:35:07.3489811Z install -m 644 "src/luarocks/tools/tar.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/tools/tar.lua"
+2025-07-05T12:35:07.3511075Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.3530207Z install -m 644 "src/luarocks/argparse.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/argparse.lua"
+2025-07-05T12:35:07.3552665Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.3569575Z install -m 644 "src/luarocks/remove.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/remove.lua"
+2025-07-05T12:35:07.3589383Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.3606143Z install -m 644 "src/luarocks/pack.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/pack.lua"
+2025-07-05T12:35:07.3628359Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/test"
+2025-07-05T12:35:07.3644876Z install -m 644 "src/luarocks/test/command.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/test/command.lua"
+2025-07-05T12:35:07.3666122Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/test"
+2025-07-05T12:35:07.3682378Z install -m 644 "src/luarocks/test/busted.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/test/busted.lua"
+2025-07-05T12:35:07.3702042Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build"
+2025-07-05T12:35:07.3718973Z install -m 644 "src/luarocks/build/make.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build/make.lua"
+2025-07-05T12:35:07.3738244Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build"
+2025-07-05T12:35:07.3754796Z install -m 644 "src/luarocks/build/builtin.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build/builtin.lua"
+2025-07-05T12:35:07.3774168Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build"
+2025-07-05T12:35:07.3791096Z install -m 644 "src/luarocks/build/command.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build/command.lua"
+2025-07-05T12:35:07.3811167Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build"
+2025-07-05T12:35:07.3827851Z install -m 644 "src/luarocks/build/cmake.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/build/cmake.lua"
+2025-07-05T12:35:07.3847580Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/upload"
+2025-07-05T12:35:07.3864668Z install -m 644 "src/luarocks/upload/api.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/upload/api.lua"
+2025-07-05T12:35:07.3884128Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/upload"
+2025-07-05T12:35:07.3900080Z install -m 644 "src/luarocks/upload/multipart.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/upload/multipart.lua"
+2025-07-05T12:35:07.3918985Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.3934937Z install -m 644 "src/luarocks/path.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/path.lua"
+2025-07-05T12:35:07.3954385Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/unix"
+2025-07-05T12:35:07.3971397Z install -m 644 "src/luarocks/fs/unix/tools.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/unix/tools.lua"
+2025-07-05T12:35:07.3991334Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4007456Z install -m 644 "src/luarocks/fs/win32.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/win32.lua"
+2025-07-05T12:35:07.4026830Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4043607Z install -m 644 "src/luarocks/fs/unix.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/unix.lua"
+2025-07-05T12:35:07.4063751Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4080346Z install -m 644 "src/luarocks/fs/tools.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/tools.lua"
+2025-07-05T12:35:07.4100266Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/win32"
+2025-07-05T12:35:07.4117116Z install -m 644 "src/luarocks/fs/win32/tools.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/win32/tools.lua"
+2025-07-05T12:35:07.4137768Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4154576Z install -m 644 "src/luarocks/fs/linux.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/linux.lua"
+2025-07-05T12:35:07.4173761Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4190321Z install -m 644 "src/luarocks/fs/freebsd.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/freebsd.lua"
+2025-07-05T12:35:07.4210272Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4226546Z install -m 644 "src/luarocks/fs/macosx.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/macosx.lua"
+2025-07-05T12:35:07.4246278Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4262803Z install -m 644 "src/luarocks/fs/netbsd.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/netbsd.lua"
+2025-07-05T12:35:07.4282124Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs"
+2025-07-05T12:35:07.4298680Z install -m 644 "src/luarocks/fs/lua.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fs/lua.lua"
+2025-07-05T12:35:07.4318388Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4335231Z install -m 644 "src/luarocks/queries.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/queries.lua"
+2025-07-05T12:35:07.4355341Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4371873Z install -m 644 "src/luarocks/fun.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/fun.lua"
+2025-07-05T12:35:07.4391552Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4407864Z install -m 644 "src/luarocks/download.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/download.lua"
+2025-07-05T12:35:07.4426751Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4443191Z install -m 644 "src/luarocks/repos.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/repos.lua"
+2025-07-05T12:35:07.4462716Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4478964Z install -m 644 "src/luarocks/results.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/results.lua"
+2025-07-05T12:35:07.4498920Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4514716Z install -m 644 "src/luarocks/dir.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/dir.lua"
+2025-07-05T12:35:07.4534884Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4551156Z install -m 644 "src/luarocks/loader.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/loader.lua"
+2025-07-05T12:35:07.4571142Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/manif"
+2025-07-05T12:35:07.4587292Z install -m 644 "src/luarocks/manif/writer.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/manif/writer.lua"
+2025-07-05T12:35:07.4607685Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd"
+2025-07-05T12:35:07.4624905Z install -m 644 "src/luarocks/admin/cmd/refresh_cache.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd/refresh_cache.lua"
+2025-07-05T12:35:07.4644364Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd"
+2025-07-05T12:35:07.4661779Z install -m 644 "src/luarocks/admin/cmd/add.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd/add.lua"
+2025-07-05T12:35:07.4683763Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd"
+2025-07-05T12:35:07.4700438Z install -m 644 "src/luarocks/admin/cmd/make_manifest.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd/make_manifest.lua"
+2025-07-05T12:35:07.4720016Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd"
+2025-07-05T12:35:07.4736259Z install -m 644 "src/luarocks/admin/cmd/remove.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cmd/remove.lua"
+2025-07-05T12:35:07.4755948Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin"
+2025-07-05T12:35:07.4772609Z install -m 644 "src/luarocks/admin/cache.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/cache.lua"
+2025-07-05T12:35:07.4792447Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin"
+2025-07-05T12:35:07.4809238Z install -m 644 "src/luarocks/admin/index.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/admin/index.lua"
+2025-07-05T12:35:07.4829418Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4845769Z install -m 644 "src/luarocks/deplocks.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/deplocks.lua"
+2025-07-05T12:35:07.4865983Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4882578Z install -m 644 "src/luarocks/util.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/util.lua"
+2025-07-05T12:35:07.4902168Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4918843Z install -m 644 "src/luarocks/persist.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/persist.lua"
+2025-07-05T12:35:07.4938456Z mkdir -p "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks"
+2025-07-05T12:35:07.4954827Z install -m 644 "src/luarocks/type_check.lua" "/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/luarocks/type_check.lua"
+2025-07-05T12:35:07.4981287Z [command]/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin/luarocks path --lr-bin
+2025-07-05T12:35:07.5369272Z /home/runner/.luarocks/bin:/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin
+2025-07-05T12:35:07.5394217Z [command]/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin/luarocks path --lr-path
+2025-07-05T12:35:07.5785832Z /home/runner/.luarocks/share/lua/5.1/?.lua;/home/runner/.luarocks/share/lua/5.1/?/init.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?/init.lua
+2025-07-05T12:35:07.5802412Z [command]/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/bin/luarocks path --lr-cpath
+2025-07-05T12:35:07.6186271Z /home/runner/.luarocks/lib/lua/5.1/?.so;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/lib/lua/5.1/?.so
+2025-07-05T12:35:07.6286919Z ##[group]Run luarocks install luacheck
+2025-07-05T12:35:07.6287239Z [36;1mluarocks install luacheck[0m
+2025-07-05T12:35:07.6383641Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:35:07.6383926Z env:
+2025-07-05T12:35:07.6384153Z   MSYS: winsymlinks:nativestrict
+2025-07-05T12:35:07.6385297Z   LUA_PATH: ;;/home/runner/.luarocks/share/lua/5.1/?.lua;/home/runner/.luarocks/share/lua/5.1/?/init.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?/init.lua
+2025-07-05T12:35:07.6386713Z   LUA_CPATH: ;;/home/runner/.luarocks/lib/lua/5.1/?.so;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/lib/lua/5.1/?.so
+2025-07-05T12:35:07.6387230Z ##[endgroup]
+2025-07-05T12:35:08.8165423Z Installing https://luarocks.org/luacheck-1.2.0-1.src.rock
+2025-07-05T12:35:09.7587221Z Missing dependencies for luacheck 1.2.0-1:
+2025-07-05T12:35:09.7587718Z    argparse >= 0.6.0 (not installed)
+2025-07-05T12:35:09.7588359Z    luafilesystem >= 1.6.3 (not installed)
+2025-07-05T12:35:09.7588552Z 
+2025-07-05T12:35:09.7588701Z luacheck 1.2.0-1 depends on lua >= 5.1 (5.1-1 provided by VM)
+2025-07-05T12:35:09.7589211Z luacheck 1.2.0-1 depends on argparse >= 0.6.0 (not installed)
+2025-07-05T12:35:09.7589588Z Installing https://luarocks.org/argparse-0.7.1-1.src.rock
+2025-07-05T12:35:10.2686690Z 
+2025-07-05T12:35:10.2687220Z argparse 0.7.1-1 depends on lua >= 5.1, < 5.5 (5.1-1 provided by VM)
+2025-07-05T12:35:10.3134042Z No existing manifest. Attempting to rebuild...
+2025-07-05T12:35:10.4241466Z argparse 0.7.1-1 is now installed in /home/runner/work/jj-fugitive/jj-fugitive/.luarocks (license: MIT)
+2025-07-05T12:35:10.4242092Z 
+2025-07-05T12:35:10.4242345Z luacheck 1.2.0-1 depends on luafilesystem >= 1.6.3 (not installed)
+2025-07-05T12:35:10.4243006Z Installing https://luarocks.org/luafilesystem-1.8.0-1.src.rock
+2025-07-05T12:35:11.0302652Z 
+2025-07-05T12:35:11.0303263Z luafilesystem 1.8.0-1 depends on lua >= 5.1 (5.1-1 provided by VM)
+2025-07-05T12:35:11.0304150Z gcc -O2 -fPIC -I/home/runner/work/jj-fugitive/jj-fugitive/.lua/include -c src/lfs.c -o src/lfs.o
+2025-07-05T12:35:11.0304697Z gcc -shared -o lfs.so src/lfs.o
+2025-07-05T12:35:11.3223538Z luafilesystem 1.8.0-1 is now installed in /home/runner/work/jj-fugitive/jj-fugitive/.luarocks (license: MIT/X11)
+2025-07-05T12:35:11.3224211Z 
+2025-07-05T12:35:11.7545537Z luacheck 1.2.0-1 is now installed in /home/runner/work/jj-fugitive/jj-fugitive/.luarocks (license: MIT)
+2025-07-05T12:35:11.7546453Z 
+2025-07-05T12:35:11.7607855Z ##[group]Run luacheck .
+2025-07-05T12:35:11.7608364Z [36;1mluacheck .[0m
+2025-07-05T12:35:11.7664023Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:35:11.7664252Z env:
+2025-07-05T12:35:11.7664436Z   MSYS: winsymlinks:nativestrict
+2025-07-05T12:35:11.7665385Z   LUA_PATH: ;;/home/runner/.luarocks/share/lua/5.1/?.lua;/home/runner/.luarocks/share/lua/5.1/?/init.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?.lua;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/share/lua/5.1/?/init.lua
+2025-07-05T12:35:11.7666602Z   LUA_CPATH: ;;/home/runner/.luarocks/lib/lua/5.1/?.so;/home/runner/work/jj-fugitive/jj-fugitive/.luarocks/lib/lua/5.1/?.so
+2025-07-05T12:35:11.7667096Z ##[endgroup]
+2025-07-05T12:35:12.2157191Z Checking lua/jj-fugitive/ansi.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2158165Z Checking lua/jj-fugitive/completion.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2158995Z Checking lua/jj-fugitive/diff.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2159674Z Checking lua/jj-fugitive/init.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2160349Z Checking lua/jj-fugitive/log.lua                  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2161003Z Checking lua/jj-fugitive/status.lua               [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2161693Z Checking plugin/jj-fugitive.lua                   [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2162406Z Checking tests/demo_enhanced_diff.lua             [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2163115Z Checking tests/demo_log_view.lua                  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2163851Z Checking tests/manual_test.lua                    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2164554Z Checking tests/test_ci_debug.lua                  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2165290Z Checking tests/test_color_rendering.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2166031Z Checking tests/test_commit_extraction.lua         [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2166790Z Checking tests/test_commit_interactive.lua        [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2167506Z Checking tests/test_completion_enhancement.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2168401Z Checking tests/test_completion_functionality.lua  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2169167Z Checking tests/test_describe_interactive.lua      [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2169907Z Checking tests/test_documentation.lua             [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2170640Z Checking tests/test_format_consistency.lua        [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2171358Z Checking tests/test_git_format_consistency.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2172028Z Checking tests/test_improved_diff.lua             [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2172775Z Checking tests/test_improved_diff_navigation.lua  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2173554Z Checking tests/test_interactive_command_detection.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2174354Z Checking tests/test_log_color_rendering.lua       [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2175106Z Checking tests/test_log_enter_functionality.lua   [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2175864Z Checking tests/test_log_expand_functionality.lua  [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2176586Z Checking tests/test_log_functionality.lua         [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2177043Z Checking tests/test_multi_level_completion.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2177480Z Checking tests/test_native_log_view.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2177942Z Checking tests/test_remaining_interactive_commands.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2178630Z Checking tests/test_repository_detection.lua      [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2179081Z Checking tests/test_simple_ci.lua                 [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2180052Z Checking tests/test_status_enter_l_keys.lua       [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2181316Z Checking tests/test_status_features.lua           [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2181806Z Checking tests/test_status_functionality.lua      [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2182271Z Checking tests/test_status_keybindings_simple.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2182735Z Checking tests/test_unified_ansi_functionality.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2200990Z Checking tests/test_user_experience_simulation.lua [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2201877Z Checking tests/test_vim_fugitive_alignment.lua    [0m[32m[1mOK[0m
+2025-07-05T12:35:12.2202179Z 
+2025-07-05T12:35:12.2202412Z Total: [0m[0m[1m0[0m warnings / [0m[0m[1m0[0m errors in 39 files
+2025-07-05T12:35:12.2256786Z Post job cleanup.
+2025-07-05T12:35:12.3180337Z [command]/usr/bin/git version
+2025-07-05T12:35:12.3216395Z git version 2.49.0
+2025-07-05T12:35:12.3260387Z Temporarily overriding HOME='/home/runner/work/_temp/e9432052-d2ef-487c-93e0-aeaa861e3262' before making global git config changes
+2025-07-05T12:35:12.3261657Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-05T12:35:12.3273223Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:35:12.3307781Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-05T12:35:12.3340082Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-05T12:35:12.3567237Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-05T12:35:12.3589911Z http.https://github.com/.extraheader
+2025-07-05T12:35:12.3603503Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-05T12:35:12.3635537Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-05T12:35:12.3984831Z Cleaning up orphan processes

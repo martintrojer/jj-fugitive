@@ -68,6 +68,16 @@ assert_test(
 -- Test 3: Level 2 - Bookmark subcommands ":J bookmark "
 print("\n🧪 Test 3: Level 2 - Bookmark subcommands")
 local level2_bookmark_result = completion.complete("", "J bookmark ", 11)
+
+-- CI Debug: Show bookmark completion results
+if os.getenv("CI") then
+  print("CI DEBUG: Level 2 bookmark completion results:")
+  for i, result in ipairs(level2_bookmark_result) do
+    print(string.format("  [%d] %s", i, result))
+  end
+  print(string.format("CI DEBUG: Total bookmark results: %d", #level2_bookmark_result))
+end
+
 assert_test(
   "Level 2 bookmark includes subcommands",
   #level2_bookmark_result > 0,
@@ -82,6 +92,17 @@ for _, expected in ipairs(expected_bookmark_subcmds) do
     found_bookmark_subcmds = found_bookmark_subcmds + 1
   end
 end
+
+-- CI Debug: Show which bookmark subcommands were found
+if os.getenv("CI") then
+  print("CI DEBUG: Bookmark subcommand search results:")
+  for _, expected in ipairs(expected_bookmark_subcmds) do
+    local found = vim.tbl_contains(level2_bookmark_result, expected)
+    print(string.format("  %s: %s", expected, found and "FOUND" or "NOT FOUND"))
+  end
+  print(string.format("CI DEBUG: Found %d/%d bookmark subcommands", found_bookmark_subcmds, #expected_bookmark_subcmds))
+end
+
 assert_test(
   "Level 2 bookmark shows subcommands",
   found_bookmark_subcmds >= 2,
@@ -139,6 +160,16 @@ assert_test(
 -- Test 6: Level 3 - Bookmark subcommand flags ":J bookmark create "
 print("\n🧪 Test 6: Level 3 - Bookmark subcommand flags")
 local level3_bookmark_create_result = completion.complete("", "J bookmark create ", 18)
+
+-- CI Debug: Show bookmark create completion results
+if os.getenv("CI") then
+  print("CI DEBUG: Level 3 bookmark create completion results:")
+  for i, result in ipairs(level3_bookmark_create_result) do
+    print(string.format("  [%d] %s", i, result))
+  end
+  print(string.format("CI DEBUG: Total bookmark create results: %d", #level3_bookmark_create_result))
+end
+
 assert_test(
   "Level 3 bookmark create includes flags",
   #level3_bookmark_create_result > 0,
@@ -152,6 +183,17 @@ for _, item in ipairs(level3_bookmark_create_result) do
     bookmark_create_flags_count = bookmark_create_flags_count + 1
   end
 end
+
+-- CI Debug: Show flag analysis results
+if os.getenv("CI") then
+  print("CI DEBUG: Bookmark create flag analysis:")
+  for _, item in ipairs(level3_bookmark_create_result) do
+    local is_flag = item:match("^%-") and true or false
+    print(string.format("  %s: %s", item, is_flag and "FLAG" or "NOT FLAG"))
+  end
+  print(string.format("CI DEBUG: Found %d flags out of %d total results", bookmark_create_flags_count, #level3_bookmark_create_result))
+end
+
 assert_test(
   "Level 3 bookmark create shows flags",
   bookmark_create_flags_count > 0,

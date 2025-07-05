@@ -1,0 +1,34 @@
+﻿2025-07-05T12:34:26.9151268Z Current runner version: '2.325.0'
+2025-07-05T12:34:26.9188471Z ##[group]Runner Image Provisioner
+2025-07-05T12:34:26.9190066Z Hosted Compute Agent
+2025-07-05T12:34:26.9190902Z Version: 20250620.352
+2025-07-05T12:34:26.9191838Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-07-05T12:34:26.9192987Z Build Date: 2025-06-20T19:27:17Z
+2025-07-05T12:34:26.9194054Z ##[endgroup]
+2025-07-05T12:34:26.9194981Z ##[group]Operating System
+2025-07-05T12:34:26.9196083Z Ubuntu
+2025-07-05T12:34:26.9196955Z 24.04.2
+2025-07-05T12:34:26.9197704Z LTS
+2025-07-05T12:34:26.9198569Z ##[endgroup]
+2025-07-05T12:34:26.9199667Z ##[group]Runner Image
+2025-07-05T12:34:26.9200685Z Image: ubuntu-24.04
+2025-07-05T12:34:26.9201504Z Version: 20250622.1.0
+2025-07-05T12:34:26.9203436Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250622.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-05T12:34:26.9205877Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250622.1
+2025-07-05T12:34:26.9207920Z ##[endgroup]
+2025-07-05T12:34:26.9209985Z ##[group]GITHUB_TOKEN Permissions
+2025-07-05T12:34:26.9212994Z Contents: read
+2025-07-05T12:34:26.9213904Z Metadata: read
+2025-07-05T12:34:26.9214718Z Packages: read
+2025-07-05T12:34:26.9215708Z ##[endgroup]
+2025-07-05T12:34:26.9218583Z Secret source: Actions
+2025-07-05T12:34:26.9220216Z Prepare workflow directory
+2025-07-05T12:34:26.9700804Z Prepare all required actions
+2025-07-05T12:34:26.9757235Z Getting action download info
+2025-07-05T12:34:27.2265045Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-05T12:34:27.2266178Z Version: 4.2.2
+2025-07-05T12:34:27.2267243Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-05T12:34:27.2268383Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-05T12:34:27.2269373Z ##[endgroup]
+2025-07-05T12:34:27.3025712Z Download action repository 'rhysd/action-setup-vim@v1' (SHA:8e931b9954b19d4203d5caa5ff5521f3bc21dcc7)
+2025-07-05T12:34:27.7354101Z Complete job name: test (stable)

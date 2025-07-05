@@ -1,0 +1,29 @@
+﻿2025-07-05T12:34:27.8667598Z ##[group]Run rhysd/action-setup-vim@v1
+2025-07-05T12:34:27.8668825Z with:
+2025-07-05T12:34:27.8669666Z   neovim: true
+2025-07-05T12:34:27.8670506Z   version: nightly
+2025-07-05T12:34:27.8671828Z   token: ***
+2025-07-05T12:34:27.8672673Z ##[endgroup]
+2025-07-05T12:34:27.9851865Z Extracted configuration: {
+2025-07-05T12:34:27.9853121Z   version: 'nightly',
+2025-07-05T12:34:27.9854075Z   neovim: true,
+2025-07-05T12:34:27.9854949Z   os: 'linux',
+2025-07-05T12:34:27.9856558Z   arch: 'x86_64',
+2025-07-05T12:34:27.9857635Z   configureArgs: null,
+2025-07-05T12:34:27.9859053Z   token: '***'
+2025-07-05T12:34:27.9859905Z }
+2025-07-05T12:34:27.9864590Z Downloading Neovim nightly on linux from https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz to /home/runner/nvim-nightly
+2025-07-05T12:34:28.2961866Z [command]/usr/bin/tar xzf /tmp/nvim-linux-x86_64.tar.gz
+2025-07-05T12:34:28.6949794Z [command]/home/runner/nvim-nightly/bin/nvim --version
+2025-07-05T12:34:28.6999432Z NVIM v0.12.0-dev-736+gd9465e984b
+2025-07-05T12:34:28.7002055Z Build type: RelWithDebInfo
+2025-07-05T12:34:28.7005153Z LuaJIT 2.1.1744317938
+2025-07-05T12:34:28.7006676Z Run "nvim -V1 -v" for more info
+2025-07-05T12:34:28.7008309Z Installed version:
+2025-07-05T12:34:28.7009739Z NVIM v0.12.0-dev-736+gd9465e984b
+2025-07-05T12:34:28.7011659Z Build type: RelWithDebInfo
+2025-07-05T12:34:28.7013230Z LuaJIT 2.1.1744317938
+2025-07-05T12:34:28.7014691Z Run "nvim -V1 -v" for more info
+2025-07-05T12:34:28.7015824Z 
+2025-07-05T12:34:28.7018977Z Installed executable: /home/runner/nvim-nightly/bin/nvim
+2025-07-05T12:34:28.7022724Z Installation successfully done: { executable: 'nvim', binDir: '/home/runner/nvim-nightly/bin' }

@@ -1,0 +1,29 @@
+﻿2025-07-05T12:34:28.4605768Z ##[group]Run rhysd/action-setup-vim@v1
+2025-07-05T12:34:28.4606364Z with:
+2025-07-05T12:34:28.4606830Z   neovim: true
+2025-07-05T12:34:28.4607223Z   version: stable
+2025-07-05T12:34:28.4607746Z   token: ***
+2025-07-05T12:34:28.4608104Z ##[endgroup]
+2025-07-05T12:34:28.5742757Z Extracted configuration: {
+2025-07-05T12:34:28.5743842Z   version: 'stable',
+2025-07-05T12:34:28.5744610Z   neovim: true,
+2025-07-05T12:34:28.5745283Z   os: 'linux',
+2025-07-05T12:34:28.5746469Z   arch: 'x86_64',
+2025-07-05T12:34:28.5747176Z   configureArgs: null,
+2025-07-05T12:34:28.5748309Z   token: '***'
+2025-07-05T12:34:28.5749215Z }
+2025-07-05T12:34:28.5756216Z Downloading Neovim stable on linux from https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz to /home/runner/nvim-stable
+2025-07-05T12:34:28.8540729Z [command]/usr/bin/tar xzf /tmp/nvim-linux-x86_64.tar.gz
+2025-07-05T12:34:29.1110655Z [command]/home/runner/nvim-stable/bin/nvim --version
+2025-07-05T12:34:29.1156791Z NVIM v0.11.2
+2025-07-05T12:34:29.1157449Z Build type: Release
+2025-07-05T12:34:29.1157768Z LuaJIT 2.1.1741730670
+2025-07-05T12:34:29.1163736Z Run "nvim -V1 -v" for more info
+2025-07-05T12:34:29.1164254Z Installed version:
+2025-07-05T12:34:29.1164675Z NVIM v0.11.2
+2025-07-05T12:34:29.1165101Z Build type: Release
+2025-07-05T12:34:29.1165561Z LuaJIT 2.1.1741730670
+2025-07-05T12:34:29.1165931Z Run "nvim -V1 -v" for more info
+2025-07-05T12:34:29.1166141Z 
+2025-07-05T12:34:29.1177634Z Installed executable: /home/runner/nvim-stable/bin/nvim
+2025-07-05T12:34:29.1179367Z Installation successfully done: { executable: 'nvim', binDir: '/home/runner/nvim-stable/bin' }

@@ -1,0 +1,1450 @@
+﻿2025-07-05T12:34:26.9152564Z Current runner version: '2.325.0'
+2025-07-05T12:34:26.9188498Z ##[group]Runner Image Provisioner
+2025-07-05T12:34:26.9190082Z Hosted Compute Agent
+2025-07-05T12:34:26.9190910Z Version: 20250620.352
+2025-07-05T12:34:26.9191847Z Commit: f262f3aba23b10ea191b2a62bdee1ca4c3d344da
+2025-07-05T12:34:26.9192998Z Build Date: 2025-06-20T19:27:17Z
+2025-07-05T12:34:26.9194076Z ##[endgroup]
+2025-07-05T12:34:26.9194997Z ##[group]Operating System
+2025-07-05T12:34:26.9196103Z Ubuntu
+2025-07-05T12:34:26.9196972Z 24.04.2
+2025-07-05T12:34:26.9197719Z LTS
+2025-07-05T12:34:26.9198582Z ##[endgroup]
+2025-07-05T12:34:26.9199685Z ##[group]Runner Image
+2025-07-05T12:34:26.9200698Z Image: ubuntu-24.04
+2025-07-05T12:34:26.9201522Z Version: 20250622.1.0
+2025-07-05T12:34:26.9203457Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250622.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-07-05T12:34:26.9206133Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250622.1
+2025-07-05T12:34:26.9207935Z ##[endgroup]
+2025-07-05T12:34:26.9210011Z ##[group]GITHUB_TOKEN Permissions
+2025-07-05T12:34:26.9213019Z Contents: read
+2025-07-05T12:34:26.9213922Z Metadata: read
+2025-07-05T12:34:26.9214732Z Packages: read
+2025-07-05T12:34:26.9215725Z ##[endgroup]
+2025-07-05T12:34:26.9218608Z Secret source: Actions
+2025-07-05T12:34:26.9220238Z Prepare workflow directory
+2025-07-05T12:34:26.9700843Z Prepare all required actions
+2025-07-05T12:34:26.9757266Z Getting action download info
+2025-07-05T12:34:27.2265081Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-07-05T12:34:27.2266187Z Version: 4.2.2
+2025-07-05T12:34:27.2267251Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-07-05T12:34:27.2268390Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-07-05T12:34:27.2269378Z ##[endgroup]
+2025-07-05T12:34:27.3025741Z Download action repository 'rhysd/action-setup-vim@v1' (SHA:8e931b9954b19d4203d5caa5ff5521f3bc21dcc7)
+2025-07-05T12:34:27.7354135Z Complete job name: test (stable)
+2025-07-05T12:34:27.8025703Z ##[group]Run actions/checkout@v4
+2025-07-05T12:34:27.8026528Z with:
+2025-07-05T12:34:27.8026912Z   fetch-depth: 0
+2025-07-05T12:34:27.8027353Z   repository: martintrojer/jj-fugitive
+2025-07-05T12:34:27.8028008Z   token: ***
+2025-07-05T12:34:27.8028389Z   ssh-strict: true
+2025-07-05T12:34:27.8028952Z   ssh-user: git
+2025-07-05T12:34:27.8029361Z   persist-credentials: true
+2025-07-05T12:34:27.8029797Z   clean: true
+2025-07-05T12:34:27.8030201Z   sparse-checkout-cone-mode: true
+2025-07-05T12:34:27.8030663Z   fetch-tags: false
+2025-07-05T12:34:27.8031055Z   show-progress: true
+2025-07-05T12:34:27.8031456Z   lfs: false
+2025-07-05T12:34:27.8031821Z   submodules: false
+2025-07-05T12:34:27.8032226Z   set-safe-directory: true
+2025-07-05T12:34:27.8032913Z ##[endgroup]
+2025-07-05T12:34:27.9090655Z Syncing repository: martintrojer/jj-fugitive
+2025-07-05T12:34:27.9092679Z ##[group]Getting Git version info
+2025-07-05T12:34:27.9093480Z Working directory is '/home/runner/work/jj-fugitive/jj-fugitive'
+2025-07-05T12:34:27.9094464Z [command]/usr/bin/git version
+2025-07-05T12:34:27.9134779Z git version 2.49.0
+2025-07-05T12:34:27.9161751Z ##[endgroup]
+2025-07-05T12:34:27.9184645Z Temporarily overriding HOME='/home/runner/work/_temp/209b256d-2e3a-47e9-8d58-77a6dc391666' before making global git config changes
+2025-07-05T12:34:27.9187020Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-05T12:34:27.9191090Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:27.9225022Z Deleting the contents of '/home/runner/work/jj-fugitive/jj-fugitive'
+2025-07-05T12:34:27.9229024Z ##[group]Initializing the repository
+2025-07-05T12:34:27.9233655Z [command]/usr/bin/git init /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:27.9289816Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-07-05T12:34:27.9291229Z hint: is subject to change. To configure the initial branch name to use in all
+2025-07-05T12:34:27.9292873Z hint: of your new repositories, which will suppress this warning, call:
+2025-07-05T12:34:27.9293895Z hint:
+2025-07-05T12:34:27.9294561Z hint: 	git config --global init.defaultBranch <name>
+2025-07-05T12:34:27.9295591Z hint:
+2025-07-05T12:34:27.9296566Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-07-05T12:34:27.9298172Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-07-05T12:34:27.9299738Z hint:
+2025-07-05T12:34:27.9300432Z hint: 	git branch -m <name>
+2025-07-05T12:34:27.9301685Z Initialized empty Git repository in /home/runner/work/jj-fugitive/jj-fugitive/.git/
+2025-07-05T12:34:27.9307447Z [command]/usr/bin/git remote add origin https://github.com/martintrojer/jj-fugitive
+2025-07-05T12:34:27.9340712Z ##[endgroup]
+2025-07-05T12:34:27.9341861Z ##[group]Disabling automatic garbage collection
+2025-07-05T12:34:27.9345556Z [command]/usr/bin/git config --local gc.auto 0
+2025-07-05T12:34:27.9376542Z ##[endgroup]
+2025-07-05T12:34:27.9377760Z ##[group]Setting up auth
+2025-07-05T12:34:27.9384247Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-05T12:34:27.9416794Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-05T12:34:27.9705961Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-05T12:34:27.9740078Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-05T12:34:27.9980442Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-07-05T12:34:28.0014782Z ##[endgroup]
+2025-07-05T12:34:28.0015637Z ##[group]Fetching the repository
+2025-07-05T12:34:28.0032793Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2025-07-05T12:34:28.4096172Z From https://github.com/martintrojer/jj-fugitive
+2025-07-05T12:34:28.4097479Z  * [new branch]      fix-repository-detection -> origin/fix-repository-detection
+2025-07-05T12:34:28.4098267Z  * [new branch]      main       -> origin/main
+2025-07-05T12:34:28.4130596Z [command]/usr/bin/git branch --list --remote origin/main
+2025-07-05T12:34:28.4153501Z   origin/main
+2025-07-05T12:34:28.4162510Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2025-07-05T12:34:28.4182363Z 88615cf2a8d9018c87077c13d365a043e254e257
+2025-07-05T12:34:28.4187822Z ##[endgroup]
+2025-07-05T12:34:28.4188723Z ##[group]Determining the checkout info
+2025-07-05T12:34:28.4189956Z ##[endgroup]
+2025-07-05T12:34:28.4193047Z [command]/usr/bin/git sparse-checkout disable
+2025-07-05T12:34:28.4227846Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-07-05T12:34:28.4252367Z ##[group]Checking out the ref
+2025-07-05T12:34:28.4255954Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2025-07-05T12:34:28.4332022Z Switched to a new branch 'main'
+2025-07-05T12:34:28.4334419Z branch 'main' set up to track 'origin/main'.
+2025-07-05T12:34:28.4341359Z ##[endgroup]
+2025-07-05T12:34:28.4375940Z [command]/usr/bin/git log -1 --format=%H
+2025-07-05T12:34:28.4397211Z 88615cf2a8d9018c87077c13d365a043e254e257
+2025-07-05T12:34:28.4605788Z ##[group]Run rhysd/action-setup-vim@v1
+2025-07-05T12:34:28.4606372Z with:
+2025-07-05T12:34:28.4606835Z   neovim: true
+2025-07-05T12:34:28.4607225Z   version: stable
+2025-07-05T12:34:28.4607749Z   token: ***
+2025-07-05T12:34:28.4608107Z ##[endgroup]
+2025-07-05T12:34:28.5742840Z Extracted configuration: {
+2025-07-05T12:34:28.5743858Z   version: 'stable',
+2025-07-05T12:34:28.5744624Z   neovim: true,
+2025-07-05T12:34:28.5745294Z   os: 'linux',
+2025-07-05T12:34:28.5746484Z   arch: 'x86_64',
+2025-07-05T12:34:28.5747190Z   configureArgs: null,
+2025-07-05T12:34:28.5748329Z   token: '***'
+2025-07-05T12:34:28.5749230Z }
+2025-07-05T12:34:28.5756247Z Downloading Neovim stable on linux from https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz to /home/runner/nvim-stable
+2025-07-05T12:34:28.8540830Z [command]/usr/bin/tar xzf /tmp/nvim-linux-x86_64.tar.gz
+2025-07-05T12:34:29.1110751Z [command]/home/runner/nvim-stable/bin/nvim --version
+2025-07-05T12:34:29.1156971Z NVIM v0.11.2
+2025-07-05T12:34:29.1157456Z Build type: Release
+2025-07-05T12:34:29.1157772Z LuaJIT 2.1.1741730670
+2025-07-05T12:34:29.1163759Z Run "nvim -V1 -v" for more info
+2025-07-05T12:34:29.1164266Z Installed version:
+2025-07-05T12:34:29.1164691Z NVIM v0.11.2
+2025-07-05T12:34:29.1165119Z Build type: Release
+2025-07-05T12:34:29.1165575Z LuaJIT 2.1.1741730670
+2025-07-05T12:34:29.1165939Z Run "nvim -V1 -v" for more info
+2025-07-05T12:34:29.1166146Z 
+2025-07-05T12:34:29.1177668Z Installed executable: /home/runner/nvim-stable/bin/nvim
+2025-07-05T12:34:29.1179383Z Installation successfully done: { executable: 'nvim', binDir: '/home/runner/nvim-stable/bin' }
+2025-07-05T12:34:29.1352463Z ##[group]Run curl -L https://github.com/martinvonz/jj/releases/download/v0.15.1/jj-v0.15.1-x86_64-unknown-linux-musl.tar.gz -o jj.tar.gz
+2025-07-05T12:34:29.1353578Z [36;1mcurl -L https://github.com/martinvonz/jj/releases/download/v0.15.1/jj-v0.15.1-x86_64-unknown-linux-musl.tar.gz -o jj.tar.gz[0m
+2025-07-05T12:34:29.1354172Z [36;1mtar -xzf jj.tar.gz[0m
+2025-07-05T12:34:29.1354445Z [36;1msudo mv jj /usr/local/bin/[0m
+2025-07-05T12:34:29.1354766Z [36;1mrm jj.tar.gz  # Clean up large file before jj init[0m
+2025-07-05T12:34:29.1355080Z [36;1mjj --version[0m
+2025-07-05T12:34:29.1746264Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:34:29.1746621Z ##[endgroup]
+2025-07-05T12:34:29.1909975Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-05T12:34:29.1910747Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-05T12:34:29.1911037Z 
+2025-07-05T12:34:29.2955778Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-05T12:34:29.2956502Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-05T12:34:29.3729056Z 
+2025-07-05T12:34:29.3729788Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-05T12:34:29.4794239Z 
+2025-07-05T12:34:29.4794706Z 100 9031k  100 9031k    0     0  30.5M      0 --:--:-- --:--:-- --:--:-- 30.5M
+2025-07-05T12:34:29.6686953Z jj 0.15.1-bf76080f42f77cad934d9a5202c7b7d29ab2c890
+2025-07-05T12:34:29.6724530Z ##[group]Run # Initialize jj in the existing git repository (checkout already provides full history)
+2025-07-05T12:34:29.6725337Z [36;1m# Initialize jj in the existing git repository (checkout already provides full history)[0m
+2025-07-05T12:34:29.6725818Z [36;1mjj git init --colocate .[0m
+2025-07-05T12:34:29.6726080Z [36;1m[0m
+2025-07-05T12:34:29.6726352Z [36;1m# Create test files for comprehensive testing[0m
+2025-07-05T12:34:29.6726690Z [36;1mecho "test content" > test.txt[0m
+2025-07-05T12:34:29.6726988Z [36;1mecho "modified content" > test2.txt[0m
+2025-07-05T12:34:29.6727287Z [36;1mmkdir -p subdir[0m
+2025-07-05T12:34:29.6727556Z [36;1mecho "subdir content" > subdir/file.txt[0m
+2025-07-05T12:34:29.6727849Z [36;1m[0m
+2025-07-05T12:34:29.6728137Z [36;1m# In jj v0.15.1, files are automatically tracked, just commit them[0m
+2025-07-05T12:34:29.6728528Z [36;1mjj commit -m "Add test files for CI testing"[0m
+2025-07-05T12:34:29.6729067Z [36;1m[0m
+2025-07-05T12:34:29.6729318Z [36;1m# Verify setup[0m
+2025-07-05T12:34:29.6729570Z [36;1mecho "=== Repository Status ==="[0m
+2025-07-05T12:34:29.6729852Z [36;1mjj status[0m
+2025-07-05T12:34:29.6730072Z [36;1mecho "=== Log ==="[0m
+2025-07-05T12:34:29.6730319Z [36;1mjj log --limit 3[0m
+2025-07-05T12:34:29.6788182Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:34:29.6788456Z ##[endgroup]
+2025-07-05T12:34:29.7056152Z Done importing changes from the underlying Git repo.
+2025-07-05T12:34:29.7146576Z The following remote branches aren't associated with the existing local branches:
+2025-07-05T12:34:29.7147389Z   main@origin
+2025-07-05T12:34:29.7148035Z Hint: Run `jj branch track main@origin` to keep local branches updated on future pulls.
+2025-07-05T12:34:29.7150200Z Initialized repo in "."
+2025-07-05T12:34:29.7590231Z Working copy now at: rurywvyo fb910a6e (empty) (no description set)
+2025-07-05T12:34:29.7591142Z Parent commit      : nkvnytxq 89e0fab5 Add test files for CI testing
+2025-07-05T12:34:29.7609534Z Name and email not configured. Until configured, your commits will be created with the empty identity, and can't be pushed to remotes. To configure, run:
+2025-07-05T12:34:29.7610325Z   jj config set --user user.name "Some One"
+2025-07-05T12:34:29.7610714Z   jj config set --user user.email "someone@example.com"
+2025-07-05T12:34:29.7611098Z === Repository Status ===
+2025-07-05T12:34:29.7769631Z The working copy is clean
+2025-07-05T12:34:29.7781460Z Working copy : rurywvyo fb910a6e (empty) (no description set)
+2025-07-05T12:34:29.7782280Z Parent commit: nkvnytxq 89e0fab5 Add test files for CI testing
+2025-07-05T12:34:29.7795336Z === Log ===
+2025-07-05T12:34:29.7977735Z @  rurywvyo (no email set) 2025-07-05 12:34:29.000 +00:00 fb910a6e
+2025-07-05T12:34:29.7978443Z │  (empty) (no description set)
+2025-07-05T12:34:29.7979150Z ◉  nkvnytxq (no email set) 2025-07-05 12:34:29.000 +00:00 HEAD@git 89e0fab5
+2025-07-05T12:34:29.7979610Z │  Add test files for CI testing
+2025-07-05T12:34:29.7980202Z ◉  lpvsxpvs martin.trojer@gmail.com 2025-07-05 13:34:15.000 +01:00 main main@origin 88615cf2
+2025-07-05T12:34:29.7980768Z │  Fix side-by-side diff view error with modern jj syntax
+2025-07-05T12:34:29.7981117Z ~
+2025-07-05T12:34:29.8021673Z ##[group]Run export CI=true
+2025-07-05T12:34:29.8022024Z [36;1mexport CI=true[0m
+2025-07-05T12:34:29.8022258Z [36;1m[0m
+2025-07-05T12:34:29.8022467Z [36;1m# Make test runner executable[0m
+2025-07-05T12:34:29.8022790Z [36;1mchmod +x tests/run_tests.sh[0m
+2025-07-05T12:34:29.8023049Z [36;1m[0m
+2025-07-05T12:34:29.8023273Z [36;1m# Debug: Check Neovim installation[0m
+2025-07-05T12:34:29.8023564Z [36;1mecho "=== Neovim Debug ==="[0m
+2025-07-05T12:34:29.8023844Z [36;1mnvim --version[0m
+2025-07-05T12:34:29.8024082Z [36;1mwhich nvim[0m
+2025-07-05T12:34:29.8024288Z [36;1m[0m
+2025-07-05T12:34:29.8024512Z [36;1m# Debug: Test basic Neovim execution[0m
+2025-07-05T12:34:29.8024806Z [36;1mecho "=== Basic Neovim Test ==="[0m
+2025-07-05T12:34:29.8025161Z [36;1mecho 'print("Neovim works")' | nvim --headless -l -[0m
+2025-07-05T12:34:29.8025480Z [36;1m[0m
+2025-07-05T12:34:29.8025787Z [36;1m# Run tests only (skip linting/formatting - handled by separate jobs)[0m
+2025-07-05T12:34:29.8026226Z [36;1m./tests/run_tests.sh --tests-only[0m
+2025-07-05T12:34:29.8085896Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:34:29.8086175Z ##[endgroup]
+2025-07-05T12:34:29.8175376Z === Neovim Debug ===
+2025-07-05T12:34:29.8200600Z NVIM v0.11.2
+2025-07-05T12:34:29.8200984Z Build type: Release
+2025-07-05T12:34:29.8201385Z LuaJIT 2.1.1741730670
+2025-07-05T12:34:29.8201704Z Run "nvim -V1 -v" for more info
+2025-07-05T12:34:29.8213632Z /home/runner/nvim-stable/bin/nvim
+2025-07-05T12:34:29.8215347Z === Basic Neovim Test ===
+2025-07-05T12:34:29.8257918Z Neovim works
+2025-07-05T12:34:29.8321023Z 🚀 === jj-fugitive Test Suite ===
+2025-07-05T12:34:29.8321491Z 
+2025-07-05T12:34:29.8451326Z ✅ Running in jj repository
+2025-07-05T12:34:29.8469726Z 🔧 Setting up temporary jj repository for tests...
+2025-07-05T12:34:29.8470784Z    Temp repo: /tmp/jj-fugitive-tests-4jHmdz
+2025-07-05T12:34:29.8714357Z ✅ Temporary test repository ready
+2025-07-05T12:34:29.8714686Z 
+2025-07-05T12:34:29.8715213Z ⏭️  Skipping linting and formatting (--tests-only mode)
+2025-07-05T12:34:29.8715487Z 
+2025-07-05T12:34:29.8715656Z 🔧 Running functional tests...
+2025-07-05T12:34:29.8715831Z 
+2025-07-05T12:34:29.8716042Z 🔍 CI environment detected - enabling verbose output
+2025-07-05T12:34:29.8716556Z 
+2025-07-05T12:34:29.8716702Z 📋 Discovering test files...
+2025-07-05T12:34:29.8749011Z ✓ Found: test_ci_debug.lua
+2025-07-05T12:34:29.8763440Z ✓ Found: test_color_rendering.lua
+2025-07-05T12:34:29.8776206Z ✓ Found: test_commit_extraction.lua
+2025-07-05T12:34:29.8788418Z ✓ Found: test_commit_interactive.lua
+2025-07-05T12:34:29.8801189Z ✓ Found: test_completion_enhancement.lua
+2025-07-05T12:34:29.8813509Z ✓ Found: test_completion_functionality.lua
+2025-07-05T12:34:29.8826274Z ✓ Found: test_describe_interactive.lua
+2025-07-05T12:34:29.8838352Z ✓ Found: test_documentation.lua
+2025-07-05T12:34:29.8850820Z ✓ Found: test_format_consistency.lua
+2025-07-05T12:34:29.8863872Z ✓ Found: test_git_format_consistency.lua
+2025-07-05T12:34:29.8876511Z ✓ Found: test_improved_diff.lua
+2025-07-05T12:34:29.8888637Z ✓ Found: test_improved_diff_navigation.lua
+2025-07-05T12:34:29.8901008Z ✓ Found: test_interactive_command_detection.lua
+2025-07-05T12:34:29.8913108Z ✓ Found: test_log_color_rendering.lua
+2025-07-05T12:34:29.8925383Z ✓ Found: test_log_enter_functionality.lua
+2025-07-05T12:34:29.8939068Z ✓ Found: test_log_expand_functionality.lua
+2025-07-05T12:34:29.8951811Z ✓ Found: test_log_functionality.lua
+2025-07-05T12:34:29.8964099Z ✓ Found: test_multi_level_completion.lua
+2025-07-05T12:34:29.8976744Z ✓ Found: test_native_log_view.lua
+2025-07-05T12:34:29.8989371Z ✓ Found: test_remaining_interactive_commands.lua
+2025-07-05T12:34:29.9001501Z ✓ Found: test_repository_detection.lua
+2025-07-05T12:34:29.9013349Z ✓ Found: test_simple_ci.lua
+2025-07-05T12:34:29.9025878Z ✓ Found: test_status_enter_l_keys.lua
+2025-07-05T12:34:29.9037850Z ✓ Found: test_status_features.lua
+2025-07-05T12:34:29.9050494Z ✓ Found: test_status_functionality.lua
+2025-07-05T12:34:29.9063020Z ✓ Found: test_status_keybindings_simple.lua
+2025-07-05T12:34:29.9074756Z ✓ Found: test_unified_ansi_functionality.lua
+2025-07-05T12:34:29.9087623Z ✓ Found: test_user_experience_simulation.lua
+2025-07-05T12:34:29.9099762Z ✓ Found: test_vim_fugitive_alignment.lua
+2025-07-05T12:34:29.9100218Z 
+2025-07-05T12:34:29.9100522Z 🎯 Found 29 test files to run
+2025-07-05T12:34:29.9100854Z 
+2025-07-05T12:34:29.9113997Z 🧪 Running: test_ci_debug
+2025-07-05T12:34:29.9114508Z    File: tests/test_ci_debug.lua
+2025-07-05T12:34:29.9115072Z    🔍 Running with verbose output...
+2025-07-05T12:34:29.9115649Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:29.9158493Z 🔍 CI Debug Test Starting
+2025-07-05T12:34:29.9175855Z 📍 Working directory: /tmp/jj-fugitive-tests-4jHmdz/test-repo
+2025-07-05T12:34:29.9176360Z 📍 Neovim version: 0.11.2+ga73904168a
+2025-07-05T12:34:29.9177458Z 📁 Directory contents:
+2025-07-05T12:34:29.9177734Z   doc
+2025-07-05T12:34:29.9177945Z   lua
+2025-07-05T12:34:29.9178171Z   plugin
+2025-07-05T12:34:29.9307122Z   tests
+2025-07-05T12:34:29.9794235Z 📦 jj version check:
+2025-07-05T12:34:29.9794965Z ✅ jj available: jj 0.15.1-bf76080f42f77cad934d9a5202c7b7d29ab2c890
+2025-07-05T12:34:29.9795661Z ✅ jj status command works
+2025-07-05T12:34:29.9796259Z 📄 Output: Working copy changes:
+2025-07-05T12:34:29.9796716Z A doc/README.md
+2025-07-05T12:34:29.9797111Z A doc/development.md
+2025-07-05T12:34:29.9797516Z A doc/enhanced-diff.md
+2025-07-05T12:34:29.9797929Z A doc/j-command.md
+2025-07-05T12:34:29.9798300Z A doc/jdiff.md
+2025-07-05T12:34:29.9798681Z A doc/jj-fugitive.txt
+2025-07-05T12:34:29.9799275Z A doc/jstatus.md
+2025-07-05T12:34:29.9799632Z A doc/tags
+2025-07-05T12:34:29.9799989Z A lua/jj-fugitive/ansi.lua
+2025-07-05T12:34:29.9800449Z A lua/j...
+2025-07-05T12:34:29.9805443Z 🔌 Loading plugin...
+2025-07-05T12:34:29.9805993Z ✅ Plugin loaded successfully
+2025-07-05T12:34:29.9809627Z 🧪 Testing basic plugin functions...
+2025-07-05T12:34:29.9810386Z ✅ Repository root: /tmp/jj-fugitive-tests-4jHmdz/test-repo
+2025-07-05T12:34:29.9811106Z 🎉 CI debug test completed
+2025-07-05T12:34:29.9811574Z 🎯 Exit code: 0
+2025-07-05T12:34:29.9818005Z    ✅ PASSED
+2025-07-05T12:34:29.9818254Z 
+2025-07-05T12:34:29.9832561Z 🧪 Running: test_color_rendering
+2025-07-05T12:34:29.9833403Z    File: tests/test_color_rendering.lua
+2025-07-05T12:34:29.9834039Z    🔍 Running with verbose output...
+2025-07-05T12:34:29.9834645Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:29.9877442Z 🔍 CI Environment Detected - Starting color rendering tests
+2025-07-05T12:34:29.9909476Z 📍 Working directory: /tmp/jj-fugitive-tests-4jHmdz/test-repo
+2025-07-05T12:34:29.9916659Z 📍 Neovim version: 0.11.2
+2025-07-05T12:34:29.9921867Z 🎨 === jj-fugitive Color Rendering Tests ===
+2025-07-05T12:34:30.0037310Z ✅ PASS: Diff module loading
+2025-07-05T12:34:30.0222992Z ℹ️  Using jj v0.15.x - files are auto-tracked
+2025-07-05T12:34:30.0223678Z ✅ PASS: jj diff produces ANSI color codes
+2025-07-05T12:34:30.0414139Z    Found ANSI codes in diff output
+2025-07-05T12:34:30.0415932Z ✅ PASS: Diff buffer created
+2025-07-05T12:34:30.0417897Z ✅ PASS: Diff buffer found
+2025-07-05T12:34:30.0418460Z ✅ PASS: ANSI codes stripped from buffer
+2025-07-05T12:34:30.0419332Z ✅ PASS: Buffer has diff content
+2025-07-05T12:34:30.0419973Z ✅ PASS: Buffer has color highlights
+2025-07-05T12:34:30.0420865Z    Found highlight groups: JjDiffBold, JjDiffBold, JjDiffBold, JjDiffBold, JjDiffBold, Cyan, JjDiffAdd
+2025-07-05T12:34:30.0421745Z    Buffer content length: 291
+2025-07-05T12:34:30.0422179Z    First 150 chars: 
+2025-07-05T12:34:30.0422602Z # File: test_color_rendering.txt
+2025-07-05T12:34:30.0423104Z # Changes in working copy vs parent (@-)
+2025-07-05T12:34:30.0423460Z 
+2025-07-05T12:34:30.0423791Z diff --git a/test_color_rendering.txt b/test_color_rendering.txt
+2025-07-05T12:34:30.0424438Z new file 
+2025-07-05T12:34:30.0424644Z 
+2025-07-05T12:34:30.0424928Z 📊 === Test Results Summary ===
+2025-07-05T12:34:30.0425398Z Passed: 7/7 tests
+2025-07-05T12:34:30.0426021Z    ✅ PASSED
+2025-07-05T12:34:30.0426247Z 
+2025-07-05T12:34:30.0441005Z 🧪 Running: test_commit_extraction
+2025-07-05T12:34:30.0441599Z    File: tests/test_commit_extraction.lua
+2025-07-05T12:34:30.0442262Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.0442940Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.0494728Z 🎉 All tests passed!🔍 === jj-fugitive Commit Extraction Tests ===
+2025-07-05T12:34:30.0711046Z ✅ PASS: ANSI module loading
+2025-07-05T12:34:30.0711654Z ✅ PASS: jj log command produces output
+2025-07-05T12:34:30.0712345Z ✅ PASS: Raw output contains ANSI codes
+2025-07-05T12:34:30.0713643Z ✅ PASS: ANSI codes stripped from line
+2025-07-05T12:34:30.0714235Z ✅ PASS: Clean line has content
+2025-07-05T12:34:30.0716357Z ✅ PASS: Commits extracted from log
+2025-07-05T12:34:30.0717103Z ✅ PASS: All extracted commit IDs are valid
+2025-07-05T12:34:30.0717781Z ✅ PASS: Clean lines contain no ANSI codes
+2025-07-05T12:34:30.0718355Z    Extracted commit details:
+2025-07-05T12:34:30.0719025Z      1: a3056da1
+2025-07-05T12:34:30.0719689Z         Clean: @  szrskuuy (no email set) 2025-07-05 12:34:30.000 +00:00 a3...
+2025-07-05T12:34:30.0720361Z      2: 00000000
+2025-07-05T12:34:30.0720954Z         Clean: ◉  zzzzzzzz root() 00000000
+2025-07-05T12:34:30.0721374Z 
+2025-07-05T12:34:30.0721647Z 📊 === Test Results Summary ===
+2025-07-05T12:34:30.0722149Z Passed: 8/8 tests
+2025-07-05T12:34:30.0722706Z 🎉 All commit extraction tests passed!
+2025-07-05T12:34:30.0723297Z 📝 Key achievements:
+2025-07-05T12:34:30.0723844Z    ✅ ANSI escape codes properly stripped
+2025-07-05T12:34:30.0724611Z    ✅ Commit IDs accurately extracted from native jj output
+2025-07-05T12:34:30.0725401Z    ✅ Multiple pattern matching strategies work
+2025-07-05T12:34:30.0726022Z    ✅ PASSED
+2025-07-05T12:34:30.0726260Z 
+2025-07-05T12:34:30.0742638Z 🧪 Running: test_commit_interactive
+2025-07-05T12:34:30.0743203Z    File: tests/test_commit_interactive.lua
+2025-07-05T12:34:30.0743818Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.0744478Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.0797319Z    ✅ Clean lines ready for interactive processing🚀 === jj-fugitive Commit Interactive Tests ===
+2025-07-05T12:34:30.0798344Z ✅ PASS: Main module loading
+2025-07-05T12:34:30.0985636Z ✅ PASS: commit_interactive function exists
+2025-07-05T12:34:30.0986362Z ✅ PASS: commit_interactive creates buffer
+2025-07-05T12:34:30.0986956Z ✅ PASS: Buffer has correct buftype
+2025-07-05T12:34:30.0987496Z ✅ PASS: Buffer has correct filetype
+2025-07-05T12:34:30.0987890Z ✅ PASS: Buffer is modifiable
+2025-07-05T12:34:30.1173739Z ✅ PASS: Buffer has help comments
+2025-07-05T12:34:30.1174494Z ✅ PASS: commit_interactive works with filesets
+2025-07-05T12:34:30.1175363Z ✅ PASS: Buffer shows fileset information
+2025-07-05T12:34:30.1175986Z ✅ PASS: BufWriteCmd autocmd is set
+2025-07-05T12:34:30.1176561Z ✅ PASS: Buffer has correct name format
+2025-07-05T12:34:30.1365025Z ✅ PASS: Buffer includes current description
+2025-07-05T12:34:30.1555456Z ✅ PASS: Empty filesets handled
+2025-07-05T12:34:30.1556309Z ✅ PASS: Flag filtering works
+2025-07-05T12:34:30.1556629Z 
+2025-07-05T12:34:30.1556895Z 📊 === Test Results Summary ===
+2025-07-05T12:34:30.1557369Z Passed: 14/14 tests
+2025-07-05T12:34:30.1562865Z    ✅ PASSED
+2025-07-05T12:34:30.1563276Z 
+2025-07-05T12:34:30.1577683Z 🧪 Running: test_completion_enhancement
+2025-07-05T12:34:30.1578320Z    File: tests/test_completion_enhancement.lua
+2025-07-05T12:34:30.1579480Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.1580111Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.1660191Z 🎉 All tests passed!🚀 === Enhanced Completion Tests ===
+2025-07-05T12:34:30.1660658Z 
+2025-07-05T12:34:30.1789734Z 🧪 Test 1: Basic command completion
+2025-07-05T12:34:30.1790391Z ✅ PASS: Basic command completion works
+2025-07-05T12:34:30.1790894Z ✅ PASS: Includes git command
+2025-07-05T12:34:30.1791179Z ✅ PASS: Includes status command
+2025-07-05T12:34:30.1791334Z 
+2025-07-05T12:34:30.1912237Z 🧪 Test 2: Git subcommand completion
+2025-07-05T12:34:30.1913215Z ✅ PASS: Git subcommand completion works
+2025-07-05T12:34:30.1913861Z ✅ PASS: Git subcommands include common commands
+2025-07-05T12:34:30.1914212Z 
+2025-07-05T12:34:30.1914468Z 🧪 Test 3: Git subcommand partial matching
+2025-07-05T12:34:30.1915056Z ✅ PASS: Git subcommand partial matching works
+2025-07-05T12:34:30.1915545Z ✅ PASS: Partial matching filters correctly
+2025-07-05T12:34:30.1915730Z 
+2025-07-05T12:34:30.2022808Z 🧪 Test 4: Bookmark subcommand completion
+2025-07-05T12:34:30.2024159Z ❌ FAIL: Bookmark subcommand completion works - Should return bookmark subcommands after ':J bookmark '
+2025-07-05T12:34:30.2025531Z ❌ FAIL: Bookmark subcommands include common commands - Should find at least 2 of: list, create, delete, set. Found 0
+2025-07-05T12:34:30.2026073Z 
+2025-07-05T12:34:30.2130248Z 🧪 Test 5: Regular command flags completion
+2025-07-05T12:34:30.2130913Z ✅ PASS: Status command flags completion works
+2025-07-05T12:34:30.2131472Z ✅ PASS: Status flags include help option
+2025-07-05T12:34:30.2131792Z 
+2025-07-05T12:34:30.2132042Z 🧪 Test 6: No subcommand pollution
+2025-07-05T12:34:30.2132643Z ✅ PASS: Status completion doesn't show git subcommands
+2025-07-05T12:34:30.2133013Z 
+2025-07-05T12:34:30.2243270Z 🧪 Test 7: Commands with subcommands recognition
+2025-07-05T12:34:30.2244116Z ✅ PASS: Git recognized as command with subcommands
+2025-07-05T12:34:30.2245010Z ✅ PASS: Non-subcommand commands provide flags
+2025-07-05T12:34:30.2245352Z 
+2025-07-05T12:34:30.2245769Z 🧪 Test 8: Edge cases
+2025-07-05T12:34:30.2246307Z ✅ PASS: Non-matching completion returns empty
+2025-07-05T12:34:30.2246634Z 
+2025-07-05T12:34:30.2246916Z 📊 === Enhanced Completion Test Results Summary ===
+2025-07-05T12:34:30.2247363Z Passed: 13/15 tests
+2025-07-05T12:34:30.2247802Z 💥 Some enhanced completion tests failed!
+2025-07-05T12:34:30.2248341Z   ❌ Bookmark subcommand completion works: Should return bookmark subcommands after ':J bookmark '
+2025-07-05T12:34:30.2256068Z    ❌ FAILED (exit code: 1)
+2025-07-05T12:34:30.2257459Z 
+2025-07-05T12:34:30.2270964Z 🧪 Running: test_completion_functionality
+2025-07-05T12:34:30.2271496Z    File: tests/test_completion_functionality.lua
+2025-07-05T12:34:30.2272022Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.2273016Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.2328027Z   ❌ Bookmark subcommands include common commands: Should find at least 2 of: list, create, delete, set. Found 0🚀 === jj-fugitive Completion Functionality Tests ===
+2025-07-05T12:34:30.2441004Z ✅ PASS: Completion module loading
+2025-07-05T12:34:30.2441639Z ✅ PASS: Basic command completion
+2025-07-05T12:34:30.2443787Z ✅ PASS: Status command in completions
+2025-07-05T12:34:30.2444699Z ✅ PASS: Command filtering works
+2025-07-05T12:34:30.2445212Z ✅ PASS: Space-triggered completion
+2025-07-05T12:34:30.2558510Z ✅ PASS: Space completion includes status
+2025-07-05T12:34:30.2560054Z ✅ PASS: Flag completion returns results
+2025-07-05T12:34:30.2560553Z ✅ PASS: Help flag in completions
+2025-07-05T12:34:30.2563421Z ✅ PASS: Space-triggered flag completion
+2025-07-05T12:34:30.2684882Z ✅ PASS: Space flag completion includes help
+2025-07-05T12:34:30.2869010Z ✅ PASS: Bookmark listing
+2025-07-05T12:34:30.2869559Z ✅ PASS: Changed files listing
+2025-07-05T12:34:30.2993258Z ✅ PASS: Cache clearing
+2025-07-05T12:34:30.2994248Z ✅ PASS: Main plugin completion integration
+2025-07-05T12:34:30.2994831Z ✅ PASS: Main plugin has status completion
+2025-07-05T12:34:30.2995162Z 
+2025-07-05T12:34:30.2995387Z 📊 === Test Results Summary ===
+2025-07-05T12:34:30.2995778Z Passed: 15/15 tests
+2025-07-05T12:34:30.3003121Z    ✅ PASSED
+2025-07-05T12:34:30.3003318Z 
+2025-07-05T12:34:30.3017717Z 🧪 Running: test_describe_interactive
+2025-07-05T12:34:30.3018210Z    File: tests/test_describe_interactive.lua
+2025-07-05T12:34:30.3018952Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.3019525Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.3071804Z 🎉 All tests passed!🚀 === jj-fugitive Describe Interactive Tests ===
+2025-07-05T12:34:30.3072921Z ✅ PASS: Main module loading
+2025-07-05T12:34:30.3269060Z ✅ PASS: describe_interactive function exists
+2025-07-05T12:34:30.3269816Z ✅ PASS: describe_interactive creates buffer
+2025-07-05T12:34:30.3270484Z ✅ PASS: Buffer has correct buftype
+2025-07-05T12:34:30.3271009Z ✅ PASS: Buffer has correct filetype
+2025-07-05T12:34:30.3271594Z ✅ PASS: Buffer is modifiable
+2025-07-05T12:34:30.3461482Z ✅ PASS: Buffer has help comments
+2025-07-05T12:34:30.3462131Z ✅ PASS: describe_interactive works with revision argument
+2025-07-05T12:34:30.3462643Z ✅ PASS: BufWriteCmd autocmd is set
+2025-07-05T12:34:30.3634337Z ✅ PASS: Buffer has correct name format
+2025-07-05T12:34:30.3634974Z jj command failed: Error: Revision "nonexistent-revision" doesn't exist
+2025-07-05T12:34:30.3635270Z 
+2025-07-05T12:34:30.3824732Z ✅ PASS: Invalid revision handled gracefully
+2025-07-05T12:34:30.3825339Z ✅ PASS: Multiple revisions handled
+2025-07-05T12:34:30.3825637Z 
+2025-07-05T12:34:30.3825874Z 📊 === Test Results Summary ===
+2025-07-05T12:34:30.3826304Z Passed: 12/12 tests
+2025-07-05T12:34:30.3832673Z    ✅ PASSED
+2025-07-05T12:34:30.3832860Z 
+2025-07-05T12:34:30.3847508Z 🧪 Running: test_documentation
+2025-07-05T12:34:30.3847928Z    File: tests/test_documentation.lua
+2025-07-05T12:34:30.3848446Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.3849131Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.3901444Z 🎉 All tests passed!🚀 === jj-fugitive Documentation Tests ===
+2025-07-05T12:34:30.3901836Z ✅ PASS: doc/ directory exists
+2025-07-05T12:34:30.3903374Z ✅ PASS: jj-fugitive.txt help file exists
+2025-07-05T12:34:30.3904060Z ✅ PASS: Help file has proper header
+2025-07-05T12:34:30.3904692Z ✅ PASS: Help file contains INTRODUCTION section
+2025-07-05T12:34:30.3905354Z ✅ PASS: Help file contains COMMANDS section
+2025-07-05T12:34:30.3905983Z ✅ PASS: Help file contains STATUS BUFFER section
+2025-07-05T12:34:30.3906605Z ✅ PASS: Help file contains DIFF BUFFER section
+2025-07-05T12:34:30.3907240Z ✅ PASS: Help file contains LOG BUFFER section
+2025-07-05T12:34:30.3907850Z ✅ PASS: Help file contains COMPLETION section
+2025-07-05T12:34:30.3908466Z ✅ PASS: Help file contains CONFIGURATION section
+2025-07-05T12:34:30.3909212Z ✅ PASS: Help file contains INTEGRATION section
+2025-07-05T12:34:30.3910068Z ✅ PASS: Help file contains EXAMPLES section
+2025-07-05T12:34:30.3910631Z ✅ PASS: Help file contains TROUBLESHOOTING section
+2025-07-05T12:34:30.3911165Z ✅ PASS: Help file contains ABOUT section
+2025-07-05T12:34:30.3911651Z ✅ PASS: Help file documents :J command
+2025-07-05T12:34:30.3912134Z ✅ PASS: Help file documents <CR> keybinding
+2025-07-05T12:34:30.3912635Z ✅ PASS: Help file documents D keybinding
+2025-07-05T12:34:30.3913108Z ✅ PASS: Help file documents dv keybinding
+2025-07-05T12:34:30.3913626Z ✅ PASS: Help file documents ds keybinding
+2025-07-05T12:34:30.3914098Z ✅ PASS: Help file documents R keybinding
+2025-07-05T12:34:30.3914608Z ✅ PASS: Help file documents g? keybinding
+2025-07-05T12:34:30.3915112Z ✅ PASS: Help file documents [c keybinding
+2025-07-05T12:34:30.3915579Z ✅ PASS: Help file documents ]c keybinding
+2025-07-05T12:34:30.3916097Z ✅ PASS: Help file has *jj-fugitive-status* tag
+2025-07-05T12:34:30.3916662Z ✅ PASS: Help file has *jj-fugitive-diff* tag
+2025-07-05T12:34:30.3917244Z ✅ PASS: Help file has *jj-fugitive-log* tag
+2025-07-05T12:34:30.3917798Z ✅ PASS: Help file has *jj-fugitive-completion* tag
+2025-07-05T12:34:30.3918365Z ✅ PASS: Help file has vim modeline
+2025-07-05T12:34:30.3921442Z ✅ PASS: Help file has substantial content
+2025-07-05T12:34:30.3926108Z ✅ PASS: Help file has sufficient help tags
+2025-07-05T12:34:30.3926642Z ✅ PASS: Help tags can be generated
+2025-07-05T12:34:30.3927097Z ✅ PASS: Help tags file created
+2025-07-05T12:34:30.3927343Z 
+2025-07-05T12:34:30.3927607Z 📊 === Documentation Test Results Summary ===
+2025-07-05T12:34:30.3928042Z Passed: 32/32 tests
+2025-07-05T12:34:30.3928422Z 🎉 All documentation tests passed!
+2025-07-05T12:34:30.3929118Z ✅ Vim-style help documentation created successfully
+2025-07-05T12:34:30.3929826Z Documentation features:
+2025-07-05T12:34:30.3930318Z   • Complete vim help file in doc/jj-fugitive.txt
+2025-07-05T12:34:30.3930880Z   • Proper vim help tags and cross-references
+2025-07-05T12:34:30.3931486Z   • Comprehensive command and keybinding documentation
+2025-07-05T12:34:30.3932050Z   • Examples and troubleshooting sections
+2025-07-05T12:34:30.3932559Z   • Integration with vim's help system
+2025-07-05T12:34:30.3932967Z Users can now access help with:
+2025-07-05T12:34:30.3933317Z   :help jj-fugitive
+2025-07-05T12:34:30.3933635Z   :help jj-fugitive-status
+2025-07-05T12:34:30.3938060Z    ✅ PASSED
+2025-07-05T12:34:30.3938259Z 
+2025-07-05T12:34:30.3950901Z 🧪 Running: test_format_consistency
+2025-07-05T12:34:30.3951324Z    File: tests/test_format_consistency.lua
+2025-07-05T12:34:30.3951820Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.3952326Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.4009960Z   :help :J🎨 === jj-fugitive Format Consistency Tests ===
+2025-07-05T12:34:30.4581807Z ✅ PASS: All modules loaded
+2025-07-05T12:34:30.4582373Z ✅ PASS: ANSI parsing produces clean text
+2025-07-05T12:34:30.4582958Z ✅ PASS: ANSI parsing extracts highlights
+2025-07-05T12:34:30.4583776Z ✅ PASS: Headers preserved in processed content
+2025-07-05T12:34:30.4584187Z ✅ PASS: Content processed and ANSI stripped
+2025-07-05T12:34:30.4589006Z ✅ PASS: Highlights adjusted for header offset
+2025-07-05T12:34:30.4589703Z ✅ PASS: Colored buffer created successfully
+2025-07-05T12:34:30.4590228Z ✅ PASS: Buffer contains headers
+2025-07-05T12:34:30.4590699Z ✅ PASS: Buffer content has no ANSI codes
+2025-07-05T12:34:30.4767503Z ✅ PASS: Buffer has diff filetype
+2025-07-05T12:34:30.5101535Z    Testing with commit ID: @  szrskuuyymyp
+2025-07-05T12:34:30.5102294Z ✅ PASS: jj show produces colored output
+2025-07-05T12:34:30.5104241Z ✅ PASS: jj diff produces colored output
+2025-07-05T12:34:30.5104786Z ✅ PASS: Show output ANSI processing works
+2025-07-05T12:34:30.5295134Z ✅ PASS: Diff output ANSI processing works
+2025-07-05T12:34:30.5485484Z ✅ PASS: Diff view creates buffer
+2025-07-05T12:34:30.5485978Z ✅ PASS: Log view creates buffer
+2025-07-05T12:34:30.5486681Z ✅ PASS: Diff buffer has consistent header format
+2025-07-05T12:34:30.5487613Z ✅ PASS: Diff buffer content clean of ANSI
+2025-07-05T12:34:30.5488163Z ✅ PASS: Unified formatting infrastructure
+2025-07-05T12:34:30.5488466Z 
+2025-07-05T12:34:30.5488685Z 📊 === Test Results Summary ===
+2025-07-05T12:34:30.5489237Z Passed: 19/19 tests
+2025-07-05T12:34:30.5489651Z 🎉 All format consistency tests passed!
+2025-07-05T12:34:30.5490101Z 📝 Achievements:
+2025-07-05T12:34:30.5490535Z    ✅ ANSI parsing works consistently across modules
+2025-07-05T12:34:30.5491030Z    ✅ Buffer creation uses unified formatting
+2025-07-05T12:34:30.5491341Z    ✅ Headers and content formatting is consistent
+2025-07-05T12:34:30.5491688Z    ✅ Both diff and log views use same highlighting system
+2025-07-05T12:34:30.5498118Z    ✅ PASSED
+2025-07-05T12:34:30.5498270Z 
+2025-07-05T12:34:30.5512548Z 🧪 Running: test_git_format_consistency
+2025-07-05T12:34:30.5513043Z    File: tests/test_git_format_consistency.lua
+2025-07-05T12:34:30.5513591Z    🔍 Running with verbose output...
+2025-07-05T12:34:30.5513949Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:30.5872491Z    ✅ No ANSI codes leak into buffer display🔧 === jj-fugitive Git Format Consistency Tests ===
+2025-07-05T12:34:30.7290786Z    Testing with commit ID: szrskuuyymyp
+2025-07-05T12:34:30.7291545Z ✅ PASS: File diff uses git format
+2025-07-05T12:34:30.7292016Z ✅ PASS: Commit show uses git format
+2025-07-05T12:34:30.7294060Z ✅ PASS: Commit diff uses git format
+2025-07-05T12:34:30.7294524Z ✅ PASS: File diff has ANSI colors
+2025-07-05T12:34:30.7294946Z ✅ PASS: Commit show has ANSI colors
+2025-07-05T12:34:30.7512822Z ✅ PASS: Commit diff has ANSI colors
+2025-07-05T12:34:30.7711866Z ✅ PASS: File diff view created
+2025-07-05T12:34:30.7712326Z ✅ PASS: Log view created
+2025-07-05T12:34:30.7712777Z ✅ PASS: File diff buffer contains git format
+2025-07-05T12:34:30.7720007Z ✅ PASS: File diff buffer has no ANSI codes
+2025-07-05T12:34:30.7720458Z    File diff buffer content preview:
+2025-07-05T12:34:30.7721066Z      diff --git a/test_git_format_consistency.txt b/test_git_format_consistency.txt
+2025-07-05T12:34:30.7721809Z ✅ PASS: file diff has diff %-%-git
+2025-07-05T12:34:30.7722249Z    ✓ file diff has \-\-\- a/
+2025-07-05T12:34:30.7868944Z ✅ PASS: commit show has diff %-%-git
+2025-07-05T12:34:30.8011270Z    ✓ commit show has \-\-\- a/
+2025-07-05T12:34:30.8011775Z ✅ PASS: commit diff has diff %-%-git
+2025-07-05T12:34:36.1477169Z    ✓ commit diff has \-\-\- a/
+2025-07-05T12:34:36.1477823Z ✅ PASS: All outputs process to clean text
+2025-07-05T12:34:36.1478445Z ✅ PASS: All outputs generate highlights
+2025-07-05T12:34:36.1479131Z    Highlight counts:
+2025-07-05T12:34:36.1479481Z      File diff: 9
+2025-07-05T12:34:36.1479828Z      Commit show: 11628
+2025-07-05T12:34:36.1480218Z      Commit diff: 11620
+2025-07-05T12:34:36.1480459Z 
+2025-07-05T12:34:36.1482044Z 📊 === Test Results Summary ===
+2025-07-05T12:34:36.1482510Z Passed: 15/15 tests
+2025-07-05T12:34:36.1483029Z 🎉 All git format consistency tests passed!
+2025-07-05T12:34:36.1483439Z 📝 Key achievements:
+2025-07-05T12:34:36.1483810Z    ✅ File diff view uses --git format
+2025-07-05T12:34:36.1484180Z    ✅ Log commit show uses --git format
+2025-07-05T12:34:36.1484513Z    ✅ Log commit diff uses --git format
+2025-07-05T12:34:36.1484926Z    ✅ All views produce consistent git-style diff output
+2025-07-05T12:34:36.1485379Z    ✅ ANSI colors preserved and processed consistently
+2025-07-05T12:34:36.1531432Z    ✅ PASSED
+2025-07-05T12:34:36.1531609Z 
+2025-07-05T12:34:36.1546354Z 🧪 Running: test_improved_diff
+2025-07-05T12:34:36.1546767Z    File: tests/test_improved_diff.lua
+2025-07-05T12:34:36.1547255Z    🔍 Running with verbose output...
+2025-07-05T12:34:36.1547798Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:36.1724310Z    ✅ Buffer content clean and properly highlighted🚀 === jj-fugitive Improved Diff Tests ===
+2025-07-05T12:34:36.2421364Z ✅ PASS: Diff module loaded
+2025-07-05T12:34:36.2421961Z ✅ PASS: Native jj diff with colors works
+2025-07-05T12:34:36.3011494Z ✅ PASS: Native diff contains ANSI color codes
+2025-07-05T12:34:36.3649792Z ✅ PASS: jj diff format 'git' works
+2025-07-05T12:34:36.4243259Z ✅ PASS: jj diff format 'color-words' works
+2025-07-05T12:34:36.5314652Z ✅ PASS: jj diff format 'default' works
+2025-07-05T12:34:36.5315221Z ✅ PASS: Diff buffer creation with git format
+2025-07-05T12:34:36.5315718Z ✅ PASS: Diff buffer created
+2025-07-05T12:34:36.5322227Z ✅ PASS: Diff buffer has correct filetype
+2025-07-05T12:34:36.5355940Z ✅ PASS: Diff buffer has content
+2025-07-05T12:34:36.5356446Z ✅ PASS: Diff buffer contains proper diff content
+2025-07-05T12:34:36.5360730Z ✅ PASS: 'f' key mapping exists for format selection
+2025-07-05T12:34:36.5361288Z ✅ PASS: 'r' key mapping exists for refresh
+2025-07-05T12:34:36.5361674Z ✅ PASS: 'f' mapping is buffer-local
+2025-07-05T12:34:36.6408952Z ✅ PASS: Format selector function exists
+2025-07-05T12:34:36.8061449Z ✅ PASS: Diff with context option works
+2025-07-05T12:34:36.8197965Z ✅ PASS: Diff with color_words option works
+2025-07-05T12:34:36.8198917Z jj command failed: ^[[1m^[[31merror:^[[0m unexpected argument '^[[33m--ignore-all-space^[[0m' found
+2025-07-05T12:34:36.8199565Z 
+2025-07-05T12:34:36.8199994Z   ^[[32mtip:^[[0m to pass '^[[33m--ignore-all-space^[[0m' as a value, use '^[[32m-- --ignore-all-space^[[0m'
+2025-07-05T12:34:36.8200544Z 
+2025-07-05T12:34:36.8201843Z ^[[1m^[[4mUsage:^[[0m ^[[1mjj diff^[[0m ^[[1m--color^[[0m <WHEN> <--summary|--stat|--types|--git|--color-words|--tool <TOOL>|--context <CONTEXT>> <--git|--color-words|--tool <TOOL>> [PATHS]...
+2025-07-05T12:34:36.8202726Z 
+2025-07-05T12:34:36.8202865Z For more information, try '^[[1m--help^[[0m'.
+2025-07-05T12:34:36.8203066Z 
+2025-07-05T12:34:36.8203137Z Failed to get diff
+2025-07-05T12:34:36.8203527Z ✅ PASS: Diff with ignore_whitespace option works
+2025-07-05T12:34:36.8203866Z 
+2025-07-05T12:34:36.8204452Z 📊 === Improved Diff Test Results Summary ===
+2025-07-05T12:34:36.8204756Z Passed: 18/18 tests
+2025-07-05T12:34:36.8204988Z 🎉 All improved diff tests passed!
+2025-07-05T12:34:36.8226319Z    ✅ PASSED
+2025-07-05T12:34:36.8226520Z 
+2025-07-05T12:34:36.8240585Z 🧪 Running: test_improved_diff_navigation
+2025-07-05T12:34:36.8241092Z    File: tests/test_improved_diff_navigation.lua
+2025-07-05T12:34:36.8241638Z    🔍 Running with verbose output...
+2025-07-05T12:34:36.8242137Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:36.8289905Z ✅ Native jj colorization and enhanced diff formats work correctly🚀 === Improved Diff Navigation Tests ===
+2025-07-05T12:34:36.8290502Z 
+2025-07-05T12:34:36.8293280Z 🧪 Test 1: Status module API verification
+2025-07-05T12:34:36.8293975Z ✅ PASS: Status module loads successfully
+2025-07-05T12:34:36.8294607Z ✅ PASS: Status module has show_status function
+2025-07-05T12:34:36.8295008Z 
+2025-07-05T12:34:36.8300987Z 🧪 Test 2: Diff module API verification
+2025-07-05T12:34:36.8301603Z ✅ PASS: Diff module loads successfully
+2025-07-05T12:34:36.8302151Z ✅ PASS: Diff module has toggle_diff_view function
+2025-07-05T12:34:36.8302743Z ✅ PASS: Diff module has show_file_diff function
+2025-07-05T12:34:36.8303387Z ✅ PASS: Diff module has show_file_diff_sidebyside function
+2025-07-05T12:34:36.8303765Z 
+2025-07-05T12:34:36.8307536Z 🧪 Test 3: Log module API verification
+2025-07-05T12:34:36.8308072Z ✅ PASS: Log module loads successfully
+2025-07-05T12:34:36.8308594Z ✅ PASS: Log module has show_log function
+2025-07-05T12:34:36.8309109Z 
+2025-07-05T12:34:36.8309346Z 🧪 Test 4: Diff toggle functionality
+2025-07-05T12:34:36.8430544Z ✅ PASS: Test file created successfully
+2025-07-05T12:34:36.8431052Z jj command failed: error: unrecognized subcommand 'file'
+2025-07-05T12:34:36.8431413Z 
+2025-07-05T12:34:36.8431584Z   tip: a similar subcommand exists: 'files'
+2025-07-05T12:34:36.8431884Z 
+2025-07-05T12:34:36.8432022Z Usage: jj [OPTIONS] <COMMAND>
+2025-07-05T12:34:36.8432270Z 
+2025-07-05T12:34:36.8432429Z For more information, try '--help'.
+2025-07-05T12:34:36.8466860Z 
+2025-07-05T12:34:36.8467695Z ✅ PASS: Toggle diff function executes without error
+2025-07-05T12:34:36.8468032Z 
+2025-07-05T12:34:36.8657251Z 🧪 Test 5: Module integration verification
+2025-07-05T12:34:36.8657707Z No changes in nonexistent.txt
+2025-07-05T12:34:36.8658254Z ✅ PASS: Diff module handles nonexistent files gracefully
+2025-07-05T12:34:36.8658617Z 
+2025-07-05T12:34:36.8658985Z 🧪 Test 6: Keybinding consistency checks
+2025-07-05T12:34:36.8659479Z ✅ PASS: unified diff function exists
+2025-07-05T12:34:36.8659950Z ✅ PASS: side-by-side diff function exists
+2025-07-05T12:34:36.8660435Z ✅ PASS: diff toggle function exists
+2025-07-05T12:34:36.8660878Z ✅ PASS: status view function exists
+2025-07-05T12:34:36.8661323Z ✅ PASS: log view function exists
+2025-07-05T12:34:36.8661571Z 
+2025-07-05T12:34:36.8846934Z 🧪 Test 7: Basic buffer operations
+2025-07-05T12:34:36.8847471Z ✅ PASS: Status view creation doesn't crash
+2025-07-05T12:34:36.8847788Z 
+2025-07-05T12:34:36.8848123Z 📊 === Improved Diff Navigation Test Results Summary ===
+2025-07-05T12:34:36.8848613Z Passed: 17/17 tests
+2025-07-05T12:34:36.8849369Z 🎉 All improved diff navigation tests passed!
+2025-07-05T12:34:36.8849961Z ✅ Diff view improvements are working correctly
+2025-07-05T12:34:36.8850421Z Key improvements verified:
+2025-07-05T12:34:36.8851022Z   • Status view: <CR> now shows diff, new keybindings for file operations
+2025-07-05T12:34:36.8851868Z   • Log view: Tab toggles between diff and details, D for side-by-side
+2025-07-05T12:34:36.8852674Z   • Diff view: Tab toggles between unified/side-by-side, improved navigation
+2025-07-05T12:34:36.8858520Z    ✅ PASSED
+2025-07-05T12:34:36.8858705Z 
+2025-07-05T12:34:36.8872136Z 🧪 Running: test_interactive_command_detection
+2025-07-05T12:34:36.8872660Z    File: tests/test_interactive_command_detection.lua
+2025-07-05T12:34:36.8873137Z    🔍 Running with verbose output...
+2025-07-05T12:34:36.8873432Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:36.8923487Z   • All modules have required functions and integrate properly🚀 === jj-fugitive Interactive Command Detection Tests ===
+2025-07-05T12:34:36.9092067Z ✅ PASS: Main module loading
+2025-07-05T12:34:36.9287406Z ✅ PASS: Describe command detected as interactive
+2025-07-05T12:34:36.9472375Z ✅ PASS: Describe with -m flag not interactive
+2025-07-05T12:34:36.9683896Z ✅ PASS: Commit command detected as interactive
+2025-07-05T12:34:36.9684963Z ✅ PASS: Commit with -m flag not interactive
+2025-07-05T12:34:36.9685768Z Alternative: Use jj split -i in terminal for interactive split
+2025-07-05T12:34:36.9686581Z ✅ PASS: Split command detected as interactive
+2025-07-05T12:34:36.9687295Z Alternative: Use jj diffedit in terminal for interactive diff editing
+2025-07-05T12:34:36.9688231Z ✅ PASS: Diffedit command detected as interactive
+2025-07-05T12:34:36.9689175Z Alternative: Use jj resolve in terminal for interactive conflict resolution
+2025-07-05T12:34:36.9854006Z ✅ PASS: Resolve command detected as interactive
+2025-07-05T12:34:37.0031915Z ✅ PASS: Resolve with --list flag not interactive
+2025-07-05T12:34:37.0210496Z ✅ PASS: Non-interactive commands still work
+2025-07-05T12:34:37.0211073Z ✅ PASS: Desc alias detected as interactive
+2025-07-05T12:34:37.0211405Z 
+2025-07-05T12:34:37.0211619Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.0211845Z Passed: 11/11 tests
+2025-07-05T12:34:37.0217223Z    ✅ PASSED
+2025-07-05T12:34:37.0217399Z 
+2025-07-05T12:34:37.0231231Z 🧪 Running: test_log_color_rendering
+2025-07-05T12:34:37.0231680Z    File: tests/test_log_color_rendering.lua
+2025-07-05T12:34:37.0232181Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.0232531Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.0286724Z 🎉 All tests passed!🎨 === jj-fugitive Log Color Rendering Tests ===
+2025-07-05T12:34:37.1176811Z ✅ PASS: Log module loading
+2025-07-05T12:34:37.1177160Z ✅ PASS: jj show produces ANSI color codes
+2025-07-05T12:34:37.1341789Z    Found ANSI codes in jj show output
+2025-07-05T12:34:37.1342325Z ✅ PASS: jj diff produces ANSI color codes
+2025-07-05T12:34:37.1535778Z    Found ANSI codes in jj diff output
+2025-07-05T12:34:37.1536396Z ✅ PASS: Log buffer created
+2025-07-05T12:34:37.1537191Z ✅ PASS: Log buffer found
+2025-07-05T12:34:37.1537637Z ✅ PASS: Log buffer has expected content
+2025-07-05T12:34:37.1538221Z ✅ PASS: Found valid commit line in log
+2025-07-05T12:34:37.1538640Z    Found commit ID: b30a539d
+2025-07-05T12:34:37.1540525Z    Commit line: @  somqxlqy (no email set) 2025-07-05 12:34:37.000 +00:00 b3...
+2025-07-05T12:34:37.1541266Z ✅ PASS: Log view color integration ready
+2025-07-05T12:34:37.1541563Z 
+2025-07-05T12:34:37.1541773Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.1542131Z Passed: 8/8 tests
+2025-07-05T12:34:37.1542471Z 🎉 All tests passed!
+2025-07-05T12:34:37.1542827Z 📝 Manual testing needed:
+2025-07-05T12:34:37.1543160Z    1. Run ':J log' in Neovim
+2025-07-05T12:34:37.1543585Z    2. Press Enter on a commit to see colored commit details
+2025-07-05T12:34:37.1543973Z    3. Press 'd' on a commit to see colored diff
+2025-07-05T12:34:37.1547132Z    ✅ PASSED
+2025-07-05T12:34:37.1547312Z 
+2025-07-05T12:34:37.1561244Z 🧪 Running: test_log_enter_functionality
+2025-07-05T12:34:37.1561727Z    File: tests/test_log_enter_functionality.lua
+2025-07-05T12:34:37.1562245Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.1562726Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.1620530Z    4. Verify colors are rendered properly🚀 === jj-fugitive Log Enter Functionality Tests ===
+2025-07-05T12:34:37.1831534Z ✅ PASS: Module loading
+2025-07-05T12:34:37.1831972Z ✅ PASS: Log buffer creation
+2025-07-05T12:34:37.1832396Z ✅ PASS: Log buffer found
+2025-07-05T12:34:37.1832818Z ✅ PASS: Log buffer has content
+2025-07-05T12:34:37.1833290Z ✅ PASS: Log buffer has proper header
+2025-07-05T12:34:37.1833786Z ✅ PASS: Log buffer has commit lines
+2025-07-05T12:34:37.1834297Z ✅ PASS: Cursor positioned on commit line
+2025-07-05T12:34:37.1835293Z ✅ PASS: Commit ID extraction from cursor line
+2025-07-05T12:34:37.2004527Z Testing with commit ID: e63f43d3
+2025-07-05T12:34:37.2005145Z ✅ PASS: jj show command for extracted commit ID
+2025-07-05T12:34:37.2005755Z ✅ PASS: jj show returns valid commit details
+2025-07-05T12:34:37.2006105Z 
+2025-07-05T12:34:37.2175376Z === Testing Enter functionality from subdirectory ===
+2025-07-05T12:34:37.2345539Z ✅ PASS: jj show from subdirectory
+2025-07-05T12:34:37.2346040Z ✅ PASS: Multiple commit IDs are valid
+2025-07-05T12:34:37.2346464Z Found 1 valid commit lines out of 1 total
+2025-07-05T12:34:37.2346754Z 
+2025-07-05T12:34:37.2347046Z 📊 === Log Enter Functionality Test Results Summary ===
+2025-07-05T12:34:37.2347500Z Passed: 12/12 tests
+2025-07-05T12:34:37.2347924Z 🎉 All log Enter functionality tests passed!
+2025-07-05T12:34:37.2353635Z    ✅ PASSED
+2025-07-05T12:34:37.2353813Z 
+2025-07-05T12:34:37.2366946Z 🧪 Running: test_log_expand_functionality
+2025-07-05T12:34:37.2367416Z    File: tests/test_log_expand_functionality.lua
+2025-07-05T12:34:37.2367886Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.2368190Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.2424111Z ✅ Pressing Enter in log view should work correctly🚀 === jj-fugitive Log Expand Functionality Tests ===
+2025-07-05T12:34:37.2619945Z ✅ PASS: Log module loading
+2025-07-05T12:34:37.2620400Z ✅ PASS: Log buffer created
+2025-07-05T12:34:37.2620810Z ✅ PASS: Log buffer found
+2025-07-05T12:34:37.2621257Z ✅ PASS: Buffer stores limit variable
+2025-07-05T12:34:37.2621767Z ✅ PASS: Limit variable has correct value
+2025-07-05T12:34:37.2622291Z ✅ PASS: Header shows commit count
+2025-07-05T12:34:37.2810823Z ✅ PASS: Expand keymaps are set
+2025-07-05T12:34:37.2811521Z ⏭️  SKIP: Limit variable update test (headless mode behavior difference)
+2025-07-05T12:34:37.2812229Z ✅ PASS: Limit variable updates on new log view
+2025-07-05T12:34:37.2812735Z ✅ PASS: Help keymap available
+2025-07-05T12:34:37.2813266Z 📝 Log expand functionality implementation verified:
+2025-07-05T12:34:37.2813939Z    ✅ Buffer stores current limit in jj_log_limit variable
+2025-07-05T12:34:37.2814517Z    ✅ Header displays current commit count
+2025-07-05T12:34:37.2815124Z    ✅ = and + keymaps available for expanding (uses -r .. flag)
+2025-07-05T12:34:37.2816062Z    ✅ Limit variable updates when log view refreshes
+2025-07-05T12:34:37.2816613Z    ✅ Help system available with g? keymap
+2025-07-05T12:34:37.2816901Z 
+2025-07-05T12:34:37.2817184Z 📊 === Log Expand Functionality Test Results Summary ===
+2025-07-05T12:34:37.2817647Z Passed: 9/9 tests
+2025-07-05T12:34:37.2818069Z 🎉 All log expand functionality tests passed!
+2025-07-05T12:34:37.2818540Z 📝 Key achievements:
+2025-07-05T12:34:37.2819229Z    ✅ Log view stores current limit for expansion
+2025-07-05T12:34:37.2819933Z    ✅ Expand keybindings (= and +) are properly configured with -r .. flag
+2025-07-05T12:34:37.2820581Z    ✅ Header shows current commit count
+2025-07-05T12:34:37.2825437Z    ✅ PASSED
+2025-07-05T12:34:37.2825632Z 
+2025-07-05T12:34:37.2838544Z 🧪 Running: test_log_functionality
+2025-07-05T12:34:37.2839197Z    File: tests/test_log_functionality.lua
+2025-07-05T12:34:37.2839687Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.2839991Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.2894899Z    ✅ Limit variable management works correctly🚀 === jj-fugitive Log Functionality Tests ===
+2025-07-05T12:34:37.3023810Z ✅ PASS: Log module loading
+2025-07-05T12:34:37.3024217Z Jujutsu (An experimental VCS)
+2025-07-05T12:34:37.3024480Z 
+2025-07-05T12:34:37.3024930Z To get started, see the tutorial at https://github.com/martinvonz/jj/blob/main/docs/tutorial.md.
+2025-07-05T12:34:37.3025512Z 
+2025-07-05T12:34:37.3025655Z Usage: jj [OPTIONS] <COMMAND>
+2025-07-05T12:34:37.3025896Z 
+2025-07-05T12:34:37.3025999Z Commands:
+2025-07-05T12:34:37.3026301Z   abandon    Abandon a revision
+2025-07-05T12:34:37.3026816Z   backout    Apply the reverse of a revision on top of another revision
+2025-07-05T12:34:37.3027366Z   branch     Manage branches
+2025-07-05T12:34:37.3028063Z   cat        Print contents of a file in a revision
+2025-07-05T12:34:37.3028636Z   chmod      Sets or removes the executable bit for paths in the repo
+2025-07-05T12:34:37.3029505Z   commit     Update the description and create a new change on top [aliases: ci]
+2025-07-05T12:34:37.3030119Z   config     Manage config options
+2025-07-05T12:34:37.3030684Z   describe   Update the change description or other metadata [aliases: desc]
+2025-07-05T12:34:37.3031335Z   diff       Compare file contents between two revisions
+2025-07-05T12:34:37.3031947Z   diffedit   Touch up the content changes in a revision with a diff editor
+2025-07-05T12:34:37.3032676Z   duplicate  Create a new change with the same content as an existing one
+2025-07-05T12:34:37.3033269Z   edit       Edit a commit in the working copy
+2025-07-05T12:34:37.3033702Z   files      List files in a revision
+2025-07-05T12:34:37.3034164Z   git        Commands for working with the underlying Git repo
+2025-07-05T12:34:37.3034848Z   init       Create a new repo in the given directory
+2025-07-05T12:34:37.3035355Z   interdiff  Compare the changes of two commits
+2025-07-05T12:34:37.3035656Z   log        Show commit history
+2025-07-05T12:34:37.3035918Z   move       Move changes from one revision into another
+2025-07-05T12:34:37.3036549Z   new        Create a new, empty change and (by default) edit it in the working copy
+2025-07-05T12:34:37.3037254Z   next       Move the current working copy commit to the next child revision in the
+2025-07-05T12:34:37.3037754Z                  repository.
+2025-07-05T12:34:37.3038125Z   obslog     Show how a change has evolved
+2025-07-05T12:34:37.3038717Z   operation  Commands for working with the operation log [aliases: op]
+2025-07-05T12:34:37.3039590Z   prev       Move the working copy commit to the parent of the current revision.
+2025-07-05T12:34:37.3040237Z   rebase     Move revisions to different parent(s)
+2025-07-05T12:34:37.3040816Z   resolve    Resolve a conflicted file with an external merge tool
+2025-07-05T12:34:37.3041392Z   restore    Restore paths from another revision
+2025-07-05T12:34:37.3041898Z   root       Show the current workspace root directory
+2025-07-05T12:34:37.3042446Z   show       Show commit description and changes in a revision
+2025-07-05T12:34:37.3043413Z   sparse     Manage which paths from the working-copy commit are present in the working copy
+2025-07-05T12:34:37.3044086Z   split      Split a revision in two
+2025-07-05T12:34:37.3044637Z   squash     Move changes from a revision into its parent [aliases: amend]
+2025-07-05T12:34:37.3045262Z   status     Show high-level repo status [aliases: st]
+2025-07-05T12:34:37.3045721Z   tag        Manage tags
+2025-07-05T12:34:37.3046250Z   util       Infrequently used commands such as for generating shell completions
+2025-07-05T12:34:37.3046926Z   undo       Undo an operation (shortcut for `jj op undo`)
+2025-07-05T12:34:37.3047627Z   unsquash   Move changes from a revision's parent into the revision [aliases: unamend]
+2025-07-05T12:34:37.3048388Z   untrack    Stop tracking specified paths in the working copy
+2025-07-05T12:34:37.3049376Z   version    Display version information
+2025-07-05T12:34:37.3049868Z   workspace  Commands for working with workspaces
+2025-07-05T12:34:37.3050474Z   help       Print this message or the help of the given subcommand(s)
+2025-07-05T12:34:37.3050879Z 
+2025-07-05T12:34:37.3051004Z Options:
+2025-07-05T12:34:37.3051273Z   -h, --help
+2025-07-05T12:34:37.3051590Z           Print help (see a summary with '-h')
+2025-07-05T12:34:37.3051890Z 
+2025-07-05T12:34:37.3052004Z   -V, --version
+2025-07-05T12:34:37.3052284Z           Print version
+2025-07-05T12:34:37.3052477Z 
+2025-07-05T12:34:37.3052586Z Global Options:
+2025-07-05T12:34:37.3052904Z   -R, --repository <REPOSITORY>
+2025-07-05T12:34:37.3053285Z           Path to repository to operate on
+2025-07-05T12:34:37.3053666Z           
+2025-07-05T12:34:37.3054240Z           By default, Jujutsu searches for the closest .jj/ directory in an ancestor of the current
+2025-07-05T12:34:37.3055010Z           working directory.
+2025-07-05T12:34:37.3055400Z 
+2025-07-05T12:34:37.3055540Z       --ignore-working-copy
+2025-07-05T12:34:37.3056005Z           Don't snapshot the working copy, and don't update it
+2025-07-05T12:34:37.3056449Z           
+2025-07-05T12:34:37.3056962Z           By default, Jujutsu snapshots the working copy at the beginning of every command. The
+2025-07-05T12:34:37.3057833Z           working copy is also updated at the end of the command, if the command modified the
+2025-07-05T12:34:37.3058675Z           working-copy commit (`@`). If you want to avoid snapshotting the working copy and instead
+2025-07-05T12:34:37.3059972Z           see a possibly stale working copy commit, you can use `--ignore-working-copy`. This may be
+2025-07-05T12:34:37.3060886Z           useful e.g. in a command prompt, especially if you have another process that commits the
+2025-07-05T12:34:37.3061526Z           working copy.
+2025-07-05T12:34:37.3061843Z           
+2025-07-05T12:34:37.3062317Z           Loading the repository is at a specific operation with `--at-operation` implies
+2025-07-05T12:34:37.3062975Z           `--ignore-working-copy`.
+2025-07-05T12:34:37.3063231Z 
+2025-07-05T12:34:37.3063369Z       --at-operation <AT_OPERATION>
+2025-07-05T12:34:37.3063850Z           Operation to load the repo at
+2025-07-05T12:34:37.3064223Z           
+2025-07-05T12:34:37.3064730Z           Operation to load the repo at. By default, Jujutsu loads the repo at the most recent
+2025-07-05T12:34:37.3065592Z           operation. You can use `--at-op=<operation ID>` to see what the repo looked like at an
+2025-07-05T12:34:37.3066459Z           earlier operation. For example `jj --at-op=<operation ID> st` will show you what `jj st`
+2025-07-05T12:34:37.3067242Z           would have shown you when the given operation had just finished.
+2025-07-05T12:34:37.3067788Z           
+2025-07-05T12:34:37.3068318Z           Use `jj op log` to find the operation ID you want. Any unambiguous prefix of the operation
+2025-07-05T12:34:37.3069233Z           ID is enough.
+2025-07-05T12:34:37.3069419Z           
+2025-07-05T12:34:37.3069710Z           When loading the repo at an earlier operation, the working copy will be ignored, as if
+2025-07-05T12:34:37.3070099Z           `--ignore-working-copy` had been specified.
+2025-07-05T12:34:37.3070500Z           
+2025-07-05T12:34:37.3070792Z           It is possible to run mutating commands when loading the repo at an earlier operation.
+2025-07-05T12:34:37.3071270Z           Doing that is equivalent to having run concurrent commands starting at the earlier
+2025-07-05T12:34:37.3071700Z           operation. There's rarely a reason to do that, but it is possible.
+2025-07-05T12:34:37.3072005Z           
+2025-07-05T12:34:37.3072153Z           [default: @]
+2025-07-05T12:34:37.3072464Z           [aliases: at-op]
+2025-07-05T12:34:37.3072679Z 
+2025-07-05T12:34:37.3072796Z       --debug
+2025-07-05T12:34:37.3073073Z           Enable debug logging
+2025-07-05T12:34:37.3073311Z 
+2025-07-05T12:34:37.3073428Z       --color <WHEN>
+2025-07-05T12:34:37.3073788Z           When to colorize output (always, never, auto)
+2025-07-05T12:34:37.3074115Z 
+2025-07-05T12:34:37.3074193Z       --no-pager
+2025-07-05T12:34:37.3074370Z           Disable the pager
+2025-07-05T12:34:37.3074501Z 
+2025-07-05T12:34:37.3074575Z       --config-toml <TOML>
+2025-07-05T12:34:37.3074821Z           Additional configuration options (can be repeated)
+2025-07-05T12:34:37.3239774Z ✅ PASS: J command works
+2025-07-05T12:34:37.3436503Z ✅ PASS: jj log command works
+2025-07-05T12:34:37.3436982Z ✅ PASS: Log buffer created
+2025-07-05T12:34:37.3437392Z ✅ PASS: Log buffer found
+2025-07-05T12:34:37.3437825Z ✅ PASS: Log buffer has expected content
+2025-07-05T12:34:37.3438227Z ✅ PASS: Log buffer has correct buftype
+2025-07-05T12:34:37.3438524Z ✅ PASS: Log buffer is not modifiable
+2025-07-05T12:34:37.3626537Z ✅ PASS: Log buffer has enhanced visual formatting
+2025-07-05T12:34:37.3627096Z ✅ PASS: J log command works
+2025-07-05T12:34:37.3627335Z 
+2025-07-05T12:34:37.3627539Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.3628160Z Passed: 10/10 tests
+2025-07-05T12:34:37.3634178Z    ✅ PASSED
+2025-07-05T12:34:37.3634379Z 
+2025-07-05T12:34:37.3647317Z 🧪 Running: test_multi_level_completion
+2025-07-05T12:34:37.3647827Z    File: tests/test_multi_level_completion.lua
+2025-07-05T12:34:37.3648315Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.3648618Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.3700060Z 🎉 All log functionality tests passed!🚀 === Multi-Level Completion Tests ===
+2025-07-05T12:34:37.3700378Z 
+2025-07-05T12:34:37.3820567Z 🧪 Test 1: Level 1 - Basic commands
+2025-07-05T12:34:37.3821158Z ✅ PASS: Level 1 includes commands
+2025-07-05T12:34:37.3821639Z ✅ PASS: Level 1 includes expected commands
+2025-07-05T12:34:37.3821832Z 
+2025-07-05T12:34:37.3936647Z 🧪 Test 2: Level 2 - Git subcommands
+2025-07-05T12:34:37.3937517Z ✅ PASS: Level 2 git includes subcommands
+2025-07-05T12:34:37.3939268Z ✅ PASS: Level 2 git shows subcommands not flags
+2025-07-05T12:34:37.3939610Z 
+2025-07-05T12:34:37.4041424Z 🧪 Test 3: Level 2 - Bookmark subcommands
+2025-07-05T12:34:37.4042469Z ❌ FAIL: Level 2 bookmark includes subcommands - Should return bookmark subcommands at level 2
+2025-07-05T12:34:37.4044099Z ❌ FAIL: Level 2 bookmark shows subcommands - Should find bookmark subcommands. Found 0 of: list, create, delete, set
+2025-07-05T12:34:37.4044780Z 
+2025-07-05T12:34:37.4153884Z 🧪 Test 4: Level 2 - Regular command flags
+2025-07-05T12:34:37.4154422Z ✅ PASS: Level 2 status includes flags
+2025-07-05T12:34:37.4154773Z ✅ PASS: Level 2 status shows flags not subcommands
+2025-07-05T12:34:37.4154982Z 
+2025-07-05T12:34:37.4267941Z 🧪 Test 5: Level 3 - Git subcommand flags
+2025-07-05T12:34:37.4268494Z ✅ PASS: Level 3 git push includes flags
+2025-07-05T12:34:37.4269158Z ✅ PASS: Level 3 git push shows flags
+2025-07-05T12:34:37.4269371Z 
+2025-07-05T12:34:37.4371001Z 🧪 Test 6: Level 3 - Bookmark subcommand flags
+2025-07-05T12:34:37.4372106Z ❌ FAIL: Level 3 bookmark create includes flags - Should return bookmark create flags at level 3
+2025-07-05T12:34:37.4373279Z ❌ FAIL: Level 3 bookmark create shows flags - Should find bookmark create flags. Found 0 flags
+2025-07-05T12:34:37.4373847Z 
+2025-07-05T12:34:37.4374114Z 🧪 Test 7: Commands vs subcommands distinction
+2025-07-05T12:34:37.4375101Z ✅ PASS: Commands with subcommands show subcommands
+2025-07-05T12:34:37.4375669Z ✅ PASS: Regular commands show flags
+2025-07-05T12:34:37.4375964Z 
+2025-07-05T12:34:37.4376223Z 🧪 Test 8: No cross-pollution between levels
+2025-07-05T12:34:37.4376765Z ✅ PASS: No cross-pollution between levels
+2025-07-05T12:34:37.4377077Z 
+2025-07-05T12:34:37.4377300Z 🧪 Test 9: Partial matching at all levels
+2025-07-05T12:34:37.4377862Z ✅ PASS: Partial matching works for git subcommands
+2025-07-05T12:34:37.4378444Z ✅ PASS: Partial matching works for status flags
+2025-07-05T12:34:37.4378925Z 
+2025-07-05T12:34:37.4379193Z 🧪 Test 10: Help flags available at all levels
+2025-07-05T12:34:37.4379718Z ✅ PASS: Help flags available at level 2
+2025-07-05T12:34:37.4380234Z ✅ PASS: Help flags available at level 3
+2025-07-05T12:34:37.4380513Z 
+2025-07-05T12:34:37.4380808Z 📊 === Multi-Level Completion Test Results Summary ===
+2025-07-05T12:34:37.4381266Z Passed: 15/19 tests
+2025-07-05T12:34:37.4381700Z 💥 Some multi-level completion tests failed!
+2025-07-05T12:34:37.4382508Z   ❌ Level 2 bookmark includes subcommands: Should return bookmark subcommands at level 2
+2025-07-05T12:34:37.4383670Z   ❌ Level 2 bookmark shows subcommands: Should find bookmark subcommands. Found 0 of: list, create, delete, set
+2025-07-05T12:34:37.4384825Z   ❌ Level 3 bookmark create includes flags: Should return bookmark create flags at level 3
+2025-07-05T12:34:37.4390134Z    ❌ FAILED (exit code: 1)
+2025-07-05T12:34:37.4390345Z 
+2025-07-05T12:34:37.4403715Z 🧪 Running: test_native_log_view
+2025-07-05T12:34:37.4404118Z    File: tests/test_native_log_view.lua
+2025-07-05T12:34:37.4404616Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.4404933Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.4463258Z   ❌ Level 3 bookmark create shows flags: Should find bookmark create flags. Found 0 flags🎨 === jj-fugitive Native Log View Tests ===
+2025-07-05T12:34:37.4652024Z ✅ PASS: Log module loading
+2025-07-05T12:34:37.4850595Z ✅ PASS: Raw jj log produces colored output
+2025-07-05T12:34:37.4851137Z ✅ PASS: Log view creates buffer
+2025-07-05T12:34:37.4851623Z ✅ PASS: Log buffer contains header
+2025-07-05T12:34:37.4852096Z ✅ PASS: Log buffer has no ANSI codes
+2025-07-05T12:34:37.4852586Z ✅ PASS: Log buffer contains commit symbols
+2025-07-05T12:34:37.4853098Z ✅ PASS: Log buffer has diff filetype
+2025-07-05T12:34:37.4853363Z 
+2025-07-05T12:34:37.4853562Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.4853910Z Passed: 7/7 tests
+2025-07-05T12:34:37.4854298Z 🎉 All native log view tests passed!
+2025-07-05T12:34:37.4854731Z 📝 Key achievements:
+2025-07-05T12:34:37.4855123Z    ✅ Native jj log format preserved
+2025-07-05T12:34:37.4855571Z    ✅ ANSI colors properly processed
+2025-07-05T12:34:37.4856083Z    ✅ Interactive buffer created successfully
+2025-07-05T12:34:37.4861199Z    ✅ PASSED
+2025-07-05T12:34:37.4861388Z 
+2025-07-05T12:34:37.4874620Z 🧪 Running: test_remaining_interactive_commands
+2025-07-05T12:34:37.4875444Z    File: tests/test_remaining_interactive_commands.lua
+2025-07-05T12:34:37.4876014Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.4876323Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.4924130Z    ✅ jj symbols and layout maintained🚀 === jj-fugitive Remaining Interactive Commands Tests ===
+2025-07-05T12:34:37.4924876Z ✅ PASS: Main module loading
+2025-07-05T12:34:37.4925338Z ✅ PASS: split_interactive function exists
+2025-07-05T12:34:37.4925853Z ✅ PASS: diffedit_interactive function exists
+2025-07-05T12:34:37.4926382Z ✅ PASS: resolve_interactive function exists
+2025-07-05T12:34:37.4926902Z ✅ PASS: split_interactive shows error message
+2025-07-05T12:34:37.4927425Z ✅ PASS: split_interactive shows alternative
+2025-07-05T12:34:37.4927975Z ✅ PASS: diffedit_interactive shows error message
+2025-07-05T12:34:37.4928526Z ✅ PASS: diffedit_interactive shows alternative
+2025-07-05T12:34:37.4929247Z ✅ PASS: resolve_interactive shows error message
+2025-07-05T12:34:37.4929780Z ✅ PASS: resolve_interactive shows alternative
+2025-07-05T12:34:37.4930409Z Interactive split requires diff editor integration (not yet implemented)
+2025-07-05T12:34:37.4931123Z Alternative: Use jj split -i in terminal for interactive split
+2025-07-05T12:34:37.4931753Z ✅ PASS: split_interactive handles arguments
+2025-07-05T12:34:37.4932368Z Interactive diffedit requires diff editor integration (not yet implemented)
+2025-07-05T12:34:37.4933130Z Alternative: Use jj diffedit in terminal for interactive diff editing
+2025-07-05T12:34:37.4933804Z ✅ PASS: diffedit_interactive handles arguments
+2025-07-05T12:34:37.4934410Z Interactive resolve requires merge tool integration (not yet implemented)
+2025-07-05T12:34:37.4935171Z Alternative: Use jj resolve in terminal for interactive conflict resolution
+2025-07-05T12:34:37.4936063Z ✅ PASS: resolve_interactive handles arguments
+2025-07-05T12:34:37.4936685Z Interactive split requires diff editor integration (not yet implemented)
+2025-07-05T12:34:37.4937536Z Alternative: Use jj split -i in terminal for interactive split
+2025-07-05T12:34:37.4954216Z Interactive diffedit requires diff editor integration (not yet implemented)
+2025-07-05T12:34:37.4955024Z Alternative: Use jj diffedit in terminal for interactive diff editing
+2025-07-05T12:34:37.4955797Z Interactive resolve requires merge tool integration (not yet implemented)
+2025-07-05T12:34:37.4956573Z Alternative: Use jj resolve in terminal for interactive conflict resolution
+2025-07-05T12:34:37.4957334Z ✅ PASS: No buffers created by error functions
+2025-07-05T12:34:37.4957916Z Alternative: Use jj split -i in terminal for interactive split
+2025-07-05T12:34:37.4958595Z Alternative: Use jj diffedit in terminal for interactive diff editing
+2025-07-05T12:34:37.4959595Z Alternative: Use jj resolve in terminal for interactive conflict resolution
+2025-07-05T12:34:37.4960345Z ✅ PASS: Error message format is consistent
+2025-07-05T12:34:37.4960644Z 
+2025-07-05T12:34:37.4960837Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.4961210Z Passed: 15/15 tests
+2025-07-05T12:34:37.4961574Z    ✅ PASSED
+2025-07-05T12:34:37.4961744Z 
+2025-07-05T12:34:37.4961953Z 🧪 Running: test_repository_detection
+2025-07-05T12:34:37.4962410Z    File: tests/test_repository_detection.lua
+2025-07-05T12:34:37.4962930Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.4963537Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.5010422Z 🎉 All tests passed!🚀 === jj-fugitive Repository Detection Tests ===
+2025-07-05T12:34:37.5011084Z ✅ PASS: Main module loading
+2025-07-05T12:34:37.5011524Z ✅ PASS: Repository root detection
+2025-07-05T12:34:37.5012098Z Repository root detected: /tmp/jj-fugitive-tests-4jHmdz/test-repo
+2025-07-05T12:34:37.5187334Z Current working directory: /tmp/jj-fugitive-tests-4jHmdz/test-repo
+2025-07-05T12:34:37.5370372Z ✅ PASS: jj status command execution
+2025-07-05T12:34:37.5370870Z ✅ PASS: jj log command execution
+2025-07-05T12:34:37.5371123Z 
+2025-07-05T12:34:37.5371346Z === Testing from subdirectory (original reported issue) ===
+2025-07-05T12:34:37.5372241Z Changed to: /tmp/jj-fugitive-tests-4jHmdz/test-repo/lua
+2025-07-05T12:34:37.5372868Z ✅ PASS: Repository root detection from subdirectory
+2025-07-05T12:34:37.5544902Z ✅ PASS: Repository root consistency
+2025-07-05T12:34:37.5723180Z ✅ PASS: jj status from subdirectory
+2025-07-05T12:34:37.5723705Z ✅ PASS: jj log from subdirectory
+2025-07-05T12:34:37.5723974Z 
+2025-07-05T12:34:37.5724170Z === Testing from nested subdirectory ===
+2025-07-05T12:34:37.5725488Z Changed to nested directory: /tmp/jj-fugitive-tests-4jHmdz/test-repo/lua/jj-fugitive
+2025-07-05T12:34:37.5726396Z ✅ PASS: Repository root detection from nested subdirectory
+2025-07-05T12:34:37.5881820Z ✅ PASS: Repository root consistency from nested directory
+2025-07-05T12:34:37.5882495Z ✅ PASS: jj status from nested subdirectory
+2025-07-05T12:34:37.5882822Z 
+2025-07-05T12:34:37.5883131Z 📊 === Repository Detection Test Results Summary ===
+2025-07-05T12:34:37.5883579Z Passed: 11/11 tests
+2025-07-05T12:34:37.5883835Z 🎉 All repository detection tests passed!
+2025-07-05T12:34:37.5890695Z    ✅ PASSED
+2025-07-05T12:34:37.5890864Z 
+2025-07-05T12:34:37.5903985Z 🧪 Running: test_simple_ci
+2025-07-05T12:34:37.5904346Z    File: tests/test_simple_ci.lua
+2025-07-05T12:34:37.5904651Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.5905137Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.5946095Z ✅ The original issue with subdirectory execution should be fixed🚀 Simple CI Test Starting
+2025-07-05T12:34:37.6055037Z jj 0.15.1-bf76080f42f77cad934d9a5202c7b7d29ab2c890
+2025-07-05T12:34:37.6060314Z ✅ Lua execution works
+2025-07-05T12:34:37.6060710Z ✅ jj command available
+2025-07-05T12:34:37.6061100Z 🎉 Simple CI test completed
+2025-07-05T12:34:37.6065907Z    ✅ PASSED
+2025-07-05T12:34:37.6066099Z 
+2025-07-05T12:34:37.6078484Z 🧪 Running: test_status_enter_l_keys
+2025-07-05T12:34:37.6079993Z    File: tests/test_status_enter_l_keys.lua
+2025-07-05T12:34:37.6080529Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.6080997Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.6134972Z 🚀 === jj-fugitive Status Enter/'l' Key Tests ===
+2025-07-05T12:34:37.6317074Z ✅ PASS: Module loading
+2025-07-05T12:34:37.6317499Z ✅ PASS: Status buffer creation
+2025-07-05T12:34:37.6317926Z ✅ PASS: Status buffer found
+2025-07-05T12:34:37.6318344Z ✅ PASS: Enter key mapping exists
+2025-07-05T12:34:37.6318945Z ✅ PASS: 'l' key mapping exists
+2025-07-05T12:34:37.6319403Z ✅ PASS: Enter mapping is buffer-local
+2025-07-05T12:34:37.6319875Z ✅ PASS: 'l' mapping is buffer-local
+2025-07-05T12:34:37.6320354Z ✅ PASS: Enter key simulation
+2025-07-05T12:34:37.6326044Z    ✅ PASSED
+2025-07-05T12:34:37.6326227Z 
+2025-07-05T12:34:37.6338236Z 🧪 Running: test_status_features
+2025-07-05T12:34:37.6338671Z    File: tests/test_status_features.lua
+2025-07-05T12:34:37.6339381Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.6339888Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.6389287Z 🚀 === jj-fugitive Status Features Tests ===
+2025-07-05T12:34:37.6616219Z ✅ PASS: Status module loading
+2025-07-05T12:34:37.6825262Z ✅ PASS: Test files created and modified
+2025-07-05T12:34:37.6825784Z ✅ PASS: Status buffer created
+2025-07-05T12:34:37.6826248Z ✅ PASS: Cursor positioned on first file
+2025-07-05T12:34:37.6828087Z    Cursor at line 7: A status_test_file1.txt
+2025-07-05T12:34:37.7003082Z ✅ PASS: Test file opened in buffer
+2025-07-05T12:34:37.7003570Z ✅ PASS: Found test file in status
+2025-07-05T12:34:37.7004022Z ✅ PASS: Filename extraction works
+2025-07-05T12:34:37.7004522Z ✅ PASS: Existing buffer detected for opened file
+2025-07-05T12:34:37.7005155Z ✅ PASS: Correct buffer detected
+2025-07-05T12:34:37.7166556Z ✅ PASS: Window detection finds file buffer
+2025-07-05T12:34:37.7167277Z ✅ PASS: Detected window has correct buffer
+2025-07-05T12:34:37.7167602Z 
+2025-07-05T12:34:37.7168397Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.7168955Z Passed: 11/11 tests
+2025-07-05T12:34:37.7174758Z    ✅ PASSED
+2025-07-05T12:34:37.7174933Z 
+2025-07-05T12:34:37.7188252Z 🧪 Running: test_status_functionality
+2025-07-05T12:34:37.7188691Z    File: tests/test_status_functionality.lua
+2025-07-05T12:34:37.7189384Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.7189810Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.7241559Z 🎉 All status features tests passed!🚀 === jj-fugitive Status Functionality Tests ===
+2025-07-05T12:34:37.7426490Z ✅ PASS: Status module loading
+2025-07-05T12:34:37.7608334Z ✅ PASS: J command works
+2025-07-05T12:34:37.7609027Z ✅ PASS: jj status command works
+2025-07-05T12:34:37.7609477Z ✅ PASS: Status buffer created
+2025-07-05T12:34:37.7609902Z ✅ PASS: Status buffer found
+2025-07-05T12:34:37.7610350Z ✅ PASS: Status buffer has expected content
+2025-07-05T12:34:37.7610854Z ✅ PASS: Status buffer has correct buftype
+2025-07-05T12:34:37.7784326Z ✅ PASS: Status buffer is not modifiable
+2025-07-05T12:34:37.7955354Z ✅ PASS: Status buffer reload works
+2025-07-05T12:34:37.7955837Z ✅ PASS: J status command works
+2025-07-05T12:34:37.7956125Z 
+2025-07-05T12:34:37.7956329Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.7956674Z Passed: 10/10 tests
+2025-07-05T12:34:37.7962290Z    ✅ PASSED
+2025-07-05T12:34:37.7962463Z 
+2025-07-05T12:34:37.7976172Z 🧪 Running: test_status_keybindings_simple
+2025-07-05T12:34:37.7976698Z    File: tests/test_status_keybindings_simple.lua
+2025-07-05T12:34:37.7977141Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.7977650Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.8035754Z 🎉 All tests passed!🚀 === jj-fugitive Status Keybindings Tests ===
+2025-07-05T12:34:37.8212516Z ✅ PASS: Modules loaded
+2025-07-05T12:34:37.8212954Z ✅ PASS: Status buffer created
+2025-07-05T12:34:37.8213365Z ✅ PASS: Enter key mapped
+2025-07-05T12:34:37.8213749Z ✅ PASS: 'l' key mapped
+2025-07-05T12:34:37.8214480Z ✅ PASS: Enter mapping is buffer-local
+2025-07-05T12:34:37.8215006Z ✅ PASS: 'l' mapping is buffer-local
+2025-07-05T12:34:37.8215504Z ✅ PASS: Enter mapping shows diff (not log)
+2025-07-05T12:34:37.8215991Z ✅ PASS: 'l' mapping calls log
+2025-07-05T12:34:37.8216446Z ✅ PASS: Help text mentions Enter/l keys
+2025-07-05T12:34:37.8216721Z 
+2025-07-05T12:34:37.8216914Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.8217133Z Passed: 9/9 tests
+2025-07-05T12:34:37.8217371Z 🎉 All status keybinding tests passed!
+2025-07-05T12:34:37.8222289Z    ✅ PASSED
+2025-07-05T12:34:37.8222474Z 
+2025-07-05T12:34:37.8234782Z 🧪 Running: test_unified_ansi_functionality
+2025-07-05T12:34:37.8235291Z    File: tests/test_unified_ansi_functionality.lua
+2025-07-05T12:34:37.8235860Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.8236294Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.8285312Z ✅ The first TODO item is already implemented!🔧 === jj-fugitive Unified ANSI Functionality Tests ===
+2025-07-05T12:34:37.8286127Z ✅ PASS: ANSI module loading
+2025-07-05T12:34:37.8286566Z ✅ PASS: ANSI codes stripped from text
+2025-07-05T12:34:37.8287043Z ✅ PASS: Clean text content correct
+2025-07-05T12:34:37.8287480Z ✅ PASS: Highlights extracted
+2025-07-05T12:34:37.8287883Z    Extracted 3 highlight regions
+2025-07-05T12:34:37.8288230Z      1: Bold at 0-4
+2025-07-05T12:34:37.8288515Z      2: Red at 5-8
+2025-07-05T12:34:37.8288948Z      3: Green at 9-17
+2025-07-05T12:34:37.8289374Z ✅ PASS: Diff content processed with headers
+2025-07-05T12:34:37.8289733Z ✅ PASS: Headers included in processed content
+2025-07-05T12:34:37.8290060Z ✅ PASS: Diff content included and ANSI stripped
+2025-07-05T12:34:37.8296758Z ✅ PASS: Highlights generated for diff content
+2025-07-05T12:34:37.8297243Z ✅ PASS: Diff module loading
+2025-07-05T12:34:37.9003532Z ✅ PASS: Log module loading
+2025-07-05T12:34:37.9183294Z    Testing with commit ID: @  somqxlqywmyy
+2025-07-05T12:34:37.9374072Z ✅ PASS: Diff view buffer created
+2025-07-05T12:34:37.9374631Z ✅ PASS: Log view buffer created
+2025-07-05T12:34:37.9375107Z ✅ PASS: Unified ANSI implementation
+2025-07-05T12:34:37.9375597Z ✅ PASS: Diff buffer has correct filetype
+2025-07-05T12:34:37.9376095Z ✅ PASS: Diff buffer has correct buftype
+2025-07-05T12:34:37.9376988Z ✅ PASS: Diff buffer content has no ANSI codes
+2025-07-05T12:34:37.9377523Z ✅ PASS: Log buffer has correct buftype
+2025-07-05T12:34:37.9378027Z ✅ PASS: Format consistency infrastructure
+2025-07-05T12:34:37.9378335Z 
+2025-07-05T12:34:37.9378537Z 📊 === Test Results Summary ===
+2025-07-05T12:34:37.9379352Z Passed: 18/18 tests
+2025-07-05T12:34:37.9379806Z 🎉 All unified ANSI functionality tests passed!
+2025-07-05T12:34:37.9380298Z 📝 Key achievements:
+2025-07-05T12:34:37.9380738Z    ✅ Shared ANSI parsing module working correctly
+2025-07-05T12:34:37.9381332Z    ✅ Both diff and log views use unified color processing
+2025-07-05T12:34:37.9381973Z    ✅ Consistent formatting and highlighting across views
+2025-07-05T12:34:37.9382609Z    ✅ ANSI codes properly stripped from display text
+2025-07-05T12:34:37.9388535Z    ✅ PASSED
+2025-07-05T12:34:37.9388700Z 
+2025-07-05T12:34:37.9403168Z 🧪 Running: test_user_experience_simulation
+2025-07-05T12:34:37.9403677Z    File: tests/test_user_experience_simulation.lua
+2025-07-05T12:34:37.9404132Z    🔍 Running with verbose output...
+2025-07-05T12:34:37.9404445Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:37.9454345Z    ✅ Color highlights correctly applied to buffers🎯 === User Experience Simulation: Log View + Enter ===
+2025-07-05T12:34:37.9454883Z This test simulates the exact workflow a user would follow
+2025-07-05T12:34:37.9455118Z 
+2025-07-05T12:34:37.9679464Z 📝 Step 1: User runs ':J log'
+2025-07-05T12:34:37.9679987Z ✅ Log view created
+2025-07-05T12:34:37.9680196Z 
+2025-07-05T12:34:37.9680404Z 📝 Step 2: Neovim opens log buffer
+2025-07-05T12:34:37.9680828Z ✅ User is now in log buffer
+2025-07-05T12:34:37.9681055Z 
+2025-07-05T12:34:37.9681253Z 📝 Step 3: User sees log content
+2025-07-05T12:34:37.9681935Z Buffer contains 10 lines
+2025-07-05T12:34:37.9682307Z Sample content (first 10 lines):
+2025-07-05T12:34:37.9682659Z    1: 
+2025-07-05T12:34:37.9682940Z    2: # jj Log View (showing 5 commits)
+2025-07-05T12:34:37.9683764Z    3: # Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help
+2025-07-05T12:34:37.9684511Z    4: 
+2025-07-05T12:34:37.9684884Z    5: @  somqxlqy (no email set) 2025-07-05 12:34:37.000 +00:00 00cbd4ea
+2025-07-05T12:34:37.9685523Z    6: │  (empty) Modify test file for ANSI testing
+2025-07-05T12:34:37.9686154Z    7: ◉  szrskuuy (no email set) 2025-07-05 12:34:36.000 +00:00 634da2c0
+2025-07-05T12:34:37.9686677Z    8: │  test commit
+2025-07-05T12:34:37.9686851Z    9: ~
+2025-07-05T12:34:37.9687007Z   10: 
+2025-07-05T12:34:37.9687090Z 
+2025-07-05T12:34:37.9687236Z 📝 Step 4: Cursor is positioned automatically
+2025-07-05T12:34:37.9687496Z Cursor position: 5
+2025-07-05T12:34:37.9687783Z Current line: @  somqxlqy (no email set) 2025-07-05 12:34:37.000 +00:00 00cbd4ea
+2025-07-05T12:34:37.9688165Z 📝 Step 5: User presses Enter on current line
+2025-07-05T12:34:37.9688419Z Commit ID extracted: 00cbd4ea
+2025-07-05T12:34:37.9688559Z 
+2025-07-05T12:34:37.9862933Z 📝 Step 6: Execute 'jj show' command (what Enter does)
+2025-07-05T12:34:37.9863503Z ✅ jj show command succeeded
+2025-07-05T12:34:37.9863884Z First 300 characters of commit details:
+2025-07-05T12:34:37.9864346Z ------------------------------------------------------------
+2025-07-05T12:34:37.9864872Z Commit ID: 00cbd4ea01ca1267c9010f2d72728d1e2ff49e37
+2025-07-05T12:34:37.9865381Z Change ID: somqxlqywmyyynzyynppvlumrlolunnz
+2025-07-05T12:34:37.9865935Z Author: (no name set) <(no email set)> (2025-07-05 12:34:36.000 +00:00)
+2025-07-05T12:34:37.9866573Z Committer: (no name set) <(no email set)> (2025-07-05 12:34:37.000 +00:00)
+2025-07-05T12:34:37.9866999Z 
+2025-07-05T12:34:37.9867140Z     Modify test file for ANSI testing
+2025-07-05T12:34:37.9867414Z 
+2025-07-05T12:34:37.9867618Z ------------------------------------------------------------
+2025-07-05T12:34:37.9867939Z 
+2025-07-05T12:34:37.9868256Z 📝 Step 7: Test original issue (commands from subdirectory)
+2025-07-05T12:34:37.9869704Z Original issue: 'when i runn "J log" with an open buffer in a jj repo i get Failed to get log'
+2025-07-05T12:34:37.9870775Z Changed to subdirectory: /tmp/jj-fugitive-tests-4jHmdz/test-repo/lua
+2025-07-05T12:34:38.0042973Z Repository root detected from subdirectory: /tmp/jj-fugitive-tests-4jHmdz/test-repo
+2025-07-05T12:34:38.0043923Z ✅ jj show works from subdirectory - original issue is FIXED
+2025-07-05T12:34:38.0044164Z 
+2025-07-05T12:34:38.0211708Z 📝 Step 8: Test other log operations (e, n, r, d)
+2025-07-05T12:34:38.0379775Z ✅ 'e' (edit) operation would work
+2025-07-05T12:34:38.0380260Z ✅ 'd' (diff) operation would work
+2025-07-05T12:34:38.0380513Z 
+2025-07-05T12:34:38.0380762Z 🎉 === USER EXPERIENCE SIMULATION COMPLETE ===
+2025-07-05T12:34:38.0381282Z ✅ ALL CRITICAL FUNCTIONALITY WORKING
+2025-07-05T12:34:38.0381665Z Summary of what works:
+2025-07-05T12:34:38.0382117Z   ✅ User can run ':J log' to open log view
+2025-07-05T12:34:38.0382669Z   ✅ Cursor is positioned on first commit automatically
+2025-07-05T12:34:38.0383236Z   ✅ Pressing Enter extracts correct commit ID
+2025-07-05T12:34:38.0383756Z   ✅ jj show command executes successfully
+2025-07-05T12:34:38.0384379Z   ✅ Everything works from subdirectories (ORIGINAL ISSUE FIXED)
+2025-07-05T12:34:38.0385013Z   ✅ Log view operations (edit, diff) are functional
+2025-07-05T12:34:38.0385384Z 🎯 The reported issue should now be resolved!
+2025-07-05T12:34:38.0391743Z    ✅ PASSED
+2025-07-05T12:34:38.0391927Z 
+2025-07-05T12:34:38.0405776Z 🧪 Running: test_vim_fugitive_alignment
+2025-07-05T12:34:38.0406253Z    File: tests/test_vim_fugitive_alignment.lua
+2025-07-05T12:34:38.0406789Z    🔍 Running with verbose output...
+2025-07-05T12:34:38.0407300Z    🔧 Using nvim --headless -l for Lua file
+2025-07-05T12:34:38.0461931Z 🚀 === jj-fugitive Improved Navigation Tests ===
+2025-07-05T12:34:38.0649612Z ✅ PASS: Status module loaded
+2025-07-05T12:34:38.0650208Z ✅ PASS: Status buffer creation
+2025-07-05T12:34:38.0650676Z ✅ PASS: Status window has 'R' mapping
+2025-07-05T12:34:38.0651158Z ✅ PASS: 'R' mapping is buffer-local
+2025-07-05T12:34:38.0651669Z ✅ PASS: Status window has 'd' mapping
+2025-07-05T12:34:38.0652139Z ✅ PASS: 'd' mapping is buffer-local
+2025-07-05T12:34:38.0652622Z ✅ PASS: Status window has 'D' mapping
+2025-07-05T12:34:38.0653081Z ✅ PASS: 'D' mapping is buffer-local
+2025-07-05T12:34:38.0653558Z ✅ PASS: Status window has '<CR>' mapping
+2025-07-05T12:34:38.0654048Z ✅ PASS: '<CR>' mapping is buffer-local
+2025-07-05T12:34:38.0654531Z ✅ PASS: Status window has 'o' mapping
+2025-07-05T12:34:38.0655005Z ✅ PASS: 'o' mapping is buffer-local
+2025-07-05T12:34:38.0655467Z ✅ PASS: Status window has 's' mapping
+2025-07-05T12:34:38.0655941Z ✅ PASS: 's' mapping is buffer-local
+2025-07-05T12:34:38.0656398Z ✅ PASS: Status window has 'v' mapping
+2025-07-05T12:34:38.0656859Z ✅ PASS: 'v' mapping is buffer-local
+2025-07-05T12:34:38.0657333Z ✅ PASS: Status window has 't' mapping
+2025-07-05T12:34:38.0657799Z ✅ PASS: 't' mapping is buffer-local
+2025-07-05T12:34:38.0658271Z ✅ PASS: Status window has '<Tab>' mapping
+2025-07-05T12:34:38.0658942Z ✅ PASS: '<Tab>' mapping is buffer-local
+2025-07-05T12:34:38.0659460Z ✅ PASS: Status window has 'r' mapping
+2025-07-05T12:34:38.0659928Z ✅ PASS: 'r' mapping is buffer-local
+2025-07-05T12:34:38.0660389Z ✅ PASS: Status window has 'a' mapping
+2025-07-05T12:34:38.0660840Z ✅ PASS: 'a' mapping is buffer-local
+2025-07-05T12:34:38.0661299Z ✅ PASS: Status window has 'l' mapping
+2025-07-05T12:34:38.0661758Z ✅ PASS: 'l' mapping is buffer-local
+2025-07-05T12:34:38.0662239Z ✅ PASS: Status window has 'cc' mapping
+2025-07-05T12:34:38.0662718Z ✅ PASS: 'cc' mapping is buffer-local
+2025-07-05T12:34:38.0663182Z ✅ PASS: Status window has 'ca' mapping
+2025-07-05T12:34:38.0663650Z ✅ PASS: 'ca' mapping is buffer-local
+2025-07-05T12:34:38.0664117Z ✅ PASS: Status window has 'ce' mapping
+2025-07-05T12:34:38.0664606Z ✅ PASS: 'ce' mapping is buffer-local
+2025-07-05T12:34:38.0665066Z ✅ PASS: Status window has 'cn' mapping
+2025-07-05T12:34:38.0665527Z ✅ PASS: 'cn' mapping is buffer-local
+2025-07-05T12:34:38.0665979Z ✅ PASS: Status window has 'q' mapping
+2025-07-05T12:34:38.0666676Z ✅ PASS: 'q' mapping is buffer-local
+2025-07-05T12:34:38.0667151Z ✅ PASS: Status window has 'g?' mapping
+2025-07-05T12:34:38.0667609Z ✅ PASS: 'g?' mapping is buffer-local
+2025-07-05T12:34:38.0837987Z ✅ PASS: Deprecated key 'dd' removed
+2025-07-05T12:34:38.0838290Z No changes in working copy
+2025-07-05T12:34:38.1037220Z ✅ PASS: Diff buffer creation
+2025-07-05T12:34:38.1037646Z ✅ PASS: Log buffer creation
+2025-07-05T12:34:38.1038056Z ✅ PASS: Log window has 'g?' mapping
+2025-07-05T12:34:38.1038895Z ✅ PASS: Log window has '<CR>' mapping
+2025-07-05T12:34:38.1039623Z ✅ PASS: Log window has 'o' mapping
+2025-07-05T12:34:38.1040160Z ✅ PASS: Log window has 'P' mapping
+2025-07-05T12:34:38.1040666Z ✅ PASS: Log window has 'N' mapping
+2025-07-05T12:34:38.1041208Z ✅ PASS: Log window has '=' mapping
+2025-07-05T12:34:38.1041720Z ✅ PASS: Log window has '+' mapping
+2025-07-05T12:34:38.1042216Z ✅ PASS: Log window has 'q' mapping
+2025-07-05T12:34:38.1042885Z ✅ PASS: Log window has 'R' mapping
+2025-07-05T12:34:38.1043642Z ✅ PASS: Help text mentions vim-fugitive style keys
+2025-07-05T12:34:38.1044239Z ✅ PASS: Help text doesn't mention old keys
+2025-07-05T12:34:38.1044720Z ✅ PASS: Status help can be triggered
+2025-07-05T12:34:38.1045012Z 
+2025-07-05T12:34:38.1045311Z 📊 === vim-fugitive Alignment Test Results Summary ===
+2025-07-05T12:34:38.1045768Z Passed: 53/53 tests
+2025-07-05T12:34:38.1046213Z 🎉 All vim-fugitive alignment tests passed!
+2025-07-05T12:34:38.1046882Z ✅ jj-fugitive keybindings now align with vim-fugitive patterns
+2025-07-05T12:34:38.1047396Z Key changes made:
+2025-07-05T12:34:38.1047845Z   • Status: 'r' → 'R' for reload, 'dd' → 'D' for diff
+2025-07-05T12:34:38.1048452Z   • Status: Enter now opens files (vim-fugitive standard)
+2025-07-05T12:34:38.1049517Z   • All views: '?' → 'g?' for help (vim-fugitive standard)
+2025-07-05T12:34:38.1049903Z   • Diff: Added '[c' and ']c' for change navigation
+2025-07-05T12:34:38.1056027Z    ✅ PASSED
+2025-07-05T12:34:38.1056228Z 
+2025-07-05T12:34:38.1056542Z 🎭 Running demo files (non-critical)...
+2025-07-05T12:34:38.1093601Z 🎪 Running demo: demo_enhanced_diff
+2025-07-05T12:34:38.1329707Z   • Added 'dv' and 'ds' for vertical/horizontal diff splits🎨 === Enhanced Diff View Demo ===
+2025-07-05T12:34:38.1330422Z No changes in tests/test_enhanced_diff.txt
+2025-07-05T12:34:38.1330925Z ✅ DEMO: Enhanced diff buffer created
+2025-07-05T12:34:38.1331516Z ❌ DEMO: File header with emoji present - File header not found
+2025-07-05T12:34:38.1332242Z ❌ DEMO: Change description present - Change description not found
+2025-07-05T12:34:38.1332954Z ❌ DEMO: Visual separator present - Visual separator not found
+2025-07-05T12:34:38.1333338Z 
+2025-07-05T12:34:38.1333531Z ✨ Enhanced diff content preview:
+2025-07-05T12:34:38.1334022Z ──────────────────────────────────
+2025-07-05T12:34:38.1334347Z  1: 
+2025-07-05T12:34:38.1334675Z ──────────────────────────────────
+2025-07-05T12:34:38.1334904Z 
+2025-07-05T12:34:38.1335092Z 🎯 Enhancement features applied:
+2025-07-05T12:34:38.1335583Z   📄 File headers with emoji icons for clarity
+2025-07-05T12:34:38.1336051Z   🔄 Clear change descriptions
+2025-07-05T12:34:38.1336459Z   📁 Enhanced git diff headers
+2025-07-05T12:34:38.1336872Z   📍 Prominent hunk location markers
+2025-07-05T12:34:38.1337346Z   ❌ Red highlighted removed lines with icons
+2025-07-05T12:34:38.1337847Z   ✅ Green highlighted added lines with icons
+2025-07-05T12:34:38.1338327Z   ➡️ ⬅️ File markers for old/new versions
+2025-07-05T12:34:38.1339118Z   🔗 Index information styling
+2025-07-05T12:34:38.1339583Z   📏 Visual separators for better organization
+2025-07-05T12:34:38.1340117Z   🎨 Custom color scheme for improved readability
+2025-07-05T12:34:38.1340301Z 
+2025-07-05T12:34:38.1340415Z 📊 === Demo Results Summary ===
+2025-07-05T12:34:38.1340642Z Demo checks passed: 1/4
+2025-07-05T12:34:38.1340874Z 💥 Some demo checks failed!
+2025-07-05T12:34:38.1341172Z   ❌ File header with emoji present: File header not found
+2025-07-05T12:34:38.1341564Z   ❌ Change description present: Change description not found
+2025-07-05T12:34:38.1345329Z    ⚠️  Demo had issues (non-critical)
+2025-07-05T12:34:38.1357855Z 🎪 Running demo: demo_log_view
+2025-07-05T12:34:38.1607685Z   ❌ Visual separator present: Visual separator not found📜 === Enhanced Log View Demo ===
+2025-07-05T12:34:38.1608263Z 
+2025-07-05T12:34:38.1608479Z ✨ Enhanced log content preview:
+2025-07-05T12:34:38.1609131Z ──────────────────────────────────
+2025-07-05T12:34:38.1609480Z  1: 
+2025-07-05T12:34:38.1609765Z  2: # jj Log View (showing 10 commits)
+2025-07-05T12:34:38.1610539Z  3: # Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help
+2025-07-05T12:34:38.1611299Z  4: 
+2025-07-05T12:34:38.1611700Z  5: @  somqxlqy (no email set) 2025-07-05 12:34:37.000 +00:00 00cbd4ea
+2025-07-05T12:34:38.1612341Z  6: │  (empty) Modify test file for ANSI testing
+2025-07-05T12:34:38.1613007Z  7: ◉  szrskuuy (no email set) 2025-07-05 12:34:36.000 +00:00 634da2c0
+2025-07-05T12:34:38.1613556Z  8: │  test commit
+2025-07-05T12:34:38.1613834Z  9: ~
+2025-07-05T12:34:38.1614069Z 10: 
+2025-07-05T12:34:38.1614420Z ──────────────────────────────────
+2025-07-05T12:34:38.1614661Z 
+2025-07-05T12:34:38.1614844Z 🎯 Log view features:
+2025-07-05T12:34:38.1615256Z   📜 Header with repository history info
+2025-07-05T12:34:38.1615736Z   🔍 Navigation instructions
+2025-07-05T12:34:38.1616196Z   📋 Column headers for better organization
+2025-07-05T12:34:38.1616735Z   👉 Special icon for current working copy (@)
+2025-07-05T12:34:38.1617286Z   🔀 Different icons for different commit types
+2025-07-05T12:34:38.1617817Z   🌱 Initial commits highlighted in green
+2025-07-05T12:34:38.1618310Z   🔧 Fix commits marked with repair icon
+2025-07-05T12:34:38.1618944Z   ➕ Add commits marked with plus icon
+2025-07-05T12:34:38.1619694Z   ➖ Remove commits marked with minus icon
+2025-07-05T12:34:38.1620211Z   💡 Clear command reference at bottom
+2025-07-05T12:34:38.1620487Z 
+2025-07-05T12:34:38.1620698Z ⌨️  Available keybindings:
+2025-07-05T12:34:38.1621078Z   Enter/o = Show commit details
+2025-07-05T12:34:38.1621449Z   e = Edit at commit (jj edit)
+2025-07-05T12:34:38.1621812Z   n = New commit after this one (jj new)
+2025-07-05T12:34:38.1622286Z   r = Rebase current commit onto this one (jj rebase)
+2025-07-05T12:34:38.1622738Z   d = Show diff for commit
+2025-07-05T12:34:38.1623070Z   q = Close log view
+2025-07-05T12:34:38.1623366Z   R = Refresh log
+2025-07-05T12:34:38.1623658Z   ? = Show detailed help
+2025-07-05T12:34:38.1623870Z 
+2025-07-05T12:34:38.1624138Z 🎉 Enhanced log view demonstration complete!
+2025-07-05T12:34:38.1628435Z    ✅ Demo completed successfully
+2025-07-05T12:34:38.1628707Z 
+2025-07-05T12:34:38.1629060Z 📊 === Test Results Summary ===
+2025-07-05T12:34:38.1629409Z Total tests run: 29
+2025-07-05T12:34:38.1629716Z Passed: 27
+2025-07-05T12:34:38.1629971Z Failed: 2
+2025-07-05T12:34:38.1630116Z 
+2025-07-05T12:34:38.1630278Z 💥 Some tests failed:
+2025-07-05T12:34:38.1633149Z    ❌ test_completion_enhancement
+2025-07-05T12:34:38.1633591Z    ❌ test_multi_level_completion
+2025-07-05T12:34:38.1633838Z 
+2025-07-05T12:34:38.1633927Z Please check the failed tests above.
+2025-07-05T12:34:38.1634091Z 
+2025-07-05T12:34:38.1634231Z 🧹 Cleaning up temporary repository...
+2025-07-05T12:34:38.1739771Z ✅ Cleanup complete
+2025-07-05T12:34:38.1755212Z ##[error]Process completed with exit code 1.
+2025-07-05T12:34:38.1845646Z Post job cleanup.
+2025-07-05T12:34:38.2761895Z [command]/usr/bin/git version
+2025-07-05T12:34:38.2798425Z git version 2.49.0
+2025-07-05T12:34:38.2841867Z Temporarily overriding HOME='/home/runner/work/_temp/a505fe6e-a86b-4254-8abe-108908165ba5' before making global git config changes
+2025-07-05T12:34:38.2843142Z Adding repository directory to the temporary git global config as a safe directory
+2025-07-05T12:34:38.2854394Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/jj-fugitive/jj-fugitive
+2025-07-05T12:34:38.2889426Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-07-05T12:34:38.2921653Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-07-05T12:34:38.3138719Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-07-05T12:34:38.3158602Z http.https://github.com/.extraheader
+2025-07-05T12:34:38.3170596Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-07-05T12:34:38.3200429Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-07-05T12:34:38.3513343Z Cleaning up orphan processes

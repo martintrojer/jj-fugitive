@@ -1,0 +1,18 @@
+﻿2025-07-05T12:34:29.1352431Z ##[group]Run curl -L https://github.com/martinvonz/jj/releases/download/v0.15.1/jj-v0.15.1-x86_64-unknown-linux-musl.tar.gz -o jj.tar.gz
+2025-07-05T12:34:29.1353572Z [36;1mcurl -L https://github.com/martinvonz/jj/releases/download/v0.15.1/jj-v0.15.1-x86_64-unknown-linux-musl.tar.gz -o jj.tar.gz[0m
+2025-07-05T12:34:29.1354168Z [36;1mtar -xzf jj.tar.gz[0m
+2025-07-05T12:34:29.1354441Z [36;1msudo mv jj /usr/local/bin/[0m
+2025-07-05T12:34:29.1354756Z [36;1mrm jj.tar.gz  # Clean up large file before jj init[0m
+2025-07-05T12:34:29.1355077Z [36;1mjj --version[0m
+2025-07-05T12:34:29.1746232Z shell: /usr/bin/bash -e {0}
+2025-07-05T12:34:29.1746617Z ##[endgroup]
+2025-07-05T12:34:29.1909937Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2025-07-05T12:34:29.1910738Z                                  Dload  Upload   Total   Spent    Left  Speed
+2025-07-05T12:34:29.1911033Z 
+2025-07-05T12:34:29.2955641Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-05T12:34:29.2956496Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-05T12:34:29.3728995Z 
+2025-07-05T12:34:29.3729753Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2025-07-05T12:34:29.4794182Z 
+2025-07-05T12:34:29.4794698Z 100 9031k  100 9031k    0     0  30.5M      0 --:--:-- --:--:-- --:--:-- 30.5M
+2025-07-05T12:34:29.6686896Z jj 0.15.1-bf76080f42f77cad934d9a5202c7b7d29ab2c890

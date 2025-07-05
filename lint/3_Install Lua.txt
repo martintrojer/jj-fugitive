@@ -1,0 +1,135 @@
+﻿2025-07-05T12:34:28.4223942Z ##[group]Run leafo/gh-actions-lua@v10
+2025-07-05T12:34:28.4224371Z with:
+2025-07-05T12:34:28.4224709Z   luaVersion: 5.1
+2025-07-05T12:34:28.4225078Z   buildCache: true
+2025-07-05T12:34:28.4225374Z ##[endgroup]
+2025-07-05T12:34:38.7592702Z ##[warning]Failed to restore: getCacheEntry failed: Cache service responded with 503
+2025-07-05T12:34:38.7606561Z ##[notice]gh-actions-lua: No cache available, clean build
+2025-07-05T12:34:39.9090619Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/.lua-build -f /home/runner/work/_temp/6f032118-e5bd-42af-9d65-0ddbd485c205
+2025-07-05T12:34:39.9197553Z [command]/usr/bin/sudo apt-get install -q libreadline-dev libncurses-dev
+2025-07-05T12:34:40.7337350Z Reading package lists...
+2025-07-05T12:34:40.8994294Z Building dependency tree...
+2025-07-05T12:34:40.9006529Z Reading state information...
+2025-07-05T12:34:41.0389301Z libncurses-dev is already the newest version (6.4+20240113-1ubuntu2).
+2025-07-05T12:34:41.0390015Z libncurses-dev set to manually installed.
+2025-07-05T12:34:41.0390723Z Suggested packages:
+2025-07-05T12:34:41.0391091Z   readline-doc
+2025-07-05T12:34:41.0538304Z The following NEW packages will be installed:
+2025-07-05T12:34:41.0541746Z   libreadline-dev
+2025-07-05T12:34:41.0782632Z 0 upgraded, 1 newly installed, 0 to remove and 21 not upgraded.
+2025-07-05T12:34:41.0783470Z Need to get 167 kB of archives.
+2025-07-05T12:34:41.0784052Z After this operation, 814 kB of additional disk space will be used.
+2025-07-05T12:34:41.0784738Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2025-07-05T12:34:41.1149553Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libreadline-dev amd64 8.2-4build1 [167 kB]
+2025-07-05T12:34:41.3695136Z Fetched 167 kB in 0s (3097 kB/s)
+2025-07-05T12:34:41.3915040Z Selecting previously unselected package libreadline-dev:amd64.
+2025-07-05T12:34:41.4184321Z (Reading database ... 
+2025-07-05T12:34:41.4186328Z (Reading database ... 5%
+2025-07-05T12:34:41.4186834Z (Reading database ... 10%
+2025-07-05T12:34:41.4187171Z (Reading database ... 15%
+2025-07-05T12:34:41.4187455Z (Reading database ... 20%
+2025-07-05T12:34:41.4187738Z (Reading database ... 25%
+2025-07-05T12:34:41.4188260Z (Reading database ... 30%
+2025-07-05T12:34:41.4188556Z (Reading database ... 35%
+2025-07-05T12:34:41.4188841Z (Reading database ... 40%
+2025-07-05T12:34:41.4189145Z (Reading database ... 45%
+2025-07-05T12:34:41.4189449Z (Reading database ... 50%
+2025-07-05T12:34:41.4279088Z (Reading database ... 55%
+2025-07-05T12:34:41.4569001Z (Reading database ... 60%
+2025-07-05T12:34:41.4806365Z (Reading database ... 65%
+2025-07-05T12:34:41.5087920Z (Reading database ... 70%
+2025-07-05T12:34:41.5333359Z (Reading database ... 75%
+2025-07-05T12:34:41.5739863Z (Reading database ... 80%
+2025-07-05T12:34:41.6210623Z (Reading database ... 85%
+2025-07-05T12:34:41.6555933Z (Reading database ... 90%
+2025-07-05T12:34:41.7121634Z (Reading database ... 95%
+2025-07-05T12:34:41.7122158Z (Reading database ... 100%
+2025-07-05T12:34:41.7122594Z (Reading database ... 219349 files and directories currently installed.)
+2025-07-05T12:34:41.7166135Z Preparing to unpack .../libreadline-dev_8.2-4build1_amd64.deb ...
+2025-07-05T12:34:41.7194704Z Unpacking libreadline-dev:amd64 (8.2-4build1) ...
+2025-07-05T12:34:41.7675182Z Setting up libreadline-dev:amd64 (8.2-4build1) ...
+2025-07-05T12:34:41.7708947Z Processing triggers for install-info (7.1-3build2) ...
+2025-07-05T12:34:42.5371242Z 
+2025-07-05T12:34:42.5372008Z Running kernel seems to be up-to-date.
+2025-07-05T12:34:42.5372405Z 
+2025-07-05T12:34:42.5372552Z Restarting services...
+2025-07-05T12:34:42.5440550Z 
+2025-07-05T12:34:42.5441300Z Service restarts being deferred:
+2025-07-05T12:34:42.5443191Z  systemctl restart hosted-compute-agent.service
+2025-07-05T12:34:42.5443583Z 
+2025-07-05T12:34:42.5443751Z No containers need to be restarted.
+2025-07-05T12:34:42.5444033Z 
+2025-07-05T12:34:42.5444550Z No user sessions are running outdated binaries.
+2025-07-05T12:34:42.5444867Z 
+2025-07-05T12:34:42.5445167Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2025-07-05T12:34:43.3672386Z [command]/usr/bin/make -j linux
+2025-07-05T12:34:43.4056193Z cd src && /usr/bin/make linux
+2025-07-05T12:34:43.4075730Z make[1]: Entering directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:43.4076614Z /usr/bin/make all MYCFLAGS=-DLUA_USE_LINUX MYLIBS="-Wl,-E -ldl -lreadline -lhistory -lncurses"
+2025-07-05T12:34:43.4096227Z make[2]: Entering directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:43.4096924Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lapi.o lapi.c
+2025-07-05T12:34:43.4102493Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lcode.o lcode.c
+2025-07-05T12:34:43.4108687Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldebug.o ldebug.c
+2025-07-05T12:34:43.4109575Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldo.o ldo.c
+2025-07-05T12:34:43.4114316Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldump.o ldump.c
+2025-07-05T12:34:43.4118786Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lfunc.o lfunc.c
+2025-07-05T12:34:43.4123683Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lgc.o lgc.c
+2025-07-05T12:34:43.4135434Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o llex.o llex.c
+2025-07-05T12:34:43.4146055Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lmem.o lmem.c
+2025-07-05T12:34:43.4146922Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lobject.o lobject.c
+2025-07-05T12:34:43.4159681Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lopcodes.o lopcodes.c
+2025-07-05T12:34:43.4167919Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lparser.o lparser.c
+2025-07-05T12:34:43.4189230Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lstate.o lstate.c
+2025-07-05T12:34:43.4197681Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lstring.o lstring.c
+2025-07-05T12:34:43.4199163Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ltable.o ltable.c
+2025-07-05T12:34:43.4220667Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ltm.o ltm.c
+2025-07-05T12:34:43.4227128Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lundump.o lundump.c
+2025-07-05T12:34:43.4237098Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lvm.o lvm.c
+2025-07-05T12:34:43.4262281Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lzio.o lzio.c
+2025-07-05T12:34:43.4279245Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lauxlib.o lauxlib.c
+2025-07-05T12:34:43.4280354Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lbaselib.o lbaselib.c
+2025-07-05T12:34:43.4281288Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ldblib.o ldblib.c
+2025-07-05T12:34:43.4356935Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o liolib.o liolib.c
+2025-07-05T12:34:43.4436916Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lmathlib.o lmathlib.c
+2025-07-05T12:34:43.4541893Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o loslib.o loslib.c
+2025-07-05T12:34:43.4597026Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o ltablib.o ltablib.c
+2025-07-05T12:34:43.4598228Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lstrlib.o lstrlib.c
+2025-07-05T12:34:43.4599748Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o loadlib.o loadlib.c
+2025-07-05T12:34:43.4652393Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o linit.o linit.c
+2025-07-05T12:34:43.4653300Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o lua.o lua.c
+2025-07-05T12:34:43.4673024Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o luac.o luac.c
+2025-07-05T12:34:43.4763363Z gcc -O2 -Wall -DLUA_USE_LINUX   -c -o print.o print.c
+2025-07-05T12:34:43.5829135Z ltablib.c: In function ‘addfield’:
+2025-07-05T12:34:43.5872474Z ltablib.c:137:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+2025-07-05T12:34:43.5881830Z   137 |   if (!lua_isstring(L, -1))
+2025-07-05T12:34:43.5908508Z       |   ^~
+2025-07-05T12:34:43.5919050Z ltablib.c:140:5: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+2025-07-05T12:34:43.5919851Z   140 |     luaL_addvalue(b);
+2025-07-05T12:34:43.6038579Z       |     ^~~~~~~~~~~~~
+2025-07-05T12:34:43.6133370Z lauxlib.c: In function ‘luaL_loadfile’:
+2025-07-05T12:34:43.6339969Z lauxlib.c:577:4: warning: this ‘while’ clause does not guard... [-Wmisleading-indentation]
+2025-07-05T12:34:43.6579390Z   577 |    while ((c = getc(lf.f)) != EOF && c != LUA_SIGNATURE[0]) ;
+2025-07-05T12:34:43.6580423Z       |    ^~~~~
+2025-07-05T12:34:43.6582203Z lauxlib.c:578:5: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘while’
+2025-07-05T12:34:43.6583180Z   578 |     lf.extraline = 0;
+2025-07-05T12:34:43.6583861Z       |     ^~
+2025-07-05T12:34:43.6584550Z ldump.c: In function ‘DumpString’:
+2025-07-05T12:34:43.6586282Z ldump.c:63:26: warning: the comparison will always evaluate as ‘false’ for the pointer operand in ‘s + 24’ must not be NULL [-Waddress]
+2025-07-05T12:34:43.6587431Z    63 |  if (s==NULL || getstr(s)==NULL)
+2025-07-05T12:34:43.6588205Z       |                          ^~
+2025-07-05T12:34:44.9297032Z ar rcu liblua.a lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o lundump.o lvm.o lzio.o lauxlib.o lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o lstrlib.o loadlib.o linit.o	# DLL needs all object files
+2025-07-05T12:34:44.9364968Z ar: `u' modifier ignored since `D' is the default (see `U')
+2025-07-05T12:34:56.0391653Z ranlib liblua.a
+2025-07-05T12:34:56.0932112Z gcc -o lua  lua.o liblua.a -lm -Wl,-E -ldl -lreadline -lhistory -lncurses
+2025-07-05T12:34:56.0935080Z gcc -o luac  luac.o print.o liblua.a -lm -Wl,-E -ldl -lreadline -lhistory -lncurses
+2025-07-05T12:34:56.1317753Z make[2]: Leaving directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:56.1320756Z make[1]: Leaving directory '/home/runner/work/_temp/.lua-build/lua-5.1.5/src'
+2025-07-05T12:34:56.1342832Z [command]/usr/bin/make -j INSTALL_TOP=/home/runner/work/jj-fugitive/jj-fugitive/.lua install
+2025-07-05T12:34:56.1370431Z cd src && mkdir -p /home/runner/work/jj-fugitive/jj-fugitive/.lua/bin /home/runner/work/jj-fugitive/jj-fugitive/.lua/include /home/runner/work/jj-fugitive/jj-fugitive/.lua/lib /home/runner/work/jj-fugitive/jj-fugitive/.lua/man/man1 /home/runner/work/jj-fugitive/jj-fugitive/.lua/share/lua/5.1 /home/runner/work/jj-fugitive/jj-fugitive/.lua/lib/lua/5.1
+2025-07-05T12:34:56.1391022Z cd src && install -p -m 0755 lua luac /home/runner/work/jj-fugitive/jj-fugitive/.lua/bin
+2025-07-05T12:34:56.1419790Z cd src && install -p -m 0644 lua.h luaconf.h lualib.h lauxlib.h ../etc/lua.hpp /home/runner/work/jj-fugitive/jj-fugitive/.lua/include
+2025-07-05T12:34:56.1439677Z cd src && install -p -m 0644 liblua.a /home/runner/work/jj-fugitive/jj-fugitive/.lua/lib
+2025-07-05T12:34:56.1460435Z cd doc && install -p -m 0644 lua.1 luac.1 /home/runner/work/jj-fugitive/jj-fugitive/.lua/man/man1
+2025-07-05T12:34:56.1484868Z ##[notice]gh-actions-lua: Storing into cache: lua:5.1.5:linux:x64:
+2025-07-05T12:34:56.1592003Z [command]/usr/bin/tar --posix -cf cache.tgz --exclude cache.tgz -P -C /home/runner/work/jj-fugitive/jj-fugitive --files-from manifest.txt -z
+2025-07-05T12:35:06.2989949Z ##[warning]Failed to save: reserveCache failed: Cache service responded with 503
