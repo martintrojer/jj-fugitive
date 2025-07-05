@@ -83,17 +83,17 @@ if log_module then
       "Expected limit 5, got " .. tostring(limit_value)
     )
 
-    -- Test 5: Check if buffer contains header with commit count
+    -- Test 5: Check if buffer contains header (no count when no limit)
     local lines = vim.api.nvim_buf_get_lines(log_buffer, 0, -1, false)
-    local has_count_header = false
+    local has_header = false
     for _, line in ipairs(lines) do
-      if line:match("showing %d+ commits") then
-        has_count_header = true
+      if line:match("jj Log View") then
+        has_header = true
         break
       end
     end
 
-    assert_test("Header shows commit count", has_count_header, "Header doesn't show commit count")
+    assert_test("Header shows log view title", has_header, "Header doesn't show log view title")
 
     -- Test 6: Check if expand functionality is available (keymaps exist)
     vim.api.nvim_set_current_buf(log_buffer)

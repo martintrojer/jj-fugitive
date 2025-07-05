@@ -161,7 +161,7 @@ local function show_commit_details(commit_id, opts)
     if current_bufname:match("jj%-") then
       -- Store original buffer info for navigation back
       vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", "log")
-      local log_limit = 50
+      local log_limit = 0 -- Default to no limit (standard jj log)
       pcall(function()
         log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")
       end)
@@ -307,7 +307,7 @@ local function show_commit_diff(commit_id, opts)
     if current_bufname:match("jj%-") then
       -- Store original buffer info for navigation back
       vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", "log")
-      local log_limit = 50
+      local log_limit = 0 -- Default to no limit (standard jj log)
       pcall(function()
         log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")
       end)
@@ -353,8 +353,9 @@ end
 -- Expand log view with more commits using -r .. flag with increased limit
 local function expand_log_view(bufnr)
   -- Get current limit from buffer variable
-  local current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit") or 50
-  local new_limit = current_limit + 50 -- Expand by 50 more commits
+  -- If no limit was set initially (standard jj log), start with 50 and expand
+  local current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit") or 0
+  local new_limit = current_limit == 0 and 50 or current_limit + 50
 
   -- Get current cursor position to restore it
   local cursor_pos = vim.api.nvim_win_get_cursor(0)
@@ -734,7 +735,7 @@ local function setup_log_keymaps(bufnr, commit_data)
       "  y         - Duplicate commit (jj duplicate)",
       "",
       "View Actions:",
-      "  =, +      - Expand log view (show 50 more commits using -r .. --limit)",
+      "  =, +      - Expand log view (show more commits with --limit)",
       "  R         - Refresh log view",
       "  q         - Close log view",
       "  g?        - Show this help",
@@ -787,12 +788,10 @@ end
 -- Main function to show log view
 function M.show_log(options)
   options = options or {}
-  options.limit = options.limit or 50
+  -- No default limit - use standard jj log behavior
 
-  -- Always use -r .. to show commits from the repository
-  if not options.revisions then
-    options.revisions = { ".." }
-  end
+  -- Only set revisions if explicitly provided
+  -- Default jj log behavior shows recent commits without needing -r ..
 
   local log_output, err = get_jj_log(options)
   if not log_output then
@@ -808,9 +807,10 @@ function M.show_log(options)
   end
 
   -- Use native jj output with ANSI processing
+  local limit_text = options.limit and string.format(" (limit: %d)", options.limit) or ""
   local header_lines = {
     "",
-    string.format("# jj Log View (showing %d commits)", options.limit),
+    "# jj Log View" .. limit_text,
     "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help",
     "",
   }
@@ -863,7 +863,7 @@ function M.show_log(options)
   end)
 
   -- Store current limit in buffer variable for expand functionality
-  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", options.limit)
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", options.limit or 0)
 
   -- Setup keymaps for interaction
   setup_log_keymaps(bufnr, commit_data)
