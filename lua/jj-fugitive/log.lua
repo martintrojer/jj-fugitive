@@ -401,7 +401,7 @@ local function expand_log_view(bufnr)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", new_limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand (use -r .. --limit), q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, +=expand (use -r .. --limit), q=quit, g?=help",
     "",
   }
 
@@ -479,6 +479,60 @@ local function setup_log_keymaps(bufnr, commit_data)
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     rebase_onto_commit(commit_id)
+  end, opts)
+
+  -- Abandon commit
+  vim.keymap.set("n", "A", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    if commit_id then
+      -- Ask for confirmation since this is destructive
+      local choice = vim.fn.confirm(
+        string.format(
+          "Abandon commit %s? This will rebase its descendants onto its parent.",
+          commit_id
+        ),
+        "&Yes\n&No",
+        2
+      )
+      if choice == 1 then
+        local main_module = require("jj-fugitive.init")
+        local result = main_module.run_jj_command_from_module({ "abandon", commit_id })
+        if result then
+          vim.api.nvim_echo({ { "Abandoned commit: " .. commit_id, "MoreMsg" } }, false, {})
+          M.show_log({ update_current = true })
+        end
+      end
+    else
+      vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
+    end
+  end, opts)
+
+  -- Squash commit into its parent
+  vim.keymap.set("n", "s", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    if commit_id then
+      -- Ask for confirmation since this will modify the commit
+      local choice = vim.fn.confirm(
+        string.format(
+          "Squash commit %s into its parent? This will move its changes to the parent.",
+          commit_id
+        ),
+        "&Yes\n&No",
+        2
+      )
+      if choice == 1 then
+        local main_module = require("jj-fugitive.init")
+        local result = main_module.run_jj_command_from_module({ "squash", "-r", commit_id })
+        if result then
+          vim.api.nvim_echo({ { "Squashed commit: " .. commit_id, "MoreMsg" } }, false, {})
+          M.show_log({ update_current = true })
+        end
+      end
+    else
+      vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
+    end
   end, opts)
 
   -- Show diff for commit
@@ -595,6 +649,8 @@ local function setup_log_keymaps(bufnr, commit_data)
       "  e         - Edit at this commit (jj edit)",
       "  n         - Create new commit after this one (jj new)",
       "  r         - Rebase current commit onto this one (jj rebase)",
+      "  A         - Abandon commit (jj abandon)",
+      "  s         - Squash commit into its parent (jj squash)",
       "  d         - Show diff for this commit",
       "",
       "View Actions:",
@@ -675,7 +731,7 @@ function M.show_log(options)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", options.limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand (use -r .. --limit), q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, +=expand (use -r .. --limit), q=quit, g?=help",
     "",
   }
 

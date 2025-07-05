@@ -93,7 +93,10 @@ local function format_status_buffer(status_info)
   table.insert(lines, "")
   table.insert(lines, "# Commands:")
   table.insert(lines, "# <CR> = open file, o = open split, gO = vsplit, O = tab, = = diff")
-  table.insert(lines, "# - = toggle track, s = track, u = untrack, D = diff, dv = vdiff")
+  table.insert(
+    lines,
+    "# - = toggle track, s = track, u = untrack, r = restore, D = diff, dv = vdiff"
+  )
   table.insert(lines, "# cc = commit, ca = amend, ce = extend, cn = new, l = log view")
   table.insert(lines, "# R = reload status, q = close, g? = help")
 
@@ -279,6 +282,31 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     end
   end, opts)
 
+  -- Restore file from parent revision (jj restore)
+  vim.keymap.set("n", "r", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      -- Ask for confirmation since this will discard changes
+      local choice = vim.fn.confirm(
+        string.format(
+          "Restore '%s' from parent revision? This will discard current changes.",
+          filename
+        ),
+        "&Yes\n&No",
+        2
+      )
+      if choice == 1 then
+        local main_module = require("jj-fugitive.init")
+        local result = main_module.run_jj_command_from_module({ "restore", filename })
+        if result then
+          vim.api.nvim_echo({ { "Restored: " .. filename, "MoreMsg" } }, false, {})
+          M.show_status()
+        end
+      end
+    end
+  end, opts)
+
   -- Diff file under cursor (vim-fugitive uses D)
   vim.keymap.set("n", "D", function()
     local line = vim.api.nvim_get_current_line()
@@ -419,6 +447,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       "  -       - Toggle file tracking (primary operation)",
       "  s       - Track file for next commit",
       "  u       - Untrack file",
+      "  r       - Restore file from parent (jj restore)",
       "",
       "jj operations:",
       "  cc      - Create commit",

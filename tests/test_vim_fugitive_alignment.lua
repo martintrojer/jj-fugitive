@@ -66,6 +66,7 @@ if status_module then
       { key = "-", desc = "Toggle file tracking" },
       { key = "s", desc = "Track file" },
       { key = "u", desc = "Untrack file" },
+      { key = "r", desc = "Restore file from parent" },
       { key = "l", desc = "Show log view" },
       { key = "cc", desc = "Create commit" },
       { key = "ca", desc = "Amend commit" },
@@ -93,7 +94,7 @@ if status_module then
     end
 
     -- Test deprecated keybindings are removed
-    local deprecated_keys = { "r", "dd" }
+    local deprecated_keys = { "dd" }
     for _, key in ipairs(deprecated_keys) do
       local mapping = vim.fn.maparg(key, "n", false, true)
       local is_empty = mapping == "" or vim.tbl_isempty(mapping)
@@ -221,8 +222,8 @@ if status_buffer_for_help then
 
   assert_test(
     "Help text doesn't mention old keys",
-    not help_text:match("dd =") and not help_text:match("r ="),
-    "Help text should not mention deprecated 'dd' and 'r' keys"
+    not help_text:match("dd ="),
+    "Help text should not mention deprecated 'dd' key"
   )
 end
 
