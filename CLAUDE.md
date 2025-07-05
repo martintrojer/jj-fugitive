@@ -23,7 +23,7 @@ jj-fugitive provides seamless jj version control integration within Neovim, mimi
 - **Interactive Navigation**: Enter key functionality in log and status views
 - **Expandable Log View**: Expand log view to show more commits with `=` or `+` keys
 - **Repository Detection**: Works from any subdirectory within jj repo
-- **Command Completion**: Full tab completion for jj commands and flags
+- **Multi-Level Command Completion**: Full tab completion with nested subcommand support at every nesting level
 - **Error Handling**: Robust error detection and user feedback
 
 #### Architecture
@@ -71,7 +71,7 @@ lua/jj-fugitive/
 ### User Experience Features
 - **Interactive Navigation**: Enter key functionality in log and status views
 - **Contextual Commands**: Commands adapt based on cursor position and file type
-- **Tab Completion**: Full completion for jj commands, flags, and file paths
+- **Multi-Level Tab Completion**: Full completion for jj commands, nested subcommands, flags, and file paths at every nesting level
 - **Visual Feedback**: Progress indicators and status messages
 - **Keyboard Shortcuts**: Intuitive keybindings for common operations
 
@@ -95,7 +95,7 @@ lua/jj-fugitive/
 ### Interactive Features
 - **Status View**: Press `Enter` on file to see diff, `l` for log view
 - **Log View**: Press `Enter` on commit to see details and diff, `=` or `+` to expand view
-- **Tab Completion**: Use `<Tab>` for command and file completion
+- **Multi-Level Tab Completion**: Use `<Tab>` for command, subcommand, flag, and file completion at every nesting level
 - **Repository Detection**: Works from any subdirectory in jj repo
 
 ### Example Workflow
@@ -105,11 +105,19 @@ lua/jj-fugitive/
 :J log --limit 10  \" View recent commits with native jj formatting
 \" Navigate to commit, press Enter to see details
 \" Press = or + to expand log view and see more commits
+
+\" Enhanced completion examples (works at every nesting level):
+:J git <Tab>       \" Shows git subcommands: push, fetch, clone, etc.
+:J git push <Tab>  \" Shows git push flags: --bookmark, --branch, --help, etc.
+:J bookmark <Tab>  \" Shows bookmark subcommands: list, create, delete, etc.
+:J bookmark create <Tab>  \" Shows bookmark create flags and options
+:J status <Tab>    \" Shows status command flags: --help, --limit, etc.
+:J log <Tab>       \" Shows log command flags: --limit, --template, -r, etc.
 ```
 
 ## Testing Strategy
 
-### Comprehensive Test Suite (23 Tests)
+### Comprehensive Test Suite (24 Tests)
 - **Unit Tests**: Core jj command wrappers and module loading
 - **Integration Tests**: Cross-component functionality and ANSI processing
 - **End-to-End Tests**: Complete user workflow simulation
@@ -122,6 +130,8 @@ lua/jj-fugitive/
 - **Advanced Features**: Interactive navigation, keybindings, cursor positioning (4 tests)
 - **Color & Format**: ANSI color rendering, format consistency (5 tests)
 - **User Experience**: End-to-end workflows, vim-fugitive compatibility (4 tests)
+- **Enhanced Completion**: Nested subcommand completion, partial matching (1 test)
+- **Multi-Level Completion**: Commands and flags at every nesting level (1 test)
 - **Documentation & Quality**: Documentation completeness (2 tests)
 
 ### Intelligent Test Discovery
@@ -168,6 +178,8 @@ brew install jj           # Jujutsu CLI (if not already installed)
 ./tests/test_native_log_view.lua           # Native jj format tests
 ./tests/test_commit_extraction.lua         # ANSI processing tests
 ./tests/test_repository_detection.lua      # Subdirectory detection
+./tests/test_completion_enhancement.lua    # Enhanced completion tests
+./tests/test_multi_level_completion.lua    # Multi-level completion tests
 
 # Run all tests matching pattern
 ./tests/test_log*.lua                      # All log-related tests

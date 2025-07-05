@@ -56,6 +56,65 @@ local function parse_jj_commands()
   return commands
 end
 
+-- Parse subcommands for commands that have them (like 'git', 'bookmark', etc.)
+local function parse_subcommands(command)
+  local cache_key = "jj_" .. command .. "_subcommands"
+  local now = os.time()
+
+  -- Check cache first
+  if help_cache[cache_key] and help_cache[cache_key].timestamp + cache_ttl > now then
+    return help_cache[cache_key].data
+  end
+
+  -- Split command into parts for proper argument passing
+  local command_parts = vim.split(command, "%s+")
+  local args = { "jj" }
+  for _, part in ipairs(command_parts) do
+    table.insert(args, part)
+  end
+  table.insert(args, "--help")
+
+  local help_output = vim.fn.system(args)
+  if vim.v.shell_error ~= 0 then
+    return {}
+  end
+
+  local subcommands = {}
+  local in_commands_section = false
+
+  for line in help_output:gmatch("[^\r\n]+") do
+    -- Look for Commands section in subcommand help
+    if line:match("^Commands:") or line:match("^COMMANDS:") then
+      in_commands_section = true
+    elseif line:match("^Options:") or line:match("^OPTIONS:") or line:match("^Usage:") then
+      in_commands_section = false
+    elseif in_commands_section then
+      -- Parse subcommand lines with descriptions
+      local subcmd, desc = line:match("^%s+([a-z][a-z0-9%-]*)%s+(.+)")
+      if subcmd and desc then
+        table.insert(subcommands, {
+          name = subcmd,
+          description = desc:gsub("^%s+", ""):gsub("%s+$", ""),
+        })
+      else
+        -- Fallback: just the subcommand name
+        local subcmd_only = line:match("^%s+([a-z][a-z0-9%-]*)")
+        if subcmd_only then
+          table.insert(subcommands, { name = subcmd_only, description = "" })
+        end
+      end
+    end
+  end
+
+  -- Cache the result
+  help_cache[cache_key] = {
+    data = subcommands,
+    timestamp = now,
+  }
+
+  return subcommands
+end
+
 -- Parse command-specific help to extract flags with descriptions
 local function parse_command_flags(command)
   local cache_key = "jj_" .. command .. "_flags"
@@ -66,7 +125,15 @@ local function parse_command_flags(command)
     return help_cache[cache_key].data
   end
 
-  local help_output = vim.fn.system({ "jj", command, "--help" })
+  -- Split command into parts for proper argument passing
+  local command_parts = vim.split(command, "%s+")
+  local args = { "jj" }
+  for _, part in ipairs(command_parts) do
+    table.insert(args, part)
+  end
+  table.insert(args, "--help")
+
+  local help_output = vim.fn.system(args)
   if vim.v.shell_error ~= 0 then
     return {}
   end
@@ -151,6 +218,22 @@ local function parse_command_flags(command)
   return flags
 end
 
+-- Commands that have subcommands
+local commands_with_subcommands = {
+  "git",
+  "bookmark",
+  "branch",
+  "config",
+  "operation",
+  "op",
+  "workspace",
+}
+
+-- Check if a command has subcommands
+local function has_subcommands(command)
+  return vim.tbl_contains(commands_with_subcommands, command)
+end
+
 -- Smart completion function that provides context-aware suggestions
 function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
   -- Parse the command line to understand context
@@ -162,13 +245,18 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
     table.remove(parts, 1)
   end
 
+  -- Remove empty parts that can be created by trailing spaces
+  local filtered_parts = {}
+  for _, part in ipairs(parts) do
+    if part ~= "" then
+      table.insert(filtered_parts, part)
+    end
+  end
+  parts = filtered_parts
+
   -- If no subcommand yet, or completing the first argument
-  -- We complete commands if:
-  -- 1. No parts yet (just typed ":J ")
-  -- 2. One part and cursor is still on it (":J sta|" where | is cursor)
-  -- 3. One empty part (from ":J " which creates { "" } after removing "J")
   if #parts == 0 or (#parts == 1 and (not cmdline:match("%s$") or parts[1] == "")) then
-    -- Complete jj subcommands
+    -- Complete jj main commands
     local commands = parse_jj_commands()
     for _, cmd in ipairs(commands) do
       local cmd_name = type(cmd) == "table" and cmd.name or cmd
@@ -188,48 +276,78 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
       end
     end
   else
-    -- We have a subcommand, complete flags for it
-    local subcommand = parts[1]
-    local flags = parse_command_flags(subcommand)
+    -- We have at least one argument
+    local main_command = parts[1]
 
-    -- Filter flags that haven't been used yet and match the current input
-    local used_flags = {}
-    for i = 2, #parts do
-      if parts[i]:match("^%-") then
-        used_flags[parts[i]] = true
+    -- Case 1: Command has subcommands and we're completing the second argument
+    -- This happens when: ":J git " (1 part + trailing space) or ":J git fe" (2 parts, no trailing space)
+    if
+      has_subcommands(main_command)
+      and (#parts == 1 and cmdline:match("%s$") or (#parts == 2 and not cmdline:match("%s$")))
+    then
+      -- Complete subcommands for commands like 'git', 'bookmark', etc.
+      local subcommands = parse_subcommands(main_command)
+      for _, subcmd in ipairs(subcommands) do
+        local subcmd_name = type(subcmd) == "table" and subcmd.name or subcmd
+        if arglead == "" or subcmd_name:find("^" .. vim.pesc(arglead)) then
+          table.insert(completions, subcmd_name)
+        end
       end
-    end
+    else
+      -- Case 2: Complete flags for the command (or subcommand)
+      local command_for_flags = main_command
 
-    for _, flag in ipairs(flags) do
-      local flag_name = type(flag) == "table" and flag.name or flag
-      if
-        (arglead == "" or flag_name:find("^" .. vim.pesc(arglead))) and not used_flags[flag_name]
-      then
-        table.insert(completions, flag_name)
+      -- If we have a subcommand, use it for flag completion
+      if has_subcommands(main_command) and #parts >= 2 then
+        command_for_flags = main_command .. " " .. parts[2]
       end
-    end
 
-    -- If completing a value after certain flags, provide context-specific completions
-    if #parts >= 2 then
-      local prev_arg = parts[#parts - 1] or ""
+      local flags = parse_command_flags(command_for_flags)
 
-      -- Branch/bookmark completions for relevant flags
-      if prev_arg:match("^%-%-?[br]") or prev_arg == "--bookmark" or prev_arg == "--branch" then
-        local bookmarks = M.get_bookmarks()
-        for _, bookmark in ipairs(bookmarks) do
-          if arglead == "" or bookmark:find("^" .. vim.pesc(arglead)) then
-            table.insert(completions, bookmark)
-          end
+      -- Filter flags that haven't been used yet and match the current input
+      local used_flags = {}
+      local start_index = has_subcommands(main_command) and #parts >= 2 and 3 or 2
+      for i = start_index, #parts do
+        if parts[i] and parts[i]:match("^%-") then
+          used_flags[parts[i]] = true
         end
       end
 
-      -- File completions for certain commands
-      if subcommand == "diff" or subcommand == "show" or subcommand == "file" then
-        -- Add basic file completion (could be enhanced with actual file listing)
-        local files = M.get_changed_files()
-        for _, file in ipairs(files) do
-          if arglead == "" or file:find("^" .. vim.pesc(arglead)) then
-            table.insert(completions, file)
+      for _, flag in ipairs(flags) do
+        local flag_name = type(flag) == "table" and flag.name or flag
+        if
+          (arglead == "" or flag_name:find("^" .. vim.pesc(arglead))) and not used_flags[flag_name]
+        then
+          table.insert(completions, flag_name)
+        end
+      end
+
+      -- Case 3: Context-specific completions
+      if #parts >= 2 then
+        local prev_arg = parts[#parts - 1] or ""
+
+        -- Branch/bookmark completions for relevant flags
+        if prev_arg:match("^%-%-?[br]") or prev_arg == "--bookmark" or prev_arg == "--branch" then
+          local bookmarks = M.get_bookmarks()
+          for _, bookmark in ipairs(bookmarks) do
+            if arglead == "" or bookmark:find("^" .. vim.pesc(arglead)) then
+              table.insert(completions, bookmark)
+            end
+          end
+        end
+
+        -- File completions for certain commands
+        local effective_command = has_subcommands(main_command) and parts[2] or main_command
+        if
+          effective_command == "diff"
+          or effective_command == "show"
+          or effective_command == "file"
+        then
+          local files = M.get_changed_files()
+          for _, file in ipairs(files) do
+            if arglead == "" or file:find("^" .. vim.pesc(arglead)) then
+              table.insert(completions, file)
+            end
           end
         end
       end
