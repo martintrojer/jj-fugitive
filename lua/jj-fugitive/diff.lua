@@ -281,13 +281,8 @@ function M.show_file_diff_sidebyside(filename)
 
   -- Get the original file content (before changes)
   local main_module = require("jj-fugitive.init")
-  -- Try older jj show command first, fall back to file command for newer versions
-  local original_content = main_module.run_jj_command_from_module({ "show", "@-:" .. filename })
-  if not original_content then
-    -- Fallback for newer versions with file command
-    original_content =
-      main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
-  end
+  -- Use modern jj file show command for getting file content at specific revision
+  local original_content = main_module.run_jj_command_from_module({ "file", "show", filename, "-r", "@-" })
   if not original_content then
     -- File might be newly added, so original content is empty
     original_content = ""
