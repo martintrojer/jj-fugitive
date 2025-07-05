@@ -76,15 +76,7 @@ local function parse_subcommands(command)
 
   local help_output = vim.fn.system(args)
   if vim.v.shell_error ~= 0 then
-    -- Add debugging for CI environments
-    if os.getenv("CI") then
-      print(string.format("CI DEBUG: parse_subcommands failed for '%s'", command))
-      print(string.format("CI DEBUG: Command args: %s", vim.inspect(args)))
-      print(string.format("CI DEBUG: Shell error: %d", vim.v.shell_error))
-      print(string.format("CI DEBUG: Output: %s", help_output:sub(1, 200)))
-    end
-    
-    -- Fallback for CI environments where help parsing might fail
+    -- Fallback for environments where help parsing might fail
     -- Use hardcoded common subcommands for known commands
     local fallback_subcommands = {
       bookmark = { "create", "delete", "list", "set", "move", "rename", "track", "untrack" },
@@ -95,18 +87,15 @@ local function parse_subcommands(command)
       op = { "log", "undo", "restore", "abandon" },
       workspace = { "add", "forget", "list", "root" },
     }
-    
+
     if fallback_subcommands[command] then
-      if os.getenv("CI") then
-        print(string.format("CI DEBUG: Using fallback subcommands for '%s'", command))
-      end
       local fallback_result = {}
       for _, subcmd in ipairs(fallback_subcommands[command]) do
         table.insert(fallback_result, { name = subcmd, description = "" })
       end
       return fallback_result
     end
-    
+
     return {}
   end
 
@@ -166,24 +155,12 @@ local function parse_command_flags(command)
 
   local help_output = vim.fn.system(args)
   if vim.v.shell_error ~= 0 then
-    -- Add debugging for CI environments
-    if os.getenv("CI") then
-      print(string.format("CI DEBUG: parse_command_flags failed for '%s'", command))
-      print(string.format("CI DEBUG: Command args: %s", vim.inspect(args)))
-      print(string.format("CI DEBUG: Shell error: %d", vim.v.shell_error))
-      print(string.format("CI DEBUG: Output: %s", help_output:sub(1, 200)))
-    end
-    
-    -- Fallback for CI environments - provide common flags
+    -- Fallback for environments where help parsing might fail - provide common flags
     local fallback_flags = {
       { name = "--help", description = "Print help" },
       { name = "-h", description = "Print help" },
     }
-    
-    if os.getenv("CI") then
-      print(string.format("CI DEBUG: Using fallback flags for '%s'", command))
-    end
-    
+
     return fallback_flags
   end
 

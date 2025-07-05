@@ -100,7 +100,13 @@ if os.getenv("CI") then
     local found = vim.tbl_contains(level2_bookmark_result, expected)
     print(string.format("  %s: %s", expected, found and "FOUND" or "NOT FOUND"))
   end
-  print(string.format("CI DEBUG: Found %d/%d bookmark subcommands", found_bookmark_subcmds, #expected_bookmark_subcmds))
+  print(
+    string.format(
+      "CI DEBUG: Found %d/%d bookmark subcommands",
+      found_bookmark_subcmds,
+      #expected_bookmark_subcmds
+    )
+  )
 end
 
 assert_test(
@@ -167,7 +173,9 @@ if os.getenv("CI") then
   for i, result in ipairs(level3_bookmark_create_result) do
     print(string.format("  [%d] %s", i, result))
   end
-  print(string.format("CI DEBUG: Total bookmark create results: %d", #level3_bookmark_create_result))
+  print(
+    string.format("CI DEBUG: Total bookmark create results: %d", #level3_bookmark_create_result)
+  )
 end
 
 assert_test(
@@ -191,7 +199,13 @@ if os.getenv("CI") then
     local is_flag = item:match("^%-") and true or false
     print(string.format("  %s: %s", item, is_flag and "FLAG" or "NOT FLAG"))
   end
-  print(string.format("CI DEBUG: Found %d flags out of %d total results", bookmark_create_flags_count, #level3_bookmark_create_result))
+  print(
+    string.format(
+      "CI DEBUG: Found %d flags out of %d total results",
+      bookmark_create_flags_count,
+      #level3_bookmark_create_result
+    )
+  )
 end
 
 assert_test(

@@ -103,7 +103,10 @@ end
 assert_test(
   "Bookmark subcommand completion works",
   #result4 > 0,
-  string.format("Should return bookmark subcommands after ':J bookmark '. Got: %s", vim.inspect(result4))
+  string.format(
+    "Should return bookmark subcommands after ':J bookmark '. Got: %s",
+    vim.inspect(result4)
+  )
 )
 
 -- Check for common bookmark subcommands
