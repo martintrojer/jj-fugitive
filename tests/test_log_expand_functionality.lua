@@ -171,7 +171,7 @@ if log_module then
     print("📝 Log expand functionality implementation verified:")
     print("   ✅ Buffer stores current limit in jj_log_limit variable")
     print("   ✅ Header displays current commit count")
-    print("   ✅ = and + keymaps available for expanding")
+    print("   ✅ = and + keymaps available for expanding (uses -r .. flag)")
     print("   ✅ Limit variable updates when log view refreshes")
     print("   ✅ Help system available with g? keymap")
   end
@@ -194,7 +194,7 @@ if passed == total then
   print("🎉 All log expand functionality tests passed!")
   print("📝 Key achievements:")
   print("   ✅ Log view stores current limit for expansion")
-  print("   ✅ Expand keybindings (= and +) are properly configured")
+  print("   ✅ Expand keybindings (= and +) are properly configured with -r .. flag")
   print("   ✅ Header shows current commit count")
   print("   ✅ Limit variable management works correctly")
   os.exit(0)

@@ -22,10 +22,10 @@ local function get_jj_log(options)
     table.insert(cmd_args, tostring(options.limit))
   end
 
-  -- Add revisions if specified
+  -- Add revisions if specified (supports -r flag)
   if options.revisions then
     for _, rev in ipairs(options.revisions) do
-      table.insert(cmd_args, "--revisions")
+      table.insert(cmd_args, "-r")
       table.insert(cmd_args, rev)
     end
   end
@@ -350,7 +350,7 @@ local function show_commit_diff(commit_id, opts)
   end, { buffer = bufnr, noremap = true, silent = true })
 end
 
--- Expand log view with more commits
+-- Expand log view with more commits using -r .. flag with increased limit
 local function expand_log_view(bufnr)
   -- Get current limit from buffer variable
   local current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit") or 50
@@ -367,8 +367,8 @@ local function expand_log_view(bufnr)
     {}
   )
 
-  -- Get new log output with expanded limit
-  local log_output, err = get_jj_log({ limit = new_limit })
+  -- Get new log output using -r .. with increased limit to show more commits
+  local log_output, err = get_jj_log({ revisions = { ".." }, limit = new_limit })
   if not log_output then
     vim.api.nvim_err_writeln(err)
     return
@@ -401,7 +401,7 @@ local function expand_log_view(bufnr)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", new_limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand (use -r .. --limit), q=quit, g?=help",
     "",
   }
 
@@ -498,7 +498,7 @@ local function setup_log_keymaps(bufnr, commit_data)
     M.show_log()
   end, opts)
 
-  -- Expand log view (show more commits)
+  -- Expand log view (show more commits using -r .. with increased limit)
   vim.keymap.set("n", "=", function()
     expand_log_view(bufnr)
   end, opts)
@@ -598,7 +598,7 @@ local function setup_log_keymaps(bufnr, commit_data)
       "  d         - Show diff for this commit",
       "",
       "View Actions:",
-      "  =, +      - Expand log view (show 50 more commits)",
+      "  =, +      - Expand log view (show 50 more commits using -r .. --limit)",
       "  R         - Refresh log view",
       "  q         - Close log view",
       "  g?        - Show this help",
@@ -653,6 +653,11 @@ function M.show_log(options)
   options = options or {}
   options.limit = options.limit or 50
 
+  -- Always use -r .. to show commits from the repository
+  if not options.revisions then
+    options.revisions = { ".." }
+  end
+
   local log_output, err = get_jj_log(options)
   if not log_output then
     vim.api.nvim_err_writeln(err)
@@ -670,7 +675,7 @@ function M.show_log(options)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", options.limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand, q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, +=expand (use -r .. --limit), q=quit, g?=help",
     "",
   }
 
