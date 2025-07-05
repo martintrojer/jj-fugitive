@@ -104,9 +104,19 @@ local function setup_diff_keymaps(bufnr, filename)
     vim.cmd("close")
   end, opts)
 
+  -- Toggle between unified and side-by-side view
+  vim.keymap.set("n", "<Tab>", function()
+    M.toggle_diff_view(filename)
+  end, opts)
+
   -- Switch to side-by-side view
   vim.keymap.set("n", "s", function()
     M.show_file_diff_sidebyside(filename)
+  end, opts)
+
+  -- Switch to unified view
+  vim.keymap.set("n", "u", function()
+    M.show_file_diff(filename)
   end, opts)
 
   -- Toggle different diff formats
@@ -146,7 +156,9 @@ local function setup_diff_keymaps(bufnr, filename)
       "",
       "Operations:",
       "  q       - Close diff view",
+      "  Tab     - Toggle between unified/side-by-side view",
       "  s       - Switch to side-by-side view",
+      "  u       - Switch to unified view",
       "  f       - Select diff format (git, color-words, etc.)",
       "  r       - Refresh diff",
       "  o       - Open file in editor",
@@ -446,6 +458,27 @@ end
 -- Show diff for all changes
 function M.show_all_diff()
   M.show_file_diff(nil)
+end
+
+-- Toggle between unified and side-by-side diff view
+function M.toggle_diff_view(filename)
+  if not filename then
+    vim.api.nvim_echo({ { "Toggle diff requires a specific file", "WarningMsg" } }, false, {})
+    return
+  end
+
+  -- Check current buffer to determine what view we're in
+  local current_bufname = vim.api.nvim_buf_get_name(0)
+
+  -- If we're in a side-by-side view (tab with multiple windows), switch to unified
+  if vim.fn.tabpagenr("$") > 1 and current_bufname:match("jj%-diff.*%(") then
+    -- Close current tab and show unified diff
+    vim.cmd("tabclose")
+    M.show_file_diff(filename)
+  else
+    -- We're in unified view or somewhere else, switch to side-by-side
+    M.show_file_diff_sidebyside(filename)
+  end
 end
 
 return M

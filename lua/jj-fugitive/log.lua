@@ -401,7 +401,7 @@ local function expand_log_view(bufnr)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", new_limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, S=split, y=duplicate, +=expand, q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help",
     "",
   }
 
@@ -589,11 +589,33 @@ local function setup_log_keymaps(bufnr, commit_data)
     end
   end, opts)
 
-  -- Show diff for commit
+  -- Show unified diff for commit
   vim.keymap.set("n", "d", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     show_commit_diff(commit_id, { update_current = true })
+  end, opts)
+
+  -- Show side-by-side diff for commit
+  vim.keymap.set("n", "D", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    show_commit_diff(commit_id, { update_current = true, sidebyside = true })
+  end, opts)
+
+  -- Toggle between diff and commit details
+  vim.keymap.set("n", "<Tab>", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    -- Check current buffer to decide what to toggle to
+    local current_bufname = vim.api.nvim_buf_get_name(0)
+    if current_bufname:match("jj%-diff:") then
+      -- Currently showing diff, switch to details
+      show_commit_details(commit_id, { update_current = true })
+    else
+      -- Currently showing log or details, switch to diff
+      show_commit_diff(commit_id, { update_current = true })
+    end
   end, opts)
 
   -- Close log view
@@ -700,6 +722,9 @@ local function setup_log_keymaps(bufnr, commit_data)
       "",
       "Commit Actions:",
       "  Enter/o   - Show commit details and changes",
+      "  d         - Show unified diff for this commit",
+      "  D         - Show side-by-side diff for this commit",
+      "  Tab       - Toggle between diff and commit details",
       "  e         - Edit at this commit (jj edit)",
       "  n         - Create new commit after this one (jj new)",
       "  r         - Rebase current commit onto this one (jj rebase)",
@@ -707,7 +732,6 @@ local function setup_log_keymaps(bufnr, commit_data)
       "  s         - Squash commit into its parent (jj squash)",
       "  S         - Split commit into two (jj split)",
       "  y         - Duplicate commit (jj duplicate)",
-      "  d         - Show diff for this commit",
       "",
       "View Actions:",
       "  =, +      - Expand log view (show 50 more commits using -r .. --limit)",
@@ -787,7 +811,7 @@ function M.show_log(options)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", options.limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, S=split, y=duplicate, +=expand, q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help",
     "",
   }
 

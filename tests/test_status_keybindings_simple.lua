@@ -83,9 +83,9 @@ if status_buffer then
   end
 
   assert_test(
-    "Enter mapping opens files (not log)",
-    not enter_calls_log, -- Enter should NOT call log, it opens files
-    "Enter mapping incorrectly calls log instead of opening files"
+    "Enter mapping shows diff (not log)",
+    not enter_calls_log, -- Enter should NOT call log, it shows diff
+    "Enter mapping incorrectly calls log instead of showing diff"
   )
   assert_test("'l' mapping calls log", l_calls_log, "'l' mapping doesn't call log functionality")
 
@@ -94,7 +94,7 @@ if status_buffer then
   local has_enter_help = false
   local has_l_help = false
   for _, line in ipairs(lines) do
-    if line:match("<CR> = open file") then
+    if line:match("<CR> = show diff") then
       has_enter_help = true
     end
     if line:match("l = log view") then
@@ -108,7 +108,7 @@ if status_buffer then
   assert_test(
     "Help text mentions Enter/l keys",
     has_enter_help and has_l_help,
-    "Help text doesn't mention Enter for files and l for log view"
+    "Help text doesn't mention Enter for diff and l for log view"
   )
 end
 

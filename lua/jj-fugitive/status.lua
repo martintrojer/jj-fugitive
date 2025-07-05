@@ -92,9 +92,12 @@ local function format_status_buffer(status_info)
 
   table.insert(lines, "")
   table.insert(lines, "# Commands:")
-  table.insert(lines, "# <CR> = open file, o = open split, gO = vsplit, O = tab, = = diff")
-  table.insert(lines, "# r = restore, a = absorb, D = diff, dv = vdiff, = = inline diff")
-  table.insert(lines, "# cc = commit, ca = amend, ce = extend, cn = new, l = log view")
+  table.insert(lines, "# <CR> = show diff, o = open file, s = split, v = vsplit, t = tab")
+  table.insert(
+    lines,
+    "# Tab = toggle diff view (inline/split), d = unified diff, D = side-by-side diff"
+  )
+  table.insert(lines, "# r = restore, a = absorb, cc = commit, ca = amend, l = log view")
   table.insert(lines, "# R = reload status, q = close, g? = help")
 
   return lines
@@ -261,8 +264,8 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     end
   end, opts)
 
-  -- Diff file under cursor (vim-fugitive uses D)
-  vim.keymap.set("n", "D", function()
+  -- Unified diff view (replaces old D key)
+  vim.keymap.set("n", "d", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
@@ -270,8 +273,8 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     end
   end, opts)
 
-  -- Vertical diff split (vim-fugitive pattern)
-  vim.keymap.set("n", "dv", function()
+  -- Side-by-side diff view
+  vim.keymap.set("n", "D", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
@@ -279,56 +282,48 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     end
   end, opts)
 
-  -- Horizontal diff split (vim-fugitive pattern)
-  vim.keymap.set("n", "ds", function()
+  -- Toggle between inline and split diff view
+  vim.keymap.set("n", "<Tab>", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      require("jj-fugitive.diff").show_file_diff(filename)
+      require("jj-fugitive.diff").toggle_diff_view(filename)
     end
   end, opts)
 
-  -- Open file under cursor
+  -- Open file under cursor (simple file opening)
   vim.keymap.set("n", "o", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      -- Get the full path of the file
-      local full_path = vim.fn.fnamemodify(filename, ":p")
+      vim.cmd("edit " .. vim.fn.fnameescape(filename))
+    end
+  end, opts)
 
-      -- Check if the file is already open in any buffer
-      local existing_bufnr = nil
-      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_is_valid(buf) then
-          local buf_name = vim.api.nvim_buf_get_name(buf)
-          if buf_name == full_path then
-            existing_bufnr = buf
-            break
-          end
-        end
-      end
+  -- Open file in horizontal split
+  vim.keymap.set("n", "s", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      vim.cmd("split " .. vim.fn.fnameescape(filename))
+    end
+  end, opts)
 
-      if existing_bufnr then
-        -- File is already open, find its window or create a new one
-        local existing_win = nil
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-          if vim.api.nvim_win_get_buf(win) == existing_bufnr then
-            existing_win = win
-            break
-          end
-        end
+  -- Open file in vertical split (replacing gO)
+  vim.keymap.set("n", "v", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      vim.cmd("vsplit " .. vim.fn.fnameescape(filename))
+    end
+  end, opts)
 
-        if existing_win then
-          -- Switch to the existing window
-          vim.api.nvim_set_current_win(existing_win)
-        else
-          -- Buffer exists but no window is showing it, open it in current window
-          vim.api.nvim_set_current_buf(existing_bufnr)
-        end
-      else
-        -- File is not open, open it normally
-        vim.cmd("edit " .. vim.fn.fnameescape(filename))
-      end
+  -- Open file in new tab (replacing O)
+  vim.keymap.set("n", "t", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      vim.cmd("tabedit " .. vim.fn.fnameescape(filename))
     end
   end, opts)
 
@@ -341,39 +336,12 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     vim.cmd("close")
   end, opts)
 
-  -- Open file under cursor (vim-fugitive standard)
+  -- Show diff for file under cursor (vim-fugitive standard)
   vim.keymap.set("n", "<CR>", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      vim.cmd("edit " .. vim.fn.fnameescape(filename))
-    end
-  end, opts)
-
-  -- Open file in vertical split (vim-fugitive gO)
-  vim.keymap.set("n", "gO", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
-    if filename then
-      vim.cmd("vsplit " .. vim.fn.fnameescape(filename))
-    end
-  end, opts)
-
-  -- Open file in new tab (vim-fugitive O)
-  vim.keymap.set("n", "O", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
-    if filename then
-      vim.cmd("tabedit " .. vim.fn.fnameescape(filename))
-    end
-  end, opts)
-
-  -- Inline diff toggle (vim-fugitive =)
-  vim.keymap.set("n", "=", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
-    if filename then
-      require("jj-fugitive.diff").show_file_diff_sidebyside(filename)
+      require("jj-fugitive.diff").show_file_diff(filename)
     end
   end, opts)
 
@@ -391,14 +359,14 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       "Files are tracked immediately when created/modified.",
       "",
       "File operations:",
-      "  <CR>    - Open file in editor",
-      "  o       - Open file in split",
-      "  gO      - Open file in vertical split",
-      "  O       - Open file in new tab",
-      "  D       - Show diff for file",
-      "  dv      - Vertical diff split",
-      "  ds      - Horizontal diff split",
-      "  =       - Inline diff toggle (side-by-side)",
+      "  <CR>    - Show diff for file",
+      "  o       - Open file in editor",
+      "  s       - Open file in horizontal split",
+      "  v       - Open file in vertical split",
+      "  t       - Open file in new tab",
+      "  d       - Show unified diff for file",
+      "  D       - Show side-by-side diff for file",
+      "  Tab     - Toggle between unified/side-by-side diff",
       "",
       "jj file operations:",
       "  r       - Restore file from parent revision (jj restore)",

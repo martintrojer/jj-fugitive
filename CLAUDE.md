@@ -24,6 +24,7 @@ jj-fugitive provides seamless jj version control integration within Neovim, mimi
 - **Expandable Log View**: Expand log view to show more commits with `=` or `+` keys
 - **Repository Detection**: Works from any subdirectory within jj repo
 - **Multi-Level Command Completion**: Full tab completion with nested subcommand support at every nesting level
+- **Improved Diff Navigation**: Intuitive keybindings and toggle functionality for diff views
 - **Error Handling**: Robust error detection and user feedback
 
 #### Architecture
@@ -101,9 +102,9 @@ lua/jj-fugitive/
 ### Example Workflow
 ```vim
 :J status          \" See what files have changed
-\" Navigate to file, press Enter to see diff
+\" Navigate to file, press Enter to see diff (new behavior!)
 :J log --limit 10  \" View recent commits with native jj formatting
-\" Navigate to commit, press Enter to see details
+\" Navigate to commit, press Enter to see details, d for diff
 \" Press = or + to expand log view and see more commits
 
 \" Enhanced completion examples (works at every nesting level):
@@ -113,11 +114,16 @@ lua/jj-fugitive/
 :J bookmark create <Tab>  \" Shows bookmark create flags and options
 :J status <Tab>    \" Shows status command flags: --help, --limit, etc.
 :J log <Tab>       \" Shows log command flags: --limit, --template, -r, etc.
+
+\" Improved diff navigation:
+\" In status view: <CR>=diff, o=open file, Tab=toggle diff view
+\" In log view: d=diff, D=side-by-side, Tab=toggle diff/details
+\" In diff view: Tab=toggle unified/side-by-side, s=side-by-side, u=unified
 ```
 
 ## Testing Strategy
 
-### Comprehensive Test Suite (24 Tests)
+### Comprehensive Test Suite (25 Tests)
 - **Unit Tests**: Core jj command wrappers and module loading
 - **Integration Tests**: Cross-component functionality and ANSI processing
 - **End-to-End Tests**: Complete user workflow simulation
@@ -132,6 +138,7 @@ lua/jj-fugitive/
 - **User Experience**: End-to-end workflows, vim-fugitive compatibility (4 tests)
 - **Enhanced Completion**: Nested subcommand completion, partial matching (1 test)
 - **Multi-Level Completion**: Commands and flags at every nesting level (1 test)
+- **Improved Diff Navigation**: Enhanced diff view keybindings and toggle functionality (1 test)
 - **Documentation & Quality**: Documentation completeness (2 tests)
 
 ### Intelligent Test Discovery
@@ -180,6 +187,7 @@ brew install jj           # Jujutsu CLI (if not already installed)
 ./tests/test_repository_detection.lua      # Subdirectory detection
 ./tests/test_completion_enhancement.lua    # Enhanced completion tests
 ./tests/test_multi_level_completion.lua    # Multi-level completion tests
+./tests/test_improved_diff_navigation.lua  # Improved diff navigation tests
 
 # Run all tests matching pattern
 ./tests/test_log*.lua                      # All log-related tests

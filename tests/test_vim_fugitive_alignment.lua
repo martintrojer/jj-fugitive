@@ -15,7 +15,7 @@ local function assert_test(name, condition, message)
   end
 end
 
-print("🚀 === jj-fugitive vim-fugitive Alignment Tests ===")
+print("🚀 === jj-fugitive Improved Navigation Tests ===")
 
 -- Test 1: Load status module and create fresh status buffer
 local status_module = require("jj-fugitive.status")
@@ -52,17 +52,17 @@ if status_module then
   if status_buffer then
     vim.api.nvim_set_current_buf(status_buffer)
 
-    -- Test 2: Check vim-fugitive aligned keybindings in status window
+    -- Test 2: Check improved keybindings in status window
     local keymaps_to_test = {
-      { key = "R", desc = "Reload status (was 'r')" },
-      { key = "D", desc = "Diff file (was 'dd')" },
-      { key = "dv", desc = "Vertical diff split" },
-      { key = "ds", desc = "Horizontal diff split" },
-      { key = "<CR>", desc = "Open file (was log view)" },
-      { key = "o", desc = "Open file in split" },
-      { key = "gO", desc = "Open file in vertical split" },
-      { key = "O", desc = "Open file in new tab" },
-      { key = "=", desc = "Inline diff toggle" },
+      { key = "R", desc = "Reload status" },
+      { key = "d", desc = "Show unified diff for file" },
+      { key = "D", desc = "Show side-by-side diff for file" },
+      { key = "<CR>", desc = "Show diff (improved from open file)" },
+      { key = "o", desc = "Open file in editor" },
+      { key = "s", desc = "Open file in horizontal split" },
+      { key = "v", desc = "Open file in vertical split" },
+      { key = "t", desc = "Open file in new tab" },
+      { key = "<Tab>", desc = "Toggle diff view" },
       { key = "r", desc = "Restore file from parent" },
       { key = "a", desc = "Absorb changes into ancestors" },
       { key = "l", desc = "Show log view" },
