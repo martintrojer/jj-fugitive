@@ -61,11 +61,12 @@ lua/jj-fugitive/
 
 ### Key Design Principles
 - **Native jj Integration**: Preserves authentic jj output formatting and colors
+- **Idiomatic jj Workflow**: Designed around jj's change-centric model (no staging area)
 - **Modular Architecture**: 6 focused modules with clear responsibilities
 - **ANSI Color Processing**: Unified system for color parsing and buffer highlighting
 - **Repository Detection**: Automatic jj repository root detection from any subdirectory
 - **Error Handling**: Comprehensive error detection with user-friendly messages
-- **Vim-fugitive Compatibility**: Familiar commands and keybindings where applicable
+- **Selective vim-fugitive Compatibility**: Adapts vim-fugitive patterns that make sense for jj
 
 ### User Experience Features
 - **Interactive Navigation**: Enter key functionality in log and status views
@@ -73,6 +74,13 @@ lua/jj-fugitive/
 - **Tab Completion**: Full completion for jj commands, flags, and file paths
 - **Visual Feedback**: Progress indicators and status messages
 - **Keyboard Shortcuts**: Intuitive keybindings for common operations
+
+### jj vs Git Workflow Differences
+- **No Staging Area**: jj automatically tracks all files, no manual staging needed
+- **Working Copy as Commit**: Your working directory is always a commit
+- **Change-Centric**: Focus on "changes" rather than individual commits
+- **Automatic Rebasing**: Descendants automatically rebase when you modify commits
+- **No File Tracking Commands**: Files are auto-tracked, removed Git-style `-`, `s`, `u` commands
 
 ## Quick Start Usage
 

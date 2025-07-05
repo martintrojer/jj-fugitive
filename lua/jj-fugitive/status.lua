@@ -93,10 +93,7 @@ local function format_status_buffer(status_info)
   table.insert(lines, "")
   table.insert(lines, "# Commands:")
   table.insert(lines, "# <CR> = open file, o = open split, gO = vsplit, O = tab, = = diff")
-  table.insert(
-    lines,
-    "# - = toggle track, s = track, u = untrack, r = restore, D = diff, dv = vdiff"
-  )
+  table.insert(lines, "# r = restore, a = absorb, D = diff, dv = vdiff, = = inline diff")
   table.insert(lines, "# cc = commit, ca = amend, ce = extend, cn = new, l = log view")
   table.insert(lines, "# R = reload status, q = close, g? = help")
 
@@ -196,91 +193,8 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     M.show_status()
   end, opts)
 
-  -- File tracking operations (vim-fugitive staging equivalents)
-  -- Primary toggle - track/untrack file (vim-fugitive uses -)
-  vim.keymap.set("n", "-", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
-    if filename then
-      -- Check if jj version supports file commands
-      local main_module = require("jj-fugitive.init")
-      local version_result = main_module.run_jj_command_from_module({ "--version" })
-      local has_file_cmd = version_result and version_result:match("jj 0%.1[6-9]")
-        or version_result:match("jj 0%.[2-9]")
-        or version_result:match("jj [1-9]")
-
-      if has_file_cmd then
-        local track_status = main_module.run_jj_command_from_module({ "file", "show", filename })
-        if track_status and track_status:match("Tracked") then
-          -- File is tracked, untrack it
-          main_module.run_jj_command_from_module({ "file", "untrack", filename })
-          vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
-        else
-          -- File is not tracked, track it
-          main_module.run_jj_command_from_module({ "file", "track", filename })
-          vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
-        end
-      else
-        -- Older jj version - files are auto-tracked, show info message
-        vim.api.nvim_echo(
-          { { "File tracking not supported in jj v0.15.x (files auto-tracked)", "WarningMsg" } },
-          false,
-          {}
-        )
-      end
-      M.show_status()
-    end
-  end, opts)
-
-  -- Track file for next commit (vim-fugitive 's' equivalent)
-  vim.keymap.set("n", "s", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
-    if filename then
-      local main_module = require("jj-fugitive.init")
-      local version_result = main_module.run_jj_command_from_module({ "--version" })
-      local has_file_cmd = version_result and version_result:match("jj 0%.1[6-9]")
-        or version_result:match("jj 0%.[2-9]")
-        or version_result:match("jj [1-9]")
-
-      if has_file_cmd then
-        main_module.run_jj_command_from_module({ "file", "track", filename })
-        vim.api.nvim_echo({ { "Tracked: " .. filename, "MoreMsg" } }, false, {})
-      else
-        vim.api.nvim_echo(
-          { { "File tracking not supported in jj v0.15.x (files auto-tracked)", "WarningMsg" } },
-          false,
-          {}
-        )
-      end
-      M.show_status()
-    end
-  end, opts)
-
-  -- Untrack file (vim-fugitive 'u' equivalent)
-  vim.keymap.set("n", "u", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
-    if filename then
-      local main_module = require("jj-fugitive.init")
-      local version_result = main_module.run_jj_command_from_module({ "--version" })
-      local has_file_cmd = version_result and version_result:match("jj 0%.1[6-9]")
-        or version_result:match("jj 0%.[2-9]")
-        or version_result:match("jj [1-9]")
-
-      if has_file_cmd then
-        main_module.run_jj_command_from_module({ "file", "untrack", filename })
-        vim.api.nvim_echo({ { "Untracked: " .. filename, "WarningMsg" } }, false, {})
-      else
-        vim.api.nvim_echo(
-          { { "File tracking not supported in jj v0.15.x (files auto-tracked)", "WarningMsg" } },
-          false,
-          {}
-        )
-      end
-      M.show_status()
-    end
-  end, opts)
+  -- jj-idiomatic file operations (no staging area in jj)
+  -- Note: jj automatically tracks all files, no manual tracking needed
 
   -- Restore file from parent revision (jj restore)
   vim.keymap.set("n", "r", function()
@@ -301,6 +215,46 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
         local result = main_module.run_jj_command_from_module({ "restore", filename })
         if result then
           vim.api.nvim_echo({ { "Restored: " .. filename, "MoreMsg" } }, false, {})
+          M.show_status()
+        end
+      end
+    end
+  end, opts)
+
+  -- Absorb changes into mutable ancestors (jj absorb)
+  vim.keymap.set("n", "a", function()
+    local line = vim.api.nvim_get_current_line()
+    local filename = line:match("^[A-Z] (.+)")
+    if filename then
+      -- Ask for confirmation since this will modify commits
+      local choice = vim.fn.confirm(
+        string.format(
+          "Absorb changes in '%s' into mutable ancestors? This will move changes to appropriate commits.",
+          filename
+        ),
+        "&Yes\n&No",
+        2
+      )
+      if choice == 1 then
+        local main_module = require("jj-fugitive.init")
+        local result = main_module.run_jj_command_from_module({ "absorb", filename })
+        if result then
+          vim.api.nvim_echo({ { "Absorbed changes: " .. filename, "MoreMsg" } }, false, {})
+          M.show_status()
+        end
+      end
+    else
+      -- If no specific file, absorb all changes
+      local choice = vim.fn.confirm(
+        "Absorb all working copy changes into mutable ancestors? This will move changes to appropriate commits.",
+        "&Yes\n&No",
+        2
+      )
+      if choice == 1 then
+        local main_module = require("jj-fugitive.init")
+        local result = main_module.run_jj_command_from_module({ "absorb" })
+        if result then
+          vim.api.nvim_echo({ { "Absorbed all changes", "MoreMsg" } }, false, {})
           M.show_status()
         end
       end
@@ -433,6 +387,9 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local help_lines = {
       "# jj-fugitive Status Window Help",
       "",
+      "NOTE: jj automatically tracks all files (no staging area)",
+      "Files are tracked immediately when created/modified.",
+      "",
       "File operations:",
       "  <CR>    - Open file in editor",
       "  o       - Open file in split",
@@ -443,22 +400,21 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       "  ds      - Horizontal diff split",
       "  =       - Inline diff toggle (side-by-side)",
       "",
-      "File tracking (vim-fugitive staging equivalents):",
-      "  -       - Toggle file tracking (primary operation)",
-      "  s       - Track file for next commit",
-      "  u       - Untrack file",
-      "  r       - Restore file from parent (jj restore)",
+      "jj file operations:",
+      "  r       - Restore file from parent revision (jj restore)",
+      "  a       - Absorb changes into mutable ancestors (jj absorb)",
+      "            (moves changes to appropriate ancestor commits)",
       "",
-      "jj operations:",
-      "  cc      - Create commit",
-      "  ca      - Amend commit message (vim-fugitive)",
-      "  ce      - Extend commit with changes (vim-fugitive)",
-      "  cn      - Create new commit after current (vim-fugitive)",
-      "  new     - Create new change",
+      "jj workflow commands:",
+      "  cc      - Commit working copy changes with message",
+      "  ca      - Amend current commit description",
+      "  ce      - Extend commit with current changes",
+      "  cn      - Create new commit after current",
+      "  new     - Create new working copy change",
       "",
       "Navigation & misc:",
-      "  l       - Show log view",
-      "  R       - Reload status",
+      "  l       - Show log view (jj log)",
+      "  R       - Reload status (refresh working copy state)",
       "  q       - Close status window",
       "  g?      - Show this help",
       "",

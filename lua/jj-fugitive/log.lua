@@ -401,7 +401,7 @@ local function expand_log_view(bufnr)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", new_limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, +=expand (use -r .. --limit), q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, S=split, y=duplicate, +=expand, q=quit, g?=help",
     "",
   }
 
@@ -535,6 +535,60 @@ local function setup_log_keymaps(bufnr, commit_data)
     end
   end, opts)
 
+  -- Split commit into two
+  vim.keymap.set("n", "S", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    if commit_id then
+      -- Ask for confirmation since this will modify the commit
+      local choice = vim.fn.confirm(
+        string.format(
+          "Split commit %s into two? This will open an interactive editor to select changes.",
+          commit_id
+        ),
+        "&Yes\n&No",
+        2
+      )
+      if choice == 1 then
+        local main_module = require("jj-fugitive.init")
+        local result = main_module.run_jj_command_from_module({ "split", "-r", commit_id })
+        if result then
+          vim.api.nvim_echo({ { "Split commit: " .. commit_id, "MoreMsg" } }, false, {})
+          M.show_log({ update_current = true })
+        end
+      end
+    else
+      vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
+    end
+  end, opts)
+
+  -- Duplicate commit (like "yank")
+  vim.keymap.set("n", "y", function()
+    local line = vim.api.nvim_get_current_line()
+    local commit_id = get_commit_from_line(line, commit_data)
+    if commit_id then
+      -- Ask for confirmation since this will create a new commit
+      local choice = vim.fn.confirm(
+        string.format(
+          "Duplicate commit %s? This will create a copy with the same content.",
+          commit_id
+        ),
+        "&Yes\n&No",
+        2
+      )
+      if choice == 1 then
+        local main_module = require("jj-fugitive.init")
+        local result = main_module.run_jj_command_from_module({ "duplicate", commit_id })
+        if result then
+          vim.api.nvim_echo({ { "Duplicated commit: " .. commit_id, "MoreMsg" } }, false, {})
+          M.show_log({ update_current = true })
+        end
+      end
+    else
+      vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
+    end
+  end, opts)
+
   -- Show diff for commit
   vim.keymap.set("n", "d", function()
     local line = vim.api.nvim_get_current_line()
@@ -651,6 +705,8 @@ local function setup_log_keymaps(bufnr, commit_data)
       "  r         - Rebase current commit onto this one (jj rebase)",
       "  A         - Abandon commit (jj abandon)",
       "  s         - Squash commit into its parent (jj squash)",
+      "  S         - Split commit into two (jj split)",
+      "  y         - Duplicate commit (jj duplicate)",
       "  d         - Show diff for this commit",
       "",
       "View Actions:",
@@ -731,7 +787,7 @@ function M.show_log(options)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", options.limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, +=expand (use -r .. --limit), q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=show commit, d=diff, e=edit, n=new, r=rebase, A=abandon, s=squash, S=split, y=duplicate, +=expand, q=quit, g?=help",
     "",
   }
 
