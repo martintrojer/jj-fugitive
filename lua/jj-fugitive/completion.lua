@@ -461,4 +461,9 @@ function M.clear_cache()
   help_cache = {}
 end
 
+-- Alias for the complete function for testing compatibility
+function M.complete_jj_command(arglead, cmdline, cursorpos)
+  return M.complete(arglead, cmdline, cursorpos)
+end
+
 return M

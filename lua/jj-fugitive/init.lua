@@ -135,6 +135,19 @@ local function is_interactive_command(cmd_parts)
     return not has_flag(cmd_parts, "--list")
   end
 
+  -- Additional interactive commands
+  if command == "new" then
+    return not (has_flag(cmd_parts, "-m") or has_flag(cmd_parts, "--message"))
+  end
+
+  if command == "edit" then
+    return #cmd_parts == 1 -- edit without arguments is interactive
+  end
+
+  if command == "rebase" then
+    return true -- rebase is generally interactive
+  end
+
   return false
 end
 
@@ -539,6 +552,11 @@ function M.resolve_interactive(cmd_parts) -- luacheck: ignore cmd_parts
     { "jj resolve ", "String" },
     { "in terminal for interactive conflict resolution", "Normal" },
   }, false, {})
+end
+
+-- Export is_interactive_command for testing
+function M.is_interactive_command(cmd_parts)
+  return is_interactive_command(cmd_parts)
 end
 
 return M

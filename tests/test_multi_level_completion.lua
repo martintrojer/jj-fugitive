@@ -19,7 +19,7 @@ if completion_module then
   )
 
   -- Test git subcommand completion
-  local git_completions = completion_module.complete_jj_command("git ", "J git ", 6)
+  local git_completions = completion_module.complete_jj_command("", "J git ", 7)
   runner.assert_test(
     "Git subcommand completion works",
     git_completions and #git_completions > 0,
@@ -27,7 +27,7 @@ if completion_module then
   )
 
   -- Test bookmark subcommand completion
-  local bookmark_completions = completion_module.complete_jj_command("bookmark ", "J bookmark ", 10)
+  local bookmark_completions = completion_module.complete_jj_command("", "J bookmark ", 11)
   runner.assert_test(
     "Bookmark subcommand completion works",
     bookmark_completions and #bookmark_completions > 0,

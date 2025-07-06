@@ -50,7 +50,7 @@ if log_bufnr then
   )
 
   local content_str = table.concat(content, "\n")
-  local has_header = content_str:match("jj%-log") or content_str:match("Repository")
+  local has_header = content_str:match("jj Log View") or content_str:match("Navigate:")
   runner.assert_test(
     "Log buffer has header",
     has_header,
@@ -115,13 +115,13 @@ runner.assert_test("jj log shows commits", has_log_commits, "jj log should show 
 
 -- Test 5: Log with different options
 if log_module then
-  local success_limited = pcall(function()
-    log_module.show_log({ limit = 10 })
+  local success_limited, err = pcall(function()
+    log_module.show_log({ limit = 10, update_current = true })
   end)
   runner.assert_test(
     "Log with limit option",
     success_limited,
-    "show_log should work with limit option"
+    "show_log should work with limit option" .. (err and (": " .. tostring(err)) or "")
   )
 end
 
