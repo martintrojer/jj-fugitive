@@ -117,7 +117,7 @@ local function setup_commit_detail_keymaps(bufnr)
       local log_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
       M.show_log({ limit = log_limit, update_current = true })
     else
-      M.show_log()
+      M.show_log({ update_current = true })
     end
   end, opts)
 
