@@ -269,7 +269,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      require("jj-fugitive.diff").show_file_diff(filename)
+      require("jj-fugitive.diff").show_file_diff(filename, { update_current = true })
     end
   end, opts)
 
@@ -343,7 +343,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     -- Check if it's a file change line (e.g., "M filename")
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      require("jj-fugitive.diff").show_file_diff(filename)
+      require("jj-fugitive.diff").show_file_diff(filename, { update_current = true })
       return
     end
 

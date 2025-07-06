@@ -219,17 +219,71 @@ function M.show_file_diff(filename, options)
     return
   end
 
-  local bufnr = create_diff_buffer(filename, diff_output, options)
-  setup_diff_keymaps(bufnr, filename)
+  local bufnr
 
-  -- Open in new window (split or tab depending on environment)
-  if vim.fn.has("gui_running") == 1 or vim.env.DISPLAY then
-    vim.cmd("tabnew")
+  -- Check if we should update current buffer instead of creating new window
+  if options.update_current then
+    -- Update the current buffer instead of creating new buffer
+    local current_bufnr = vim.api.nvim_get_current_buf()
+    local current_bufname = vim.api.nvim_buf_get_name(current_bufnr)
+
+    -- Only update if we're in a jj-related buffer
+    if current_bufname:match("jj%-") then
+      -- Create format description for buffer name
+      local format_desc = ""
+      if options.color_words then
+        format_desc = " (color-words)"
+      elseif options.context then
+        format_desc = " (context:" .. options.context .. ")"
+      elseif options.ignore_whitespace then
+        format_desc = " (no-ws)"
+      end
+
+      local bufname = string.format("jj-diff: %s%s", filename or "all", format_desc)
+
+      -- Create header lines for file diff
+      local header_lines = nil
+      if filename and not options.no_header then
+        header_lines = {
+          "",
+          "# File: " .. filename,
+          "# Changes in working copy vs parent (@-)",
+          "",
+        }
+      end
+
+      -- Update existing buffer content
+      ansi.update_colored_buffer(current_bufnr, diff_output, header_lines, {
+        prefix = "JjDiff",
+        custom_syntax = {
+          ["^# File:.*$"] = "JjDiffFileHeader",
+          ["^# Changes.*$"] = "JjDiffChangeHeader",
+        },
+      })
+
+      -- Update buffer name only if it's different
+      if current_bufname ~= bufname then
+        vim.api.nvim_buf_set_name(current_bufnr, bufname)
+      end
+      bufnr = current_bufnr
+    else
+      -- Fallback to creating new buffer if not in jj buffer
+      bufnr = create_diff_buffer(filename, diff_output, options)
+    end
   else
-    -- In headless mode, just switch to the buffer
-    vim.cmd("new")
+    bufnr = create_diff_buffer(filename, diff_output, options)
+
+    -- Open in new window (split or tab depending on environment)
+    if vim.fn.has("gui_running") == 1 or vim.env.DISPLAY then
+      vim.cmd("tabnew")
+    else
+      -- In headless mode, just switch to the buffer
+      vim.cmd("new")
+    end
+    vim.api.nvim_set_current_buf(bufnr)
   end
-  vim.api.nvim_set_current_buf(bufnr)
+
+  setup_diff_keymaps(bufnr, filename)
 
   -- Add status line info with current format
   vim.api.nvim_buf_call(bufnr, function()
