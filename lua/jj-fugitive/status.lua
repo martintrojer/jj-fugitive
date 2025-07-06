@@ -267,9 +267,26 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
   -- Unified diff view (replaces old D key)
   vim.keymap.set("n", "d", function()
     local line = vim.api.nvim_get_current_line()
+
+    -- Check if it's a file change line (e.g., "M filename")
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       require("jj-fugitive.diff").show_file_diff(filename, { update_current = true })
+      return
+    end
+
+    -- Check if it's a commit line and extract commit ID
+    local commit_id = line:match("Working copy%s+%(@%)%s*:%s*%w+%s+([a-f0-9]+)")
+    if not commit_id then
+      commit_id = line:match("Parent commit%s+%(@%-%):%s*%w+%s+([a-f0-9]+)")
+    end
+
+    if commit_id and #commit_id >= 8 then
+      -- Show commit diff using the log module
+      require("jj-fugitive.log").show_commit_diff(commit_id, {
+        update_current = true,
+        previous_view = "status",
+      })
     end
   end, opts)
 
