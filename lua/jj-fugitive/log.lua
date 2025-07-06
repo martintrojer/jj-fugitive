@@ -1022,4 +1022,7 @@ function M.show_log(options)
   end)
 end
 
+-- Export show_commit_details for use by other modules
+M.show_commit_details = show_commit_details
+
 return M
