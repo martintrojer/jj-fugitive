@@ -110,12 +110,19 @@ end
 local function setup_commit_detail_keymaps(bufnr)
   local opts = { buffer = bufnr, noremap = true, silent = true }
 
-  -- Back to log view
+  -- Back to previous view (log or status)
   vim.keymap.set("n", "b", function()
     local has_previous = pcall(vim.api.nvim_buf_get_var, bufnr, "jj_previous_view")
     if has_previous then
-      local log_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
-      M.show_log({ limit = log_limit, update_current = true })
+      local previous_view = vim.api.nvim_buf_get_var(bufnr, "jj_previous_view")
+      if previous_view == "status" then
+        -- Go back to status view
+        require("jj-fugitive.status").show_status()
+      else
+        -- Go back to log view (default behavior)
+        local log_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
+        M.show_log({ limit = log_limit, update_current = true })
+      end
     else
       M.show_log({ update_current = true })
     end
@@ -163,7 +170,8 @@ local function show_commit_details(commit_id, opts)
     -- Only update if we're in a jj-related buffer
     if current_bufname:match("jj%-") then
       -- Store original buffer info for navigation back
-      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", "log")
+      local previous_view = opts.previous_view or "log"
+      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", previous_view)
       local log_limit = 0 -- Default to no limit (standard jj log)
       pcall(function()
         log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")
@@ -313,7 +321,8 @@ local function show_commit_diff(commit_id, opts)
     -- Only update if we're in a jj-related buffer
     if current_bufname:match("jj%-") then
       -- Store original buffer info for navigation back
-      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", "log")
+      local previous_view = opts.previous_view or "log"
+      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", previous_view)
       local log_limit = 0 -- Default to no limit (standard jj log)
       pcall(function()
         log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")

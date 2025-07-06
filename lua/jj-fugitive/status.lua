@@ -359,7 +359,11 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
 
     if commit_id and #commit_id >= 8 then
       -- Show commit details using the log module
-      require("jj-fugitive.log").show_commit_details(commit_id, { update_current = true })
+      -- Pass information that we came from status view
+      require("jj-fugitive.log").show_commit_details(commit_id, {
+        update_current = true,
+        previous_view = "status",
+      })
     end
   end, opts)
 
