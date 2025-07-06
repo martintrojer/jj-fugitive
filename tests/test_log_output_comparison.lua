@@ -17,10 +17,12 @@ runner.section("Test 1: Raw jj log command variants")
 local default_log = main_module.run_jj_command_from_module({ "log", "--color", "always" })
 runner.assert_test("Default jj log works", default_log ~= nil, "Default log command failed")
 
-local full_repo_log = main_module.run_jj_command_from_module({ "log", "--color", "always", "-r", ".." })
+local full_repo_log =
+  main_module.run_jj_command_from_module({ "log", "--color", "always", "-r", ".." })
 runner.assert_test("Full repo jj log works", full_repo_log ~= nil, "Full repo log command failed")
 
-local limited_log = main_module.run_jj_command_from_module({ "log", "--color", "always", "--limit", "10" })
+local limited_log =
+  main_module.run_jj_command_from_module({ "log", "--color", "always", "--limit", "10" })
 runner.assert_test("Limited jj log works", limited_log ~= nil, "Limited log command failed")
 
 -- Test 2: Compare line counts
@@ -28,22 +30,30 @@ runner.section("Test 2: Line count comparisons")
 
 if default_log and full_repo_log and limited_log then
   local default_count = runner.count_non_empty_lines(default_log)
-  local full_count = runner.count_non_empty_lines(full_repo_log)  
+  local full_count = runner.count_non_empty_lines(full_repo_log)
   local limited_count = runner.count_non_empty_lines(limited_log)
-  
+
   runner.info(string.format("Default log: %d non-empty lines", default_count))
   runner.info(string.format("Full repo log: %d non-empty lines", full_count))
   runner.info(string.format("Limited log: %d non-empty lines", limited_count))
-  
-  runner.assert_test("Default log is concise", default_count <= 20, 
-    string.format("Expected ≤20 lines, got %d", default_count))
-    
-  runner.assert_test("Full repo log shows at least as many commits as default", 
-    full_count >= default_count, 
-    string.format("Full: %d, Default: %d", full_count, default_count))
-    
-  runner.assert_test("Limited log respects limit", limited_count <= 20,
-    string.format("Expected ≤20 lines, got %d", limited_count))
+
+  runner.assert_test(
+    "Default log is concise",
+    default_count <= 20,
+    string.format("Expected ≤20 lines, got %d", default_count)
+  )
+
+  runner.assert_test(
+    "Full repo log shows at least as many commits as default",
+    full_count >= default_count,
+    string.format("Full: %d, Default: %d", full_count, default_count)
+  )
+
+  runner.assert_test(
+    "Limited log respects limit",
+    limited_count <= 20,
+    string.format("Expected ≤20 lines, got %d", limited_count)
+  )
 end
 
 -- Test 3: Content analysis
@@ -53,9 +63,13 @@ if default_log then
   local has_working_copy = default_log:match("@")
   local has_commit_symbol = default_log:match("◆") or default_log:match("○")
   local has_elided = default_log:match("~")
-  
+
   runner.assert_test("Default log contains working copy (@)", has_working_copy, "No @ symbol found")
-  runner.assert_test("Default log contains commit symbols", has_commit_symbol, "No ◆ or ○ symbols found")
+  runner.assert_test(
+    "Default log contains commit symbols",
+    has_commit_symbol,
+    "No ◆ or ○ symbols found"
+  )
   runner.info(string.format("Elided marker (~) found: %s", has_elided and "yes" or "no"))
 end
 
@@ -66,9 +80,12 @@ if full_repo_log then
       commit_count = commit_count + 1
     end
   end
-  
-  runner.assert_test("Full repo log shows commits", commit_count >= 1,
-    string.format("Expected ≥1 commits, found %d", commit_count))
+
+  runner.assert_test(
+    "Full repo log shows commits",
+    commit_count >= 1,
+    string.format("Expected ≥1 commits, found %d", commit_count)
+  )
   runner.info(string.format("Found %d commits in full repo log", commit_count))
 end
 
@@ -76,8 +93,11 @@ end
 runner.section("Test 4: ANSI color preservation")
 
 if default_log then
-  runner.assert_test("Default log preserves ANSI colors", runner.has_ansi_codes(default_log),
-    "No ANSI color codes found in default log")
+  runner.assert_test(
+    "Default log preserves ANSI colors",
+    runner.has_ansi_codes(default_log),
+    "No ANSI color codes found in default log"
+  )
 end
 
 -- Test 5: Performance characteristics
@@ -88,7 +108,8 @@ local quick_log = main_module.run_jj_command_from_module({ "log", "--limit", "5"
 local quick_time = (os.clock() - start_time) * 1000
 
 start_time = os.clock()
-local comprehensive_log = main_module.run_jj_command_from_module({ "log", "-r", "..", "--limit", "50" })
+local comprehensive_log =
+  main_module.run_jj_command_from_module({ "log", "-r", "..", "--limit", "50" })
 local comprehensive_time = (os.clock() - start_time) * 1000
 
 runner.assert_test("Quick log executes successfully", quick_log ~= nil)
@@ -104,10 +125,10 @@ end
 local summary = {
   "Key findings:",
   "  📊 Default jj log shows recent commits only",
-  "  📈 Full repo jj log (-r ..) shows comprehensive history", 
+  "  📈 Full repo jj log (-r ..) shows comprehensive history",
   "  🎨 ANSI colors preserved in all variants",
   "  ⚡ Default behavior optimized for typical usage",
-  "  🔍 All jj log variants work correctly"
+  "  🔍 All jj log variants work correctly",
 }
 
 runner.finish(summary)

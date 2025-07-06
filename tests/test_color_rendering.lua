@@ -1,12 +1,14 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Test color rendering functionality
+local runner = require("tests.test_runner")
+runner.init("jj-fugitive Color Rendering Tests")
+
 -- Add CI environment debugging
-if os.getenv("CI") then
-  print("🔍 CI Environment Detected - Starting color rendering tests")
-  print("📍 Working directory: " .. vim.fn.getcwd())
-  print(
-    "📍 Neovim version: "
+if runner.is_ci() then
+  runner.section("CI Environment Information")
+  runner.info("Working directory: " .. vim.fn.getcwd())
+  runner.info(
+    "Neovim version: "
       .. vim.version().major
       .. "."
       .. vim.version().minor
@@ -15,46 +17,16 @@ if os.getenv("CI") then
   )
 end
 
--- Test basic Neovim functionality before proceeding
-local status_ok, error_msg = pcall(function()
-  vim.cmd("set rtp+=.")
-  vim.cmd("runtime plugin/jj-fugitive.lua")
-end)
-
-if not status_ok then
-  print("❌ FATAL: Failed to initialize Neovim or plugin")
-  print("❌ Error: " .. tostring(error_msg))
-  os.exit(1)
-end
-
-local test_results = {}
-local function assert_test(name, condition, message)
-  if condition then
-    print("✅ PASS: " .. name)
-    table.insert(test_results, { name = name, passed = true })
-  else
-    print("❌ FAIL: " .. name .. " - " .. (message or ""))
-    table.insert(test_results, { name = name, passed = false, message = message })
-  end
-end
-
-print("🎨 === jj-fugitive Color Rendering Tests ===")
-
+runner.section("Module Loading")
 -- Test 1: Check if diff module can be loaded
-local diff_module = nil
-pcall(function()
-  diff_module = require("jj-fugitive.diff")
-end)
-assert_test("Diff module loading", diff_module ~= nil, "Could not require jj-fugitive.diff")
+local diff_module = runner.load_module("jj-fugitive.diff")
 
+runner.section("Test File Creation")
 -- Create test file with changes to generate colored diff
 local test_file = "test_color_rendering.txt"
-local file = io.open(test_file, "w")
-if file then
-  file:write("Line 1\nLine 2\nLine 3\n")
-  file:close()
-end
+runner.create_test_file(test_file, "Line 1\nLine 2\nLine 3\n")
 
+runner.section("File Tracking")
 -- Check jj version and track file if needed
 local version_output = vim.fn.system({ "jj", "--version" })
 local has_file_cmd = version_output and version_output:match("jj 0%.1[6-9]")
@@ -66,45 +38,47 @@ if has_file_cmd then
   local track_result = vim.fn.system({ "jj", "file", "track", test_file })
   local track_exit_code = vim.v.shell_error
   if track_exit_code ~= 0 then
-    if os.getenv("CI") then
-      print("⚠️  jj file track failed with exit code: " .. track_exit_code)
-      print("⚠️  Output: " .. track_result)
+    if runner.is_ci() then
+      runner.info("jj file track failed with exit code: " .. track_exit_code)
+      runner.info("Output: " .. track_result)
     end
   end
 else
   -- Older jj versions auto-track files
-  if os.getenv("CI") then
-    print("ℹ️  Using jj v0.15.x - files are auto-tracked")
+  if runner.is_ci() then
+    runner.info("Using jj v0.15.x - files are auto-tracked")
   end
 end
 
 -- Modify the file to create additions and deletions
-file = io.open(test_file, "w")
-if file then
-  file:write("Line 1 modified\nLine 2\nLine 4 added\n")
-  file:close()
+local modified_file = io.open(test_file, "w")
+if modified_file then
+  modified_file:write("Line 1 modified\nLine 2\nLine 4 added\n")
+  modified_file:close()
 end
 
+runner.section("ANSI Color Code Detection")
 -- Test 2: Get colored diff output
 local jj_diff_colored = vim.fn.system({ "jj", "diff", "--color", "always", test_file })
 local diff_exit_code = vim.v.shell_error
 if diff_exit_code ~= 0 then
-  if os.getenv("CI") then
-    print("⚠️  jj diff failed with exit code: " .. diff_exit_code)
-    print("⚠️  Output: " .. jj_diff_colored)
+  if runner.is_ci() then
+    runner.info("jj diff failed with exit code: " .. diff_exit_code)
+    runner.info("Output: " .. jj_diff_colored)
   end
 end
-local has_ansi_codes = jj_diff_colored:match("\27%[[0-9;]*m")
-assert_test(
+local has_ansi_codes = runner.has_ansi_codes(jj_diff_colored)
+runner.assert_test(
   "jj diff produces ANSI color codes",
-  has_ansi_codes ~= nil,
+  has_ansi_codes,
   "No ANSI escape sequences found"
 )
 
 if has_ansi_codes then
-  print("   Found ANSI codes in diff output")
+  runner.info("Found ANSI codes in diff output")
 end
 
+runner.section("Buffer Creation and Processing")
 -- Test 3: Create diff buffer and verify ANSI codes are removed
 if diff_module then
   local initial_buf_count = #vim.api.nvim_list_bufs()
@@ -116,32 +90,30 @@ if diff_module then
   local final_buf_count = #vim.api.nvim_list_bufs()
   local diff_buffer_created = final_buf_count > initial_buf_count
 
-  assert_test("Diff buffer created", diff_buffer_created, "No new buffer created by show_file_diff")
+  runner.assert_test(
+    "Diff buffer created",
+    diff_buffer_created,
+    "No new buffer created by show_file_diff"
+  )
 
   if diff_buffer_created then
     -- Find the diff buffer
-    local diff_buffer = nil
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(bufnr) then
-        local name = vim.api.nvim_buf_get_name(bufnr)
-        if name:match("jj%-diff") and name:match(test_file) then
-          diff_buffer = bufnr
-          break
-        end
-      end
-    end
-
-    assert_test("Diff buffer found", diff_buffer ~= nil, "Could not find diff buffer by name")
+    local diff_buffer = runner.find_buffer("jj%-diff.*" .. test_file)
+    runner.assert_test(
+      "Diff buffer found",
+      diff_buffer ~= nil,
+      "Could not find diff buffer by name"
+    )
 
     if diff_buffer then
       local lines = vim.api.nvim_buf_get_lines(diff_buffer, 0, -1, false)
       local content = table.concat(lines, "\n")
 
       -- Test 4: Verify ANSI codes are stripped from buffer content
-      local has_ansi_in_buffer = content:match("\27%[[0-9;]*m")
-      assert_test(
+      local has_ansi_in_buffer = runner.has_ansi_codes(content)
+      runner.assert_test(
         "ANSI codes stripped from buffer",
-        has_ansi_in_buffer == nil,
+        not has_ansi_in_buffer,
         "ANSI codes still present in buffer text"
       )
 
@@ -149,7 +121,11 @@ if diff_module then
       local has_diff_content = content:match("diff --git")
         or content:match("@@")
         or content:match("Added regular file")
-      assert_test("Buffer has diff content", has_diff_content, "No diff markers found in buffer")
+      runner.assert_test(
+        "Buffer has diff content",
+        has_diff_content,
+        "No diff markers found in buffer"
+      )
 
       -- Test 6: Check for highlight groups in buffer
       -- Get all highlights in the buffer - use namespace -1 to get all namespaces
@@ -172,20 +148,20 @@ if diff_module then
       end
 
       local has_color_highlights = #highlights > 0
-      assert_test(
+      runner.assert_test(
         "Buffer has color highlights",
         has_color_highlights,
         "No highlight groups found in buffer"
       )
 
       if has_color_highlights then
-        print("   Found highlight groups: " .. table.concat(highlights, ", "))
+        runner.info("Found highlight groups: " .. table.concat(highlights, ", "))
       else
-        print("   No highlight groups found - this might be expected in headless mode")
+        runner.info("No highlight groups found - this might be expected in headless mode")
       end
 
-      print("   Buffer content length: " .. string.len(content))
-      print("   First 150 chars: " .. string.sub(content, 1, 150))
+      runner.info("Buffer content length: " .. string.len(content))
+      runner.info("First 150 chars: " .. string.sub(content, 1, 150))
     end
   end
 end
@@ -195,28 +171,10 @@ pcall(function()
   os.remove(test_file)
 end)
 
--- Summary
-print("\n📊 === Test Results Summary ===")
-local passed = 0
-local total = #test_results
-
-for _, result in ipairs(test_results) do
-  if result.passed then
-    passed = passed + 1
-  end
-end
-
-print(string.format("Passed: %d/%d tests", passed, total))
-
-if passed == total then
-  print("🎉 All tests passed!")
-  os.exit(0)
-else
-  print("💥 Some tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
-    end
-  end
-  os.exit(1)
-end
+runner.finish({
+  "📝 Key achievements:",
+  "   ✅ ANSI escape codes properly detected in jj diff output",
+  "   ✅ Buffer creation and ANSI code stripping working correctly",
+  "   ✅ Highlight groups applied to diff buffers",
+  "   ✅ Color rendering pipeline functional",
+})

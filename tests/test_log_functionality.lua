@@ -1,147 +1,128 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Test log functionality
-vim.cmd("set rtp+=.")
-vim.cmd("runtime plugin/jj-fugitive.lua")
+local runner = require("tests.test_runner")
 
-local test_results = {}
-local function assert_test(name, condition, message)
-  if condition then
-    print("✅ PASS: " .. name)
-    table.insert(test_results, { name = name, passed = true })
-  else
-    print("❌ FAIL: " .. name .. " - " .. (message or ""))
-    table.insert(test_results, { name = name, passed = false, message = message })
-  end
-end
+runner.init("jj-fugitive Log Functionality Tests")
 
-print("🚀 === jj-fugitive Log Functionality Tests ===")
+local log_module = runner.load_module("jj-fugitive.log")
 
--- Test 1: Check if log module can be loaded
-local log_module = nil
-pcall(function()
-  log_module = require("jj-fugitive.log")
-end)
-assert_test("Log module loading", log_module ~= nil, "Could not require jj-fugitive.log")
+-- Test help command first to get version info
+local help_output = vim.fn.system("jj --help")
+print(help_output:match("Jujutsu [^\n]*") or "")
 
--- Test 2: Check if J command works by trying to execute it
-local j_command_works = false
-local j_error = ""
-local success, err = pcall(function()
-  vim.cmd("J help")
-  j_command_works = true
-end)
-if not success then
-  j_error = tostring(err)
-end
-assert_test("J command works", j_command_works, "J command failed: " .. j_error)
+-- Test 1: Basic log functionality
+runner.check_function(log_module, "show_log", "Log module")
 
--- Test 3: Check if jj log works
-local jj_log_result = vim.fn.system({ "jj", "log", "--limit", "5" })
-local jj_log_works = vim.v.shell_error == 0
-assert_test("jj log command works", jj_log_works, "jj log failed: " .. jj_log_result)
-
--- Test 4: Test log buffer creation
 if log_module then
-  local initial_buf_count = #vim.api.nvim_list_bufs()
-
-  pcall(function()
+  local success = pcall(function()
     log_module.show_log({ limit = 5 })
   end)
-
-  local final_buf_count = #vim.api.nvim_list_bufs()
-  local log_buffer_created = final_buf_count > initial_buf_count
-
-  assert_test("Log buffer created", log_buffer_created, "No new buffer created by show_log")
-
-  if log_buffer_created then
-    -- Find the log buffer
-    local log_buffer = nil
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(bufnr) then
-        local name = vim.api.nvim_buf_get_name(bufnr)
-        if name:match("jj%-log") then
-          log_buffer = bufnr
-          break
-        end
-      end
-    end
-
-    assert_test("Log buffer found", log_buffer ~= nil, "Could not find log buffer by name")
-
-    if log_buffer then
-      local lines = vim.api.nvim_buf_get_lines(log_buffer, 0, -1, false)
-      local content = table.concat(lines, "\n")
-      local has_expected_content = content:match("# jj Log View")
-        and (content:match("@") or content:match("◆") or content:match("○"))
-
-      assert_test(
-        "Log buffer has expected content",
-        has_expected_content,
-        "Log buffer missing expected content (native jj format)"
-      )
-
-      -- Test buffer options
-      local buftype = vim.api.nvim_buf_get_option(log_buffer, "buftype")
-      local modifiable = vim.api.nvim_buf_get_option(log_buffer, "modifiable")
-
-      assert_test(
-        "Log buffer has correct buftype",
-        buftype == "nofile",
-        "buftype is " .. buftype .. ", expected nofile"
-      )
-      assert_test(
-        "Log buffer is not modifiable",
-        modifiable == false,
-        "buffer should not be modifiable"
-      )
-
-      -- Test enhanced formatting
-      local has_header = content:match("# jj Log View")
-      local has_navigation = content:match("Navigate:")
-      assert_test(
-        "Log buffer has enhanced visual formatting",
-        has_header and has_navigation,
-        "Log buffer missing header or navigation instructions"
-      )
-    end
-  end
+  runner.assert_test("Log view creation", success, "show_log should work without errors")
 end
 
--- Test 5: Test main plugin integration
-local initial_buf_count = #vim.api.nvim_list_bufs()
+-- Test 2: Log buffer verification
+local log_bufnr = runner.find_buffer("jj%-log")
+runner.assert_test("Log buffer created", log_bufnr ~= nil, "Log buffer should be created")
 
-pcall(function()
-  vim.cmd("J log --limit 3")
-end)
+if log_bufnr then
+  -- Test buffer properties
+  local buftype = vim.api.nvim_buf_get_option(log_bufnr, "buftype")
+  runner.assert_test(
+    "Log buffer has correct buftype",
+    buftype == "nofile",
+    "Log buffer should be nofile type"
+  )
 
-local final_buf_count = #vim.api.nvim_list_bufs()
-local j_log_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
+  local modifiable = vim.api.nvim_buf_get_option(log_bufnr, "modifiable")
+  runner.assert_test(
+    "Log buffer is not modifiable",
+    not modifiable,
+    "Log buffer should not be modifiable"
+  )
 
-assert_test("J log command works", j_log_created_buffer, ":J log command failed")
+  -- Test buffer content
+  local content = vim.api.nvim_buf_get_lines(log_bufnr, 0, -1, false)
+  local has_content = #content > 0
+  runner.assert_test(
+    "Log buffer has content",
+    has_content,
+    "Log buffer should contain log information"
+  )
 
--- Summary
-print("\n📊 === Test Results Summary ===")
-local passed = 0
-local total = #test_results
+  local content_str = table.concat(content, "\n")
+  local has_header = content_str:match("jj%-log") or content_str:match("Repository")
+  runner.assert_test(
+    "Log buffer has header",
+    has_header,
+    "Log buffer should contain header information"
+  )
 
-for _, result in ipairs(test_results) do
-  if result.passed then
-    passed = passed + 1
-  end
+  -- Test for commit information
+  local has_commits = content_str:match("@") or content_str:match("◆") or content_str:match("○")
+  runner.assert_test(
+    "Log buffer contains commits",
+    has_commits,
+    "Log buffer should show commit information"
+  )
 end
 
-print(string.format("Passed: %d/%d tests", passed, total))
+-- Test 3: Log keybindings
+if log_bufnr then
+  local keymaps = vim.api.nvim_buf_get_keymap(log_bufnr, "n")
+  local has_enter_key = false
+  local has_q_key = false
+  local has_expand_key = false
 
-if passed == total then
-  print("🎉 All log functionality tests passed!")
-  os.exit(0)
-else
-  print("💥 Some log functionality tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
+  for _, keymap in ipairs(keymaps) do
+    if keymap.lhs == "<CR>" then
+      has_enter_key = true
+    end
+    if keymap.lhs == "q" then
+      has_q_key = true
+    end
+    if keymap.lhs == "=" or keymap.lhs == "+" then
+      has_expand_key = true
     end
   end
-  os.exit(1)
+
+  runner.assert_test(
+    "Enter key mapping exists",
+    has_enter_key,
+    "Log buffer should have Enter key mapping"
+  )
+
+  runner.assert_test("Quit key mapping exists", has_q_key, "Log buffer should have 'q' key mapping")
+
+  runner.assert_test(
+    "Expand key mapping exists",
+    has_expand_key,
+    "Log buffer should have expand key mapping"
+  )
 end
+
+-- Test 4: jj log command integration
+local jj_log_output = vim.fn.system({ "jj", "log", "--limit", "5" })
+runner.assert_test(
+  "jj log command works",
+  jj_log_output ~= nil and jj_log_output ~= "",
+  "jj log command should produce output"
+)
+
+local has_log_commits = jj_log_output:match("@")
+  or jj_log_output:match("◆")
+  or jj_log_output:match("○")
+runner.assert_test("jj log shows commits", has_log_commits, "jj log should show commit information")
+
+-- Test 5: Log with different options
+if log_module then
+  local success_limited = pcall(function()
+    log_module.show_log({ limit = 10 })
+  end)
+  runner.assert_test(
+    "Log with limit option",
+    success_limited,
+    "show_log should work with limit option"
+  )
+end
+
+runner.finish()

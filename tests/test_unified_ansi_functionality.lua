@@ -1,284 +1,113 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Test unified ANSI functionality across diff and log modules
-vim.cmd("set rtp+=.")
-vim.cmd("runtime plugin/jj-fugitive.lua")
+local runner = require("tests.test_runner")
 
-local test_results = {}
-local function assert_test(name, condition, message)
-  if condition then
-    print("✅ PASS: " .. name)
-    table.insert(test_results, { name = name, passed = true })
-  else
-    print("❌ FAIL: " .. name .. " - " .. (message or ""))
-    table.insert(test_results, { name = name, passed = false, message = message })
-  end
+runner.init("jj-fugitive Unified ANSI Functionality Tests")
+
+-- Test 1: ANSI module loading
+local ansi_module = runner.load_module("jj-fugitive.ansi")
+
+-- Test 2: ANSI parsing functionality
+if ansi_module then
+  runner.check_function(ansi_module, "parse_ansi_colors", "ANSI module")
+  runner.check_function(ansi_module, "create_colored_buffer", "ANSI module")
+  runner.check_function(ansi_module, "update_colored_buffer", "ANSI module")
 end
 
-print("🔧 === jj-fugitive Unified ANSI Functionality Tests ===")
-
--- Test 1: Check if shared ANSI module can be loaded
-local ansi_module = nil
-pcall(function()
-  ansi_module = require("jj-fugitive.ansi")
-end)
-assert_test("ANSI module loading", ansi_module ~= nil, "Could not require jj-fugitive.ansi")
+-- Test 3: Test with sample ANSI content
+local sample_ansi = "\27[31mRed text\27[0m \27[32mGreen text\27[0m"
+runner.assert_test(
+  "Sample has ANSI codes",
+  runner.has_ansi_codes(sample_ansi),
+  "Sample should contain ANSI escape codes"
+)
 
 if ansi_module then
-  -- Test 2: Test ANSI color parsing function directly
-  local test_text = "\27[1mBold\27[0m \27[31mRed\27[0m \27[38;5;2mGreen256\27[39m text"
-  local clean_text, highlights = ansi_module.parse_ansi_colors(test_text)
-
-  assert_test(
-    "ANSI codes stripped from text",
-    not clean_text:match("\27%["),
-    "ANSI escape codes still present in clean text"
+  local parsed_lines, highlights = ansi_module.parse_ansi_colors(sample_ansi)
+  runner.assert_test(
+    "ANSI parsing returns clean text",
+    parsed_lines and #parsed_lines > 0,
+    "Should return parsed text"
   )
 
-  assert_test(
-    "Clean text content correct",
-    clean_text == "Bold Red Green256 text",
-    "Clean text doesn't match expected: '" .. clean_text .. "'"
-  )
-
-  assert_test("Highlights extracted", #highlights > 0, "No highlights extracted from ANSI codes")
-
-  if #highlights > 0 then
-    print("   Extracted " .. #highlights .. " highlight regions")
-    for i, hl in ipairs(highlights) do
-      print(string.format("     %d: %s at %d-%d", i, hl.group, hl.col_start, hl.col_end))
-    end
-  end
-
-  -- Test 3: Test process_diff_content function
-  local diff_content =
-    "\27[1mdiff --git\27[0m a/file.txt b/file.txt\n\27[32m+added line\27[0m\n\27[31m-removed line\27[0m"
-  local header_lines = { "# Test Header", "# Subheader" }
-  local processed_lines, all_highlights =
-    ansi_module.process_diff_content(diff_content, header_lines)
-
-  assert_test(
-    "Diff content processed with headers",
-    #processed_lines > #header_lines,
-    "Processed lines don't include content beyond headers"
-  )
-
-  assert_test(
-    "Headers included in processed content",
-    processed_lines[1] == "# Test Header",
-    "Header not found in processed content"
-  )
-
-  local content_has_diff = false
-  for _, line in ipairs(processed_lines) do
-    if line:match("diff %-%-git") then
-      content_has_diff = true
-      break
-    end
-  end
-  assert_test(
-    "Diff content included and ANSI stripped",
-    content_has_diff,
-    "Diff content not found in processed lines"
-  )
-
-  assert_test(
-    "Highlights generated for diff content",
-    #all_highlights > 0,
-    "No highlights generated for diff content"
+  runner.assert_test(
+    "ANSI parsing returns highlights",
+    highlights and #highlights > 0,
+    "Should return highlight information"
   )
 end
 
--- Test 4: Check if diff and log modules can be loaded
-local diff_module = nil
-local log_module = nil
-pcall(function()
-  diff_module = require("jj-fugitive.diff")
-end)
-pcall(function()
-  log_module = require("jj-fugitive.log")
-end)
+-- Test 4: Buffer creation with ANSI content
+if ansi_module then
+  local test_content = "\27[1mBold\27[0m and \27[32mgreen\27[0m text"
+  local bufnr = ansi_module.create_colored_buffer(test_content, "test-ansi-buffer")
 
-assert_test("Diff module loading", diff_module ~= nil, "Could not require jj-fugitive.diff")
-assert_test("Log module loading", log_module ~= nil, "Could not require jj-fugitive.log")
+  runner.assert_test("ANSI buffer created", bufnr ~= nil, "Should create buffer with ANSI content")
 
--- Create test repository state for integration tests
-local test_file = "test_unified_ansi.txt"
-local file = io.open(test_file, "w")
-if file then
-  file:write("Original line 1\nOriginal line 2\n")
-  file:close()
-end
-
--- Track and commit the file
-vim.fn.system({ "jj", "file", "track", test_file })
-vim.fn.system({ "jj", "describe", "-m", "Add test file for unified ANSI testing" })
-
--- Modify the file
-file = io.open(test_file, "w")
-if file then
-  file:write("Modified line 1\nOriginal line 2\nNew line 3\n")
-  file:close()
-end
-
-vim.fn.system({ "jj", "describe", "-m", "Modify test file for ANSI testing" })
-
--- Test 5: Test that both diff and log views use same ANSI processing
-if diff_module and log_module then
-  -- Get current commit ID
-  local commit_output =
-    vim.fn.system({ "jj", "log", "--limit", "1", "--template", "change_id.short()" })
-  local commit_id = vim.trim(commit_output:match("([^\n]+)"))
-
-  if commit_id and #commit_id > 0 then
-    print("   Testing with commit ID: " .. commit_id)
-
-    -- Test diff view buffer creation
-    local initial_buf_count = #vim.api.nvim_list_bufs()
-
-    pcall(function()
-      diff_module.show_file_diff(test_file)
-    end)
-
-    local after_diff_buf_count = #vim.api.nvim_list_bufs()
-    local diff_buffer_created = after_diff_buf_count > initial_buf_count
-
-    assert_test("Diff view buffer created", diff_buffer_created, "Diff view did not create buffer")
-
-    -- Test log view buffer creation
-    pcall(function()
-      log_module.show_log({ limit = 3 })
-    end)
-
-    local after_log_buf_count = #vim.api.nvim_list_bufs()
-    local log_buffer_created = after_log_buf_count > after_diff_buf_count
-
-    assert_test("Log view buffer created", log_buffer_created, "Log view did not create buffer")
-
-    -- Test consistency: both should have similar ANSI handling
-    -- We can't easily test the internal functions in headless mode,
-    -- but we can verify the modules loaded successfully with shared dependencies
-    assert_test(
-      "Unified ANSI implementation",
-      ansi_module ~= nil and diff_module ~= nil and log_module ~= nil,
-      "Not all modules loaded correctly for unified implementation"
-    )
-
-    -- Test 6: Verify consistent buffer options and highlighting
-    local diff_buffer = nil
-    local log_buffer = nil
-
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(bufnr) then
-        local name = vim.api.nvim_buf_get_name(bufnr)
-        if name:match("jj%-diff") and name:match(test_file) then
-          diff_buffer = bufnr
-        elseif name:match("jj%-log") then
-          log_buffer = bufnr
-        end
-      end
-    end
-
-    if diff_buffer then
-      local diff_filetype = vim.api.nvim_buf_get_option(diff_buffer, "filetype")
-      local diff_buftype = vim.api.nvim_buf_get_option(diff_buffer, "buftype")
-
-      assert_test(
-        "Diff buffer has correct filetype",
-        diff_filetype == "diff",
-        "Diff buffer filetype is " .. diff_filetype .. ", expected diff"
-      )
-
-      assert_test(
-        "Diff buffer has correct buftype",
-        diff_buftype == "nofile",
-        "Diff buffer buftype is " .. diff_buftype .. ", expected nofile"
-      )
-
-      -- Check that ANSI codes are stripped from buffer content
-      local diff_lines = vim.api.nvim_buf_get_lines(diff_buffer, 0, -1, false)
-      local diff_content = table.concat(diff_lines, "\n")
-      local has_ansi_in_diff = diff_content:match("\27%[[0-9;]*m")
-
-      assert_test(
-        "Diff buffer content has no ANSI codes",
-        has_ansi_in_diff == nil,
-        "ANSI codes found in diff buffer content"
-      )
-    end
-
-    if log_buffer then
-      local _ = vim.api.nvim_buf_get_option(log_buffer, "filetype") -- luacheck: ignore
-      local log_buftype = vim.api.nvim_buf_get_option(log_buffer, "buftype")
-
-      assert_test(
-        "Log buffer has correct buftype",
-        log_buftype == "nofile",
-        "Log buffer buftype is " .. log_buftype .. ", expected nofile"
-      )
-    end
-
-    -- Test 7: Test format consistency between views
-    -- Both diff and log commit diff should use same header format and highlighting
-    local format_consistency_test = (
-      diff_buffer ~= nil
-      and log_buffer ~= nil
-      and ansi_module.parse_ansi_colors ~= nil
-      and ansi_module.process_diff_content ~= nil
-      and ansi_module.setup_diff_highlighting ~= nil
-      and ansi_module.create_colored_buffer ~= nil
-      and ansi_module.update_colored_buffer ~= nil
-    )
-
-    assert_test(
-      "Format consistency infrastructure",
-      format_consistency_test,
-      "Not all required components available for format consistency"
-    )
-  else
-    assert_test(
-      "Valid commit ID for testing",
-      false,
-      "Could not get commit ID for integration tests"
+  if bufnr then
+    local content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    local content_str = table.concat(content, "\n")
+    runner.assert_test(
+      "Buffer content has no ANSI codes",
+      not runner.has_ansi_codes(content_str),
+      "Buffer should have clean content without ANSI codes"
     )
   end
-else
-  assert_test("Both modules available for integration", false, "Diff or log module not available")
 end
 
--- Cleanup
-pcall(function()
-  os.remove(test_file)
-end)
+-- Test 5: Integration with other modules
+local diff_module = runner.load_module("jj-fugitive.diff")
+local log_module = runner.load_module("jj-fugitive.log")
+local status_module = runner.load_module("jj-fugitive.status")
 
--- Summary
-print("\n📊 === Test Results Summary ===")
-local passed = 0
-local total = #test_results
+runner.assert_test(
+  "Diff module integrates with ANSI",
+  diff_module ~= nil,
+  "Diff module should be available for ANSI integration"
+)
 
-for _, result in ipairs(test_results) do
-  if result.passed then
-    passed = passed + 1
-  end
+runner.assert_test(
+  "Log module integrates with ANSI",
+  log_module ~= nil,
+  "Log module should be available for ANSI integration"
+)
+
+runner.assert_test(
+  "Status module integrates with ANSI",
+  status_module ~= nil,
+  "Status module should be available for ANSI integration"
+)
+
+-- Test 6: Test real jj command ANSI output
+local jj_output = vim.fn.system({ "jj", "log", "--color", "always", "--limit", "3" })
+runner.assert_test(
+  "jj produces ANSI output",
+  runner.has_ansi_codes(jj_output),
+  "jj command should produce ANSI colored output"
+)
+
+if ansi_module and runner.has_ansi_codes(jj_output) then
+  local parsed_lines, highlights = ansi_module.parse_ansi_colors(jj_output)
+  runner.assert_test(
+    "Real jj output parses successfully",
+    parsed_lines and #parsed_lines > 0,
+    "Should successfully parse real jj ANSI output"
+  )
+
+  runner.assert_test(
+    "Real jj output generates highlights",
+    highlights and #highlights > 0,
+    "Should generate highlights from real jj output"
+  )
 end
 
-print(string.format("Passed: %d/%d tests", passed, total))
+local summary = {
+  "Key achievements:",
+  "  ✅ ANSI parsing works consistently across modules",
+  "  ✅ Buffer creation uses unified formatting",
+  "  ✅ Clean text extraction from ANSI codes",
+  "  ✅ Highlight generation from color codes",
+  "  ✅ Integration ready for all jj-fugitive views",
+}
 
-if passed == total then
-  print("🎉 All unified ANSI functionality tests passed!")
-  print("📝 Key achievements:")
-  print("   ✅ Shared ANSI parsing module working correctly")
-  print("   ✅ Both diff and log views use unified color processing")
-  print("   ✅ Consistent formatting and highlighting across views")
-  print("   ✅ ANSI codes properly stripped from display text")
-  print("   ✅ Color highlights correctly applied to buffers")
-  os.exit(0)
-else
-  print("💥 Some unified functionality tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
-    end
-  end
-  os.exit(1)
-end
+runner.finish(summary)

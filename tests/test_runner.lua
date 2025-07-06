@@ -13,12 +13,12 @@ function M.init(test_name)
   -- Set up Neovim environment
   vim.cmd("set rtp+=.")
   vim.cmd("runtime plugin/jj-fugitive.lua")
-  
+
   -- Reset test state
   test_results = {}
   test_count = 0
   passed_count = 0
-  
+
   print(string.format("🚀 === %s ===", test_name))
   return true
 end
@@ -26,7 +26,7 @@ end
 -- Assert a test condition
 function M.assert_test(name, condition, message)
   test_count = test_count + 1
-  
+
   if condition then
     print("✅ PASS: " .. name)
     passed_count = passed_count + 1
@@ -35,7 +35,7 @@ function M.assert_test(name, condition, message)
     print("❌ FAIL: " .. name .. " - " .. (message or ""))
     table.insert(test_results, { name = name, passed = false, message = message })
   end
-  
+
   return condition
 end
 
@@ -58,11 +58,11 @@ end
 -- Finish tests and exit with appropriate code
 function M.finish(additional_summary)
   local failed_count = test_count - passed_count
-  
+
   print(string.format("\n📊 === Test Results Summary ==="))
   print(string.format("Total tests run: %d", test_count))
   print(string.format("Passed: %d", passed_count))
-  
+
   if failed_count > 0 then
     print(string.format("Failed: %d", failed_count))
     print("\n💥 Some tests failed!")
@@ -75,7 +75,7 @@ function M.finish(additional_summary)
   else
     print(string.format("Failed: %d", failed_count))
     print("\n🎉 All tests passed!")
-    
+
     if additional_summary then
       if type(additional_summary) == "table" then
         for _, line in ipairs(additional_summary) do
@@ -85,7 +85,7 @@ function M.finish(additional_summary)
         print(additional_summary)
       end
     end
-    
+
     os.exit(0)
   end
 end
@@ -94,7 +94,11 @@ end
 function M.load_module(module_name)
   local ok, module = pcall(require, module_name)
   if not ok then
-    M.assert_test("Module " .. module_name .. " loading", false, "Failed to load module: " .. tostring(module))
+    M.assert_test(
+      "Module " .. module_name .. " loading",
+      false,
+      "Failed to load module: " .. tostring(module)
+    )
     return nil
   end
   M.assert_test("Module " .. module_name .. " loading", true)
@@ -141,7 +145,9 @@ end
 
 -- Utility: Count non-empty lines
 function M.count_non_empty_lines(text)
-  if not text then return 0 end
+  if not text then
+    return 0
+  end
   local count = 0
   for line in text:gmatch("[^\n]+") do
     if line:match("%S") then -- line contains non-whitespace

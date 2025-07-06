@@ -1,30 +1,13 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Test log view Enter functionality specifically
-vim.cmd("set rtp+=.")
-vim.cmd("runtime plugin/jj-fugitive.lua")
+local runner = require("tests.test_runner")
 
-local test_results = {}
-local function assert_test(name, condition, message)
-  if condition then
-    print("✅ PASS: " .. name)
-    table.insert(test_results, { name = name, passed = true })
-  else
-    print("❌ FAIL: " .. name .. " - " .. (message or ""))
-    table.insert(test_results, { name = name, passed = false, message = message })
-  end
-end
-
-print("🚀 === jj-fugitive Log Enter Functionality Tests ===")
+runner.init("jj-fugitive Log Enter Functionality Tests")
 
 -- Test 1: Load required modules
-local log_module = nil
-local main_module = nil
-pcall(function()
-  log_module = require("jj-fugitive.log")
-  main_module = require("jj-fugitive.init")
-end)
-assert_test(
+local log_module = runner.load_module("jj-fugitive.log")
+local main_module = runner.load_module("jj-fugitive.init")
+runner.assert_test(
   "Module loading",
   log_module ~= nil and main_module ~= nil,
   "Could not load required modules"
@@ -38,7 +21,7 @@ if log_module and main_module then
   end)
 
   local final_buf_count = #vim.api.nvim_list_bufs()
-  assert_test(
+  runner.assert_test(
     "Log buffer creation",
     final_buf_count > initial_buf_count,
     "Log buffer was not created"
@@ -56,12 +39,12 @@ if log_module and main_module then
     end
   end
 
-  assert_test("Log buffer found", log_buffer ~= nil, "Could not find log buffer by name")
+  runner.assert_test("Log buffer found", log_buffer ~= nil, "Could not find log buffer by name")
 
   if log_buffer then
     vim.api.nvim_set_current_buf(log_buffer)
     local lines = vim.api.nvim_buf_get_lines(log_buffer, 0, -1, false)
-    assert_test("Log buffer has content", #lines > 0, "Log buffer is empty")
+    runner.assert_test("Log buffer has content", #lines > 0, "Log buffer is empty")
 
     -- Test 4: Verify log buffer format
     local has_header = false
@@ -89,8 +72,16 @@ if log_module and main_module then
       end
     end
 
-    assert_test("Log buffer has proper header", has_header, "Log buffer missing expected header")
-    assert_test("Log buffer has commit lines", has_commits, "Log buffer has no valid commit lines")
+    runner.assert_test(
+      "Log buffer has proper header",
+      has_header,
+      "Log buffer missing expected header"
+    )
+    runner.assert_test(
+      "Log buffer has commit lines",
+      has_commits,
+      "Log buffer has no valid commit lines"
+    )
 
     -- Test 5: Test cursor positioning
     if has_commits then
@@ -106,7 +97,7 @@ if log_module and main_module then
         end
       end
 
-      assert_test(
+      runner.assert_test(
         "Cursor positioned on commit line",
         cursor_on_commit,
         "Cursor not positioned on a valid commit line"
@@ -131,7 +122,7 @@ if log_module and main_module then
       end
 
       local extracted_commit_id = get_commit_from_line(current_line)
-      assert_test(
+      runner.assert_test(
         "Commit ID extraction from cursor line",
         extracted_commit_id ~= nil,
         "Could not extract commit ID from cursor line: " .. current_line
@@ -141,7 +132,7 @@ if log_module and main_module then
       if extracted_commit_id then
         print("Testing with commit ID:", extracted_commit_id)
         local show_result = main_module.run_jj_command_from_module({ "show", extracted_commit_id })
-        assert_test(
+        runner.assert_test(
           "jj show command for extracted commit ID",
           show_result ~= nil,
           "jj show failed for commit ID: " .. extracted_commit_id
@@ -150,7 +141,7 @@ if log_module and main_module then
         if show_result then
           local has_commit_details = show_result:match("Commit ID:")
             or show_result:match("Change ID:")
-          assert_test(
+          runner.assert_test(
             "jj show returns valid commit details",
             has_commit_details,
             "jj show output doesn't contain expected commit details"
@@ -166,7 +157,7 @@ if log_module and main_module then
       if extracted_commit_id then
         local subdir_show_result =
           main_module.run_jj_command_from_module({ "show", extracted_commit_id })
-        assert_test(
+        runner.assert_test(
           "jj show from subdirectory",
           subdir_show_result ~= nil,
           "jj show failed from subdirectory"
@@ -185,7 +176,7 @@ if log_module and main_module then
         end
       end
 
-      assert_test(
+      runner.assert_test(
         "Multiple commit IDs are valid",
         valid_commits > 0,
         "No valid commit IDs found in log view"
@@ -198,29 +189,9 @@ if log_module and main_module then
   end
 end
 
--- Summary
-print("\n📊 === Log Enter Functionality Test Results Summary ===")
-local passed = 0
-local total = #test_results
+local summary = {
+  "✅ Pressing Enter in log view should work correctly",
+  "Log enter functionality verified",
+}
 
-for _, result in ipairs(test_results) do
-  if result.passed then
-    passed = passed + 1
-  end
-end
-
-print(string.format("Passed: %d/%d tests", passed, total))
-
-if passed == total then
-  print("🎉 All log Enter functionality tests passed!")
-  print("✅ Pressing Enter in log view should work correctly")
-  os.exit(0)
-else
-  print("💥 Some log Enter functionality tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
-    end
-  end
-  os.exit(1)
-end
+runner.finish(summary)

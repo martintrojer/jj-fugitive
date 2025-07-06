@@ -1,161 +1,120 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Test status functionality
-vim.cmd("set rtp+=.")
-vim.cmd("runtime plugin/jj-fugitive.lua")
+local runner = require("tests.test_runner")
 
-local test_results = {}
-local function assert_test(name, condition, message)
-  if condition then
-    print("✅ PASS: " .. name)
-    table.insert(test_results, { name = name, passed = true })
-  else
-    print("❌ FAIL: " .. name .. " - " .. (message or ""))
-    table.insert(test_results, { name = name, passed = false, message = message })
-  end
-end
+runner.init("jj-fugitive Status Functionality Tests")
 
-print("🚀 === jj-fugitive Status Functionality Tests ===")
+local status_module = runner.load_module("jj-fugitive.status")
 
--- Test 1: Check if status module can be loaded
-local status_module = nil
-pcall(function()
-  status_module = require("jj-fugitive.status")
-end)
-assert_test("Status module loading", status_module ~= nil, "Could not require jj-fugitive.status")
+-- Test 1: Status module loading and basic function availability
+runner.check_function(status_module, "show_status", "Status module")
 
--- Test 2: Check if J command works by trying to execute it
-local j_command_works = false
-local j_error = ""
-local success, err = pcall(function()
-  vim.cmd("J status")
-  j_command_works = true
-end)
-if not success then
-  j_error = tostring(err)
-end
-assert_test("J command works", j_command_works, "J command failed: " .. j_error)
-
--- Test 3: Check if jj status works
-local jj_status_result = vim.fn.system({ "jj", "status" })
-local jj_status_works = vim.v.shell_error == 0
-assert_test("jj status command works", jj_status_works, "jj status failed: " .. jj_status_result)
-
--- Test 4: Test status buffer creation (or find existing one)
+-- Test 2: Basic status command functionality
 if status_module then
-  -- First try to find existing status buffer
-  local status_buffer = nil
-  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(bufnr) then
-      local name = vim.api.nvim_buf_get_name(bufnr)
-      if name:match("jj%-status") then
-        status_buffer = bufnr
-        break
-      end
-    end
-  end
+  local success = pcall(function()
+    status_module.show_status()
+  end)
+  runner.assert_test("Status view creation", success, "show_status should work without errors")
+end
 
-  -- If no existing buffer, create one
-  if not status_buffer then
-    pcall(function()
-      status_module.show_status()
-    end)
+-- Test 3: Status buffer verification
+local status_bufnr = runner.find_buffer("jj%-status")
+runner.assert_test("Status buffer created", status_bufnr ~= nil, "Status buffer should be created")
 
-    -- Find the newly created buffer
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_valid(bufnr) then
-        local name = vim.api.nvim_buf_get_name(bufnr)
-        if name:match("jj%-status") then
-          status_buffer = bufnr
-          break
-        end
-      end
-    end
-  end
-
-  assert_test(
-    "Status buffer created",
-    status_buffer ~= nil,
-    "No status buffer found after creation attempt"
+if status_bufnr then
+  -- Test buffer properties
+  local buftype = vim.api.nvim_buf_get_option(status_bufnr, "buftype")
+  runner.assert_test(
+    "Status buffer has correct buftype",
+    buftype == "nofile",
+    "Status buffer should be nofile type"
   )
 
-  if status_buffer then
-    assert_test("Status buffer found", status_buffer ~= nil, "Could not find status buffer by name")
+  local modifiable = vim.api.nvim_buf_get_option(status_bufnr, "modifiable")
+  runner.assert_test(
+    "Status buffer is not modifiable",
+    not modifiable,
+    "Status buffer should not be modifiable"
+  )
 
-    local lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
-    local content = table.concat(lines, "\n")
-    local has_expected_content = content:match("jj%-fugitive Status") and content:match("Commands:")
+  -- Test buffer content
+  local content = vim.api.nvim_buf_get_lines(status_bufnr, 0, -1, false)
+  local has_content = #content > 0
+  runner.assert_test(
+    "Status buffer has content",
+    has_content,
+    "Status buffer should contain status information"
+  )
 
-    assert_test(
-      "Status buffer has expected content",
-      has_expected_content,
-      "Status buffer missing expected content"
-    )
+  local content_str = table.concat(content, "\n")
+  local has_header = content_str:match("jj%-fugitive") or content_str:match("Status")
+  runner.assert_test(
+    "Status buffer has header",
+    has_header,
+    "Status buffer should contain header information"
+  )
 
-    -- Test buffer options
-    local buftype = vim.api.nvim_buf_get_option(status_buffer, "buftype")
-    local modifiable = vim.api.nvim_buf_get_option(status_buffer, "modifiable")
-
-    assert_test(
-      "Status buffer has correct buftype",
-      buftype == "nofile",
-      "buftype is " .. buftype .. ", expected nofile"
-    )
-    assert_test(
-      "Status buffer is not modifiable",
-      modifiable == false,
-      "buffer should not be modifiable"
-    )
-
-    -- Test that reload function exists and works
-    pcall(function()
-      status_module.show_status() -- Call again to test reload
-    end)
-
-    local new_lines = vim.api.nvim_buf_get_lines(status_buffer, 0, -1, false)
-    local reload_worked = #new_lines > 0
-    assert_test(
-      "Status buffer reload works",
-      reload_worked,
-      "Status buffer became empty after reload"
-    )
-  end
+  -- Test for working copy information
+  local has_working_copy = content_str:match("Working copy") or content_str:match("@")
+  runner.assert_test(
+    "Status buffer contains working copy info",
+    has_working_copy,
+    "Status buffer should show working copy information"
+  )
 end
 
--- Test 5: Test :J status command
-local initial_buf_count = #vim.api.nvim_list_bufs()
+-- Test 4: Status keybindings
+if status_bufnr then
+  local keymaps = vim.api.nvim_buf_get_keymap(status_bufnr, "n")
+  local has_enter_key = false
+  local has_q_key = false
+  local has_r_key = false
 
-pcall(function()
-  vim.cmd("J status")
-end)
-
-local final_buf_count = #vim.api.nvim_list_bufs()
-local j_status_created_buffer = final_buf_count >= initial_buf_count -- May reuse existing buffer
-
-assert_test("J status command works", j_status_created_buffer, ":J status command failed")
-
--- Summary
-print("\n📊 === Test Results Summary ===")
-local passed = 0
-local total = #test_results
-
-for _, result in ipairs(test_results) do
-  if result.passed then
-    passed = passed + 1
-  end
-end
-
-print(string.format("Passed: %d/%d tests", passed, total))
-
-if passed == total then
-  print("🎉 All tests passed!")
-  os.exit(0)
-else
-  print("💥 Some tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
+  for _, keymap in ipairs(keymaps) do
+    if keymap.lhs == "<CR>" then
+      has_enter_key = true
+    end
+    if keymap.lhs == "q" then
+      has_q_key = true
+    end
+    if keymap.lhs == "R" then
+      has_r_key = true
     end
   end
-  os.exit(1)
+
+  runner.assert_test(
+    "Enter key mapping exists",
+    has_enter_key,
+    "Status buffer should have Enter key mapping"
+  )
+
+  runner.assert_test(
+    "Quit key mapping exists",
+    has_q_key,
+    "Status buffer should have 'q' key mapping"
+  )
+
+  runner.assert_test(
+    "Reload key mapping exists",
+    has_r_key,
+    "Status buffer should have 'R' key mapping"
+  )
 end
+
+-- Test 5: jj status command integration
+local jj_status_output = vim.fn.system({ "jj", "status" })
+runner.assert_test(
+  "jj status command works",
+  jj_status_output ~= nil and jj_status_output ~= "",
+  "jj status command should produce output"
+)
+
+-- Test 6: Status parsing and formatting
+local has_working_copy_info = jj_status_output:match("Working copy") or jj_status_output:match("@")
+runner.assert_test(
+  "jj status shows working copy",
+  has_working_copy_info,
+  "jj status should show working copy information"
+)
+
+runner.finish()

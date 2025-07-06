@@ -1,38 +1,28 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Test documentation creation and format
-vim.cmd("set rtp+=.")
-vim.cmd("runtime plugin/jj-fugitive.lua")
-
-local test_results = {}
-local function assert_test(name, condition, message)
-  if condition then
-    print("✅ PASS: " .. name)
-    table.insert(test_results, { name = name, passed = true })
-  else
-    print("❌ FAIL: " .. name .. " - " .. (message or ""))
-    table.insert(test_results, { name = name, passed = false, message = message })
-  end
-end
-
-print("🚀 === jj-fugitive Documentation Tests ===")
+local runner = require("tests.test_runner")
+runner.init("jj-fugitive Documentation Tests")
 
 -- Test 1: Check if doc directory exists
 local doc_dir = vim.fn.getcwd() .. "/doc"
 local doc_exists = vim.fn.isdirectory(doc_dir) == 1
-assert_test("doc/ directory exists", doc_exists, "doc/ directory should exist for vim help files")
+runner.assert_test(
+  "doc/ directory exists",
+  doc_exists,
+  "doc/ directory should exist for vim help files"
+)
 
 -- Test 2: Check if help file exists
 local help_file = doc_dir .. "/jj-fugitive.txt"
 local help_exists = vim.fn.filereadable(help_file) == 1
-assert_test("jj-fugitive.txt help file exists", help_exists, "Help file should exist")
+runner.assert_test("jj-fugitive.txt help file exists", help_exists, "Help file should exist")
 
 if help_exists then
   -- Test 3: Read and validate help file content
   local content = table.concat(vim.fn.readfile(help_file), "\n")
 
   -- Test basic vim help format
-  assert_test(
+  runner.assert_test(
     "Help file has proper header",
     content:match("*jj%-fugitive%.txt*") and content:match("*jj%-fugitive*"),
     "Help file should have proper vim help tags"
@@ -54,7 +44,7 @@ if help_exists then
   }
 
   for _, section in ipairs(required_sections) do
-    assert_test(
+    runner.assert_test(
       string.format("Help file contains %s section", section),
       content:find(section, 1, true),
       string.format("Help file should contain %s section", section)
@@ -64,7 +54,7 @@ if help_exists then
   -- Test command documentation
   local commands = { ":J" }
   for _, cmd in ipairs(commands) do
-    assert_test(
+    runner.assert_test(
       string.format("Help file documents %s command", cmd),
       content:find(cmd, 1, true),
       string.format("Help file should document %s command", cmd)
@@ -74,7 +64,7 @@ if help_exists then
   -- Test keybinding documentation
   local keybindings = { "<CR>", "D", "dv", "ds", "R", "g?", "[c", "]c" }
   for _, key in ipairs(keybindings) do
-    assert_test(
+    runner.assert_test(
       string.format("Help file documents %s keybinding", key),
       content:find(key, 1, true),
       string.format("Help file should document %s keybinding", key)
@@ -90,7 +80,7 @@ if help_exists then
   }
 
   for _, tag in ipairs(help_tags) do
-    assert_test(
+    runner.assert_test(
       string.format("Help file has %s tag", tag),
       content:find(vim.pesc(tag), 1, false),
       string.format("Help file should have %s tag for cross-references", tag)
@@ -98,7 +88,7 @@ if help_exists then
   end
 
   -- Test vim help file format (ends with vim modeline)
-  assert_test(
+  runner.assert_test(
     "Help file has vim modeline",
     content:match("vim:.*ft=help"),
     "Help file should end with vim modeline for proper formatting"
@@ -108,7 +98,7 @@ if help_exists then
   local lines = vim.split(content, "\n")
   local line_count = #lines
 
-  assert_test(
+  runner.assert_test(
     "Help file has substantial content",
     line_count > 50,
     "Help file should have substantial documentation content"
@@ -124,7 +114,7 @@ if help_exists then
     end
   end
 
-  assert_test(
+  runner.assert_test(
     "Help file has sufficient help tags",
     tag_count >= 10,
     string.format("Help file should have at least 10 help tags, found %d", tag_count)
@@ -137,7 +127,7 @@ if help_exists then
     vim.cmd("helptags " .. doc_dir)
   end)
 
-  assert_test(
+  runner.assert_test(
     "Help tags can be generated",
     success,
     "vim should be able to generate help tags from the help file"
@@ -146,44 +136,26 @@ if help_exists then
   -- Check if tags file was created
   local tags_file = doc_dir .. "/tags"
   local tags_exists = vim.fn.filereadable(tags_file) == 1
-  assert_test("Help tags file created", tags_exists, "tags file should be created by helptags")
+  runner.assert_test(
+    "Help tags file created",
+    tags_exists,
+    "tags file should be created by helptags"
+  )
 end
 
--- Summary
-print("\n📊 === Documentation Test Results Summary ===")
-local passed = 0
-local total = #test_results
-
-for _, result in ipairs(test_results) do
-  if result.passed then
-    passed = passed + 1
-  end
-end
-
-print(string.format("Passed: %d/%d tests", passed, total))
-
-if passed == total then
-  print("🎉 All documentation tests passed!")
-  print("✅ Vim-style help documentation created successfully")
-  print("")
-  print("Documentation features:")
-  print("  • Complete vim help file in doc/jj-fugitive.txt")
-  print("  • Proper vim help tags and cross-references")
-  print("  • Comprehensive command and keybinding documentation")
-  print("  • Examples and troubleshooting sections")
-  print("  • Integration with vim's help system")
-  print("")
-  print("Users can now access help with:")
-  print("  :help jj-fugitive")
-  print("  :help jj-fugitive-status")
-  print("  :help :J")
-  os.exit(0)
-else
-  print("💥 Some documentation tests failed!")
-  for _, result in ipairs(test_results) do
-    if not result.passed then
-      print("  ❌ " .. result.name .. ": " .. (result.message or ""))
-    end
-  end
-  os.exit(1)
-end
+runner.finish({
+  "🎉 All documentation tests passed!",
+  "✅ Vim-style help documentation created successfully",
+  "",
+  "Documentation features:",
+  "  • Complete vim help file in doc/jj-fugitive.txt",
+  "  • Proper vim help tags and cross-references",
+  "  • Comprehensive command and keybinding documentation",
+  "  • Examples and troubleshooting sections",
+  "  • Integration with vim's help system",
+  "",
+  "Users can now access help with:",
+  "  :help jj-fugitive",
+  "  :help jj-fugitive-status",
+  "  :help :J",
+})

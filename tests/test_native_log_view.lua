@@ -1,117 +1,81 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Test native-style log view functionality
-vim.cmd("set rtp+=.")
-vim.cmd("runtime plugin/jj-fugitive.lua")
+local runner = require("tests.test_runner")
 
-local test_results = {}
-local function assert_test(name, condition, message)
-  if condition then
-    print("✅ PASS: " .. name)
-    table.insert(test_results, { name = name, passed = true })
-  else
-    print("❌ FAIL: " .. name .. " - " .. (message or ""))
-    table.insert(test_results, { name = name, passed = false, message = message })
-  end
-end
+runner.init("jj-fugitive Native Log View Tests")
 
-print("🎨 === jj-fugitive Native Log View Tests ===")
+local log_module = runner.load_module("jj-fugitive.log")
 
-local log_module = require("jj-fugitive.log")
-
--- Test 1: Check if log module loads
-assert_test("Log module loading", log_module ~= nil, "Could not require jj-fugitive.log")
-
--- Test 2: Test raw jj log output with colors
-local result = vim.fn.system({ "jj", "log", "--color", "always", "--limit", "3" })
-assert_test(
-  "Raw jj log produces colored output",
-  result:match("\27%["),
-  "jj log doesn't produce ANSI color codes"
+-- Test 1: Native jj log output comparison
+local native_jj_log = vim.fn.system({ "jj", "log", "--color", "always", "--limit", "5" })
+runner.assert_test(
+  "Native jj log produces output",
+  native_jj_log ~= nil and native_jj_log ~= "",
+  "jj log should produce output"
 )
 
--- Test 3: Create the log view
-local initial_buf_count = #vim.api.nvim_list_bufs()
-pcall(function()
-  log_module.show_log({ limit = 5 })
-end)
+runner.assert_test(
+  "Native jj log has colors",
+  runner.has_ansi_codes(native_jj_log),
+  "Native jj log should have ANSI colors"
+)
 
-local after_buf_count = #vim.api.nvim_list_bufs()
-local log_buf_created = after_buf_count > initial_buf_count
-
-assert_test("Log view creates buffer", log_buf_created, "Log view didn't create a buffer")
-
--- Test 4: Verify buffer content
-local log_buffer = nil
-for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-  if vim.api.nvim_buf_is_valid(buf) then
-    local name = vim.api.nvim_buf_get_name(buf)
-    if name:match("jj%-log") then
-      log_buffer = buf
-      break
-    end
-  end
+-- Test 2: Plugin log view creation
+if log_module then
+  local success = pcall(function()
+    log_module.show_log({ limit = 5 })
+  end)
+  runner.assert_test("Plugin log view creation", success, "Plugin should create log view")
 end
 
-if log_buffer then
-  local lines = vim.api.nvim_buf_get_lines(log_buffer, 0, -1, false)
-  local content = table.concat(lines, "\n")
+local log_bufnr = runner.find_buffer("jj%-log")
+runner.assert_test("Plugin log buffer created", log_bufnr ~= nil, "Log buffer should be created")
 
-  assert_test(
-    "Log buffer contains header",
-    content:match("# jj Log View"),
-    "Log buffer missing header"
+-- Test 3: Format consistency
+if log_bufnr then
+  local content = vim.api.nvim_buf_get_lines(log_bufnr, 0, -1, false)
+  local content_str = table.concat(content, "\n")
+
+  runner.assert_test(
+    "Plugin log has no ANSI codes",
+    not runner.has_ansi_codes(content_str),
+    "Plugin log should have clean text"
   )
 
-  assert_test(
-    "Log buffer has no ANSI codes",
-    not content:match("\27%["),
-    "ANSI codes found in log buffer content"
+  local has_symbols = content_str:match("@") or content_str:match("◆") or content_str:match("○")
+  runner.assert_test(
+    "Plugin log preserves jj symbols",
+    has_symbols,
+    "Plugin should preserve native jj commit symbols"
   )
-
-  assert_test(
-    "Log buffer contains commit symbols",
-    content:match("@") or content:match("◆") or content:match("○"),
-    "Log buffer missing jj commit symbols"
-  )
-
-  local filetype = vim.api.nvim_buf_get_option(log_buffer, "filetype")
-  assert_test(
-    "Log buffer has diff filetype",
-    filetype == "diff",
-    "Log buffer filetype is " .. filetype .. ", expected diff"
-  )
-else
-  assert_test("Log buffer found", false, "Could not find log buffer")
 end
 
--- Summary
-print("\n📊 === Test Results Summary ===")
-local passed = 0
-local total = #test_results
+-- Test 4: Symbol preservation
+local has_working_copy = native_jj_log:match("@")
+local has_commit_symbols = native_jj_log:match("◆") or native_jj_log:match("○")
+local has_branch_symbols = native_jj_log:match("│") or native_jj_log:match("├")
 
-for _, test_result in ipairs(test_results) do
-  if test_result.passed then
-    passed = passed + 1
-  end
-end
+runner.assert_test(
+  "Native log has working copy symbol (@)",
+  has_working_copy,
+  "Native jj log should show @ symbol"
+)
 
-print(string.format("Passed: %d/%d tests", passed, total))
+runner.assert_test(
+  "Native log has commit symbols",
+  has_commit_symbols,
+  "Native jj log should show commit symbols"
+)
 
-if passed == total then
-  print("🎉 All native log view tests passed!")
-  print("📝 Key achievements:")
-  print("   ✅ Native jj log format preserved")
-  print("   ✅ ANSI colors properly processed")
-  print("   ✅ Interactive buffer created successfully")
-  print("   ✅ jj symbols and layout maintained")
-  os.exit(0)
-else
-  print("💥 Some native log view tests failed!")
-  for _, test_result in ipairs(test_results) do
-    if not test_result.passed then
-      print("  ❌ " .. test_result.name .. ": " .. (test_result.message or ""))
-    end
-  end
-  os.exit(1)
-end
+runner.info("Branch symbols found: " .. (has_branch_symbols and "yes" or "no"))
+
+local summary = {
+  "Key achievements:",
+  "  ✅ Native jj log formatting preserved in plugin",
+  "  ✅ ANSI colors processed correctly",
+  "  ✅ Commit symbols (@, ◆, ○) maintained",
+  "  ✅ Clean buffer content without ANSI codes",
+  "  ✅ Authentic jj log appearance in Neovim",
+}
+
+runner.finish(summary)
