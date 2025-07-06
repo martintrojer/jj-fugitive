@@ -1033,5 +1033,6 @@ end
 
 -- Export show_commit_details for use by other modules
 M.show_commit_details = show_commit_details
+M.show_commit_diff = show_commit_diff
 
 return M
