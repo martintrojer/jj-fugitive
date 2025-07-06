@@ -130,7 +130,7 @@ local function setup_commit_detail_keymaps(bufnr)
 
   -- Quit
   vim.keymap.set("n", "q", function()
-    vim.cmd("bdelete")
+    vim.cmd("bdelete!")
   end, opts)
 end
 
