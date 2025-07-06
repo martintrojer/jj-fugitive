@@ -1,15 +1,14 @@
 #!/usr/bin/env -S nvim --headless -l
 
--- Simple CI test
-print("🚀 Simple CI Test Starting")
-print("✅ Lua execution works")
+-- Simple CI test using common test runner
+local runner = require("tests.test_runner")
+
+runner.init("Simple CI Test")
+
+runner.assert_test("Lua execution works", true)
 
 -- Test basic system command
-local jj_result = os.execute("jj --version")
-if jj_result == 0 then
-  print("✅ jj command available")
-else
-  print("❌ jj command failed with code: " .. tostring(jj_result))
-end
+local jj_result = os.execute("jj --version > /dev/null 2>&1")
+runner.assert_test("jj command available", jj_result == 0, "jj command failed")
 
-print("🎉 Simple CI test completed")
+runner.finish("🎉 Simple CI test completed")

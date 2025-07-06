@@ -137,22 +137,26 @@ failed_tests=()
 echo "📋 Discovering test files..."
 test_files=()
 while IFS= read -r -d '' file; do
-    # Skip manual tests, demos, and non-executable files
-    if [[ "$file" == *"manual_test"* ]] || [[ "$file" == *"demo_"* ]]; then
-        echo "⏭️  Skipping: $(basename "$file") (manual/demo)"
+    # Skip manual tests, demos, and library files
+    if [[ "$file" == *"manual_test"* ]] || [[ "$file" == *"demo_"* ]] || [[ "$(basename "$file")" == "test_runner.lua" ]]; then
+        echo "⏭️  Skipping: $(basename "$file") (manual/demo/library)"
         continue
     fi
     
-    # Check if file is executable
-    if [[ -x "$file" ]]; then
-        test_files+=("$file")
-        echo "✓ Found: $(basename "$file")"
+    # Check if file has proper shebang for execution
+    if head -n1 "$file" | grep -q "^#!/.*nvim.*-l" || head -n1 "$file" | grep -q "^#!/usr/bin/env"; then
+        if [[ -x "$file" ]]; then
+            test_files+=("$file")
+            echo "✓ Found: $(basename "$file")"
+        else
+            echo "⚠️  Found non-executable: $(basename "$file")"
+            # Make it executable
+            chmod +x "$file"
+            test_files+=("$file")
+            echo "✓ Made executable: $(basename "$file")"
+        fi
     else
-        echo "⚠️  Found non-executable: $(basename "$file")"
-        # Make it executable
-        chmod +x "$file"
-        test_files+=("$file")
-        echo "✓ Made executable: $(basename "$file")"
+        echo "⏭️  Skipping non-executable file: $(basename "$file")"
     fi
 done < <(find tests/ -name "test_*.lua" -print0 | sort -z)
 
