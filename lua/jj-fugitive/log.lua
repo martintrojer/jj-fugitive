@@ -3,6 +3,9 @@ local M = {}
 -- Import shared ANSI parsing utilities
 local ansi = require("jj-fugitive.ansi")
 
+-- Forward declaration for side-by-side diff function
+local show_commit_diff_sidebyside
+
 -- Get native jj log output with colors preserved
 local function get_jj_log(options)
   options = options or {}
@@ -273,6 +276,12 @@ local function show_commit_diff(commit_id, opts)
     return
   end
 
+  -- For side-by-side diff, we need to handle it differently
+  if opts.sidebyside then
+    show_commit_diff_sidebyside(commit_id)
+    return
+  end
+
   -- Show diff for commit using repository-aware command with color and git format
   local main_module = require("jj-fugitive.init")
   local result = main_module.run_jj_command_from_module({
@@ -348,6 +357,121 @@ local function show_commit_diff(commit_id, opts)
   vim.keymap.set("n", "q", function()
     vim.cmd("close")
   end, { buffer = bufnr, noremap = true, silent = true })
+end
+
+-- Show side-by-side diff for commit
+function show_commit_diff_sidebyside(commit_id)
+  if not commit_id then
+    vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
+    return
+  end
+
+  -- Get the list of files changed in this commit
+  local main_module = require("jj-fugitive.init")
+  local files_result = main_module.run_jj_command_from_module({
+    "diff",
+    "--name-only",
+    "-r",
+    commit_id,
+  })
+
+  if not files_result or files_result:match("^%s*$") then
+    vim.api.nvim_echo({ { "No files changed in commit " .. commit_id, "WarningMsg" } }, false, {})
+    return
+  end
+
+  -- Get the first changed file for side-by-side view
+  local files = vim.split(files_result, "\n")
+  local first_file = nil
+  for _, file in ipairs(files) do
+    if file:match("%S") then -- non-empty line
+      first_file = file
+      break
+    end
+  end
+
+  if not first_file then
+    vim.api.nvim_echo(
+      { { "No valid files found in commit " .. commit_id, "WarningMsg" } },
+      false,
+      {}
+    )
+    return
+  end
+
+  -- Show side-by-side diff for the first file in this commit
+  vim.api.nvim_echo({
+    { "Side-by-side diff for commit " .. commit_id, "MoreMsg" },
+    { " (file: " .. first_file .. ")", "Comment" },
+  }, false, {})
+
+  -- Get file content at the commit and its parent
+  local commit_content = main_module.run_jj_command_from_module({
+    "file",
+    "show",
+    first_file,
+    "-r",
+    commit_id,
+  })
+
+  local parent_content = main_module.run_jj_command_from_module({
+    "file",
+    "show",
+    first_file,
+    "-r",
+    commit_id .. "-",
+  })
+
+  -- Handle case where file is new or deleted
+  if not parent_content then
+    parent_content = "" -- File was newly added
+  end
+  if not commit_content then
+    commit_content = "" -- File was deleted
+  end
+
+  -- Create side-by-side buffers in a new tab
+  vim.cmd("tabnew")
+
+  -- Left buffer (parent/before)
+  local left_bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_name(left_bufnr, string.format("%s@%s- (parent)", first_file, commit_id))
+  vim.api.nvim_buf_set_lines(left_bufnr, 0, -1, false, vim.split(parent_content, "\n"))
+  vim.api.nvim_buf_set_option(left_bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(left_bufnr, "readonly", true)
+
+  -- Right buffer (commit/after)
+  local right_bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_name(right_bufnr, string.format("%s@%s (commit)", first_file, commit_id))
+  vim.api.nvim_buf_set_lines(right_bufnr, 0, -1, false, vim.split(commit_content, "\n"))
+  vim.api.nvim_buf_set_option(right_bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(right_bufnr, "readonly", true)
+
+  -- Set up side-by-side layout
+  vim.cmd("vsplit")
+  vim.api.nvim_set_current_buf(left_bufnr)
+  vim.cmd("wincmd l")
+  vim.api.nvim_set_current_buf(right_bufnr)
+
+  -- Enable diff mode for both buffers
+  vim.cmd("wincmd h")
+  vim.cmd("diffthis")
+  vim.cmd("wincmd l")
+  vim.cmd("diffthis")
+
+  -- Set up keymaps for both buffers
+  local function setup_commit_diff_keymaps(bufnr)
+    local opts_local = { buffer = bufnr, noremap = true, silent = true }
+    vim.keymap.set("n", "q", function()
+      vim.cmd("tabclose")
+    end, opts_local)
+    vim.keymap.set("n", "b", function()
+      vim.cmd("tabclose")
+    end, opts_local)
+  end
+
+  setup_commit_diff_keymaps(left_bufnr)
+  setup_commit_diff_keymaps(right_bufnr)
 end
 
 -- Expand log view with more commits using -r .. flag with increased limit
