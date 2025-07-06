@@ -201,10 +201,8 @@ local function show_commit_details(commit_id, opts)
   vim.cmd("split")
   vim.api.nvim_set_current_buf(bufnr)
 
-  -- Setup close keymap
-  vim.keymap.set("n", "q", function()
-    vim.cmd("close")
-  end, { buffer = bufnr, noremap = true, silent = true })
+  -- Setup navigation keymaps
+  setup_commit_detail_keymaps(bufnr)
 end
 
 -- Edit at commit (jj edit)
@@ -353,10 +351,8 @@ local function show_commit_diff(commit_id, opts)
   vim.cmd("split")
   vim.api.nvim_set_current_buf(bufnr)
 
-  -- Setup close keymap
-  vim.keymap.set("n", "q", function()
-    vim.cmd("close")
-  end, { buffer = bufnr, noremap = true, silent = true })
+  -- Setup navigation keymaps
+  setup_commit_detail_keymaps(bufnr)
 end
 
 -- Show side-by-side diff for commit
