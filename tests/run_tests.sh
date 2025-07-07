@@ -63,6 +63,30 @@ if [[ -d "$ORIGINAL_DIR/doc" ]]; then
     cp -r "$ORIGINAL_DIR/doc" .
 fi
 
+# Create enough commits for meaningful log tests
+echo "🔧 Creating test commit history..."
+for i in {1..25}; do
+    echo "Test commit $i content" > "test_file_$i.txt"
+    if ! jj file track "test_file_$i.txt" >/dev/null 2>&1; then
+        echo "⚠️  Warning: Failed to track test_file_$i.txt"
+    fi
+    if ! jj describe -m "Test commit $i: Add test_file_$i.txt" >/dev/null 2>&1; then
+        echo "⚠️  Warning: Failed to describe commit $i"
+    fi
+    if ! jj new >/dev/null 2>&1; then
+        echo "⚠️  Warning: Failed to create new commit $i"
+    fi
+done
+echo "✅ Created 25 test commits"
+
+# Verify commit creation
+COMMIT_COUNT=$(jj log --limit 50 2>/dev/null | grep -c "@\|◆\|○" || echo "0")
+echo "📊 Verification: Found $COMMIT_COUNT commits in repository"
+
+if [ "$COMMIT_COUNT" -lt 5 ]; then
+    echo "⚠️  Warning: Only $COMMIT_COUNT commits found, tests may behave unexpectedly"
+fi
+
 # Set up Neovim runtime path for the temp repo
 export NVIM_TEST_TEMP_REPO="$TEMP_REPO_DIR/test-repo"
 
