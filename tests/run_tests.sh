@@ -67,12 +67,12 @@ fi
 echo "🔧 Creating test commit history..."
 for i in {1..25}; do
     echo "Test commit $i content" > "test_file_$i.txt"
-    # jj automatically tracks new files, so no need to explicitly track
-    if ! jj describe -m "Test commit $i: Add test_file_$i.txt" >/dev/null 2>&1; then
-        echo "⚠️  Warning: Failed to describe commit $i"
-    fi
-    if ! jj new >/dev/null 2>&1; then
-        echo "⚠️  Warning: Failed to create new commit $i"
+    # Use jj commit to create a proper commit with the file
+    if ! jj commit -m "Test commit $i: Add test_file_$i.txt" >/dev/null 2>&1; then
+        echo "⚠️  Warning: Failed to commit $i"
+        # Fallback: try describe then new
+        jj describe -m "Test commit $i: Add test_file_$i.txt" >/dev/null 2>&1
+        jj new >/dev/null 2>&1
     fi
 done
 echo "✅ Created 25 test commits"
