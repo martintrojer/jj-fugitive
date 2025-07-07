@@ -22,7 +22,7 @@ vim.fn.system({ "jj", "file", "track", test_file })
 vim.fn.system({ "jj", "describe", "-m", "Add test file for format consistency" })
 
 -- Modify file to create diff content
-file = io.open(test_file, "w")
+local file = io.open(test_file, "w")
 if file then
   file:write("Modified Line 1\nLine 2\nLine 3\nLine 4 added\n")
   file:close()

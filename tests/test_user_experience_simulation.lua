@@ -5,7 +5,6 @@ local runner = require("tests.test_runner")
 runner.init("jj-fugitive User Experience Simulation")
 
 -- Test 1: Load all core modules
-local main_module = runner.load_module("jj-fugitive")
 local status_module = runner.load_module("jj-fugitive.status")
 local log_module = runner.load_module("jj-fugitive.log")
 local diff_module = runner.load_module("jj-fugitive.diff")
