@@ -136,6 +136,19 @@ local function setup_diff_keymaps(bufnr, filename)
     end
   end, opts)
 
+  -- Capital D: Show side-by-side diff (like vim-fugitive)
+  vim.keymap.set("n", "D", function()
+    if filename then
+      M.show_file_diff_sidebyside(filename)
+    else
+      vim.api.nvim_echo(
+        { { "Side-by-side diff requires a specific file", "WarningMsg" } },
+        false,
+        {}
+      )
+    end
+  end, opts)
+
   -- Add vim diff navigation (vim-fugitive standard)
   vim.keymap.set("n", "[c", function()
     vim.cmd("normal! [c")
@@ -156,6 +169,7 @@ local function setup_diff_keymaps(bufnr, filename)
       "",
       "Operations:",
       "  q       - Close diff view",
+      "  D       - Show side-by-side diff",
       "  Tab     - Toggle between unified/side-by-side view",
       "  s       - Switch to side-by-side view",
       "  u       - Switch to unified view",
