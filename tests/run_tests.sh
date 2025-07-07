@@ -67,9 +67,7 @@ fi
 echo "🔧 Creating test commit history..."
 for i in {1..25}; do
     echo "Test commit $i content" > "test_file_$i.txt"
-    if ! jj file track "test_file_$i.txt" >/dev/null 2>&1; then
-        echo "⚠️  Warning: Failed to track test_file_$i.txt"
-    fi
+    # jj automatically tracks new files, so no need to explicitly track
     if ! jj describe -m "Test commit $i: Add test_file_$i.txt" >/dev/null 2>&1; then
         echo "⚠️  Warning: Failed to describe commit $i"
     fi
