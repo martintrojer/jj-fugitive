@@ -388,8 +388,10 @@ end
 
 -- Get list of bookmarks for completion
 function M.get_bookmarks()
-  local result = vim.fn.system({ "jj", "bookmark", "list" })
-  if vim.v.shell_error ~= 0 then
+  -- Use repo-aware runner to ensure correct repository context
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "bookmark", "list" })
+  if not result then
     return {}
   end
 
@@ -410,8 +412,10 @@ end
 
 -- Get list of changed files for completion
 function M.get_changed_files()
-  local result = vim.fn.system({ "jj", "status" })
-  if vim.v.shell_error ~= 0 then
+  -- Use repo-aware runner to ensure correct repository context from any subdir
+  local main_module = require("jj-fugitive.init")
+  local result = main_module.run_jj_command_from_module({ "status" })
+  if not result then
     return {}
   end
 

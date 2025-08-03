@@ -1,19 +1,29 @@
 local M = {}
 
+-- Cache for repository roots to avoid repeated filesystem traversal
+local repo_root_cache = {}
+
 -- Find the jj repository root starting from a given directory
 local function find_jj_root(start_path)
-  local path = start_path or vim.fn.getcwd()
-
-  -- Convert to absolute path and normalize (remove trailing slash)
-  path = vim.fn.fnamemodify(path, ":p")
-  if path:sub(-1) == "/" and path ~= "/" then
-    path = path:sub(1, -2)
+  -- Normalize the cache key to an absolute path without trailing slash
+  local key = vim.fn.fnamemodify(start_path or vim.fn.getcwd(), ":p")
+  if key:sub(-1) == "/" and key ~= "/" then
+    key = key:sub(1, -2)
   end
+
+  -- Check cache first (positive or negative)
+  if repo_root_cache[key] ~= nil then
+    return repo_root_cache[key] or nil
+  end
+
+  -- Walk up the directory tree looking for .jj directory using a normalized path
+  local path = key
 
   -- Walk up the directory tree looking for .jj directory
   while path ~= "/" and path ~= "" do
     local jj_dir = path .. "/.jj"
     if vim.fn.isdirectory(jj_dir) == 1 then
+      repo_root_cache[key] = path
       return path
     end
 
@@ -25,6 +35,8 @@ local function find_jj_root(start_path)
     path = parent
   end
 
+  -- Cache negative result (nil) as false to distinguish from uncached
+  repo_root_cache[key] = false
   return nil
 end
 
@@ -66,8 +78,9 @@ local function run_jj_command(args, options)
   end
 
   -- Run the command from the repository root
+  -- Use local-directory change to avoid affecting other windows/tabs
   local old_cwd = vim.fn.getcwd()
-  local success = pcall(vim.cmd, "cd " .. vim.fn.fnameescape(repo_root))
+  local success = pcall(vim.cmd, "lcd " .. vim.fn.fnameescape(repo_root))
   if not success then
     vim.api.nvim_err_writeln("Failed to change to repository root: " .. repo_root)
     return nil
@@ -77,7 +90,7 @@ local function run_jj_command(args, options)
   local exit_code = vim.v.shell_error
 
   -- Restore original working directory
-  pcall(vim.cmd, "cd " .. vim.fn.fnameescape(old_cwd))
+  pcall(vim.cmd, "lcd " .. vim.fn.fnameescape(old_cwd))
 
   if exit_code ~= 0 then
     vim.api.nvim_err_writeln("jj command failed: " .. result)
@@ -557,6 +570,45 @@ end
 -- Export is_interactive_command for testing
 function M.is_interactive_command(cmd_parts)
   return is_interactive_command(cmd_parts)
+end
+
+-- Lightweight help entrypoint: opens plugin help or jj command help
+function M.jhelp(args)
+  -- No args: open vim help for this plugin
+  if not args or args == "" then
+    vim.cmd("help jj-fugitive")
+    return
+  end
+
+  -- With args: show `jj <args> --help` output in a scratch buffer at repo root
+  local parts = vim.split(args, "%s+", { trimempty = true })
+  local cmd = {}
+  for _, p in ipairs(parts) do
+    table.insert(cmd, p)
+  end
+  table.insert(cmd, "--help")
+
+  local out = run_jj_command(cmd)
+  if not out then
+    return
+  end
+
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
+  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
+  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
+  vim.api.nvim_buf_set_name(bufnr, "jj-help")
+
+  local lines = vim.split(out, "\n")
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(bufnr, "filetype", "help")
+
+  vim.cmd("split")
+  vim.api.nvim_set_current_buf(bufnr)
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.cmd("setlocal statusline=jj-help")
+  end)
 end
 
 return M

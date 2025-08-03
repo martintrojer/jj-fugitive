@@ -71,7 +71,7 @@ local function extract_commit_ids_from_log(output)
           clean_line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
       end
 
-      if commit_id and #commit_id == 8 then
+      if commit_id and #commit_id >= 8 then
         table.insert(commit_data, {
           line_number = i,
           commit_id = commit_id,
