@@ -165,10 +165,8 @@ local function show_commit_details(commit_id, opts)
   -- If update_current is true, update the current buffer instead of creating new window
   if opts.update_current then
     local current_bufnr = vim.api.nvim_get_current_buf()
-    local current_bufname = vim.api.nvim_buf_get_name(current_bufnr)
-
     -- Only update if we're in a jj-related buffer
-    if current_bufname:match("jj%-") then
+    if require("jj-fugitive.ui").is_jj_buffer(current_bufnr) then
       -- Store original buffer info for navigation back
       local previous_view = opts.previous_view or "log"
       vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", previous_view)
@@ -316,10 +314,8 @@ local function show_commit_diff(commit_id, opts)
   -- If update_current is true, update the current buffer instead of creating new window
   if opts.update_current then
     local current_bufnr = vim.api.nvim_get_current_buf()
-    local current_bufname = vim.api.nvim_buf_get_name(current_bufnr)
-
     -- Only update if we're in a jj-related buffer
-    if current_bufname:match("jj%-") then
+    if require("jj-fugitive.ui").is_jj_buffer(current_bufnr) then
       -- Store original buffer info for navigation back
       local previous_view = opts.previous_view or "log"
       vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", previous_view)
@@ -950,10 +946,9 @@ function M.show_log(options)
   -- If update_current is true, update the current buffer instead of creating new one
   if options.update_current then
     bufnr = vim.api.nvim_get_current_buf()
-    local current_bufname = vim.api.nvim_buf_get_name(bufnr)
 
     -- Only update if we're in a jj-related buffer
-    if current_bufname:match("jj%-") then
+    if require("jj-fugitive.ui").is_jj_buffer(bufnr) then
       -- Update buffer content
       ansi.update_colored_buffer(bufnr, log_output, header_lines, {
         prefix = "JjLog",
@@ -999,20 +994,7 @@ function M.show_log(options)
 
   if not options.update_current then
     -- Open in current window or split
-    local existing_win = nil
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-      if vim.api.nvim_win_get_buf(win) == bufnr then
-        existing_win = win
-        break
-      end
-    end
-
-    if existing_win then
-      vim.api.nvim_set_current_win(existing_win)
-    else
-      vim.cmd("split")
-      vim.api.nvim_set_current_buf(bufnr)
-    end
+    require("jj-fugitive.ui").ensure_buffer_visible(bufnr)
   end
 
   -- Position cursor on first commit line (skip headers)

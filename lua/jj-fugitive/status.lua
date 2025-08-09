@@ -408,6 +408,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
 
   -- Show help (vim-fugitive standard)
   vim.keymap.set("n", "g?", function()
+    local ui = require("jj-fugitive.ui")
     local help_lines = {
       "# jj-fugitive Status Window Help",
       "",
@@ -445,45 +446,11 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       "Press any key to close help...",
     }
 
-    local help_buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, help_lines)
-    vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
-    vim.api.nvim_buf_set_option(help_buf, "filetype", "markdown")
-
-    local win_width = vim.api.nvim_get_option("columns")
-    local win_height = vim.api.nvim_get_option("lines")
-    local width = math.min(60, win_width - 4)
-    local height = math.min(#help_lines + 2, win_height - 4)
-
-    local win_opts = {
-      relative = "editor",
-      width = width,
-      height = height,
-      row = (win_height - height) / 2,
-      col = (win_width - width) / 2,
-      style = "minimal",
-      border = "rounded",
-      title = " jj-fugitive Status Help ",
-      title_pos = "center",
-    }
-
-    local help_win = vim.api.nvim_open_win(help_buf, true, win_opts)
-
-    -- Close help on any key
-    vim.keymap.set("n", "<CR>", function()
-      vim.api.nvim_win_close(help_win, true)
-    end, { buffer = help_buf, noremap = true, silent = true })
-
-    vim.keymap.set("n", "<Esc>", function()
-      vim.api.nvim_win_close(help_win, true)
-    end, { buffer = help_buf, noremap = true, silent = true })
-
-    -- Close on any other key
-    for _, key in ipairs({ "q", "g", "?", "o", "D", "l", "R" }) do
-      vim.keymap.set("n", key, function()
-        vim.api.nvim_win_close(help_win, true)
-      end, { buffer = help_buf, noremap = true, silent = true })
-    end
+    ui.show_help_popup(
+      "jj-fugitive Status Help",
+      help_lines,
+      { close_keys = { "q", "g", "?", "o", "D", "l", "R" } }
+    )
   end, opts)
 end
 
@@ -531,20 +498,7 @@ function M.show_status()
   end
 
   -- Open in current window or split
-  local existing_win = nil
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.api.nvim_win_get_buf(win) == bufnr then
-      existing_win = win
-      break
-    end
-  end
-
-  if existing_win then
-    vim.api.nvim_set_current_win(existing_win)
-  else
-    vim.cmd("split")
-    vim.api.nvim_set_current_buf(bufnr)
-  end
+  require("jj-fugitive.ui").ensure_buffer_visible(bufnr)
 
   -- Position cursor on the first file if there are changes
   if #status_info.changes > 0 then

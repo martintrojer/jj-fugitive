@@ -160,6 +160,7 @@ local function setup_diff_keymaps(bufnr, filename)
 
   -- Show help (vim-fugitive uses g?)
   vim.keymap.set("n", "g?", function()
+    local ui = require("jj-fugitive.ui")
     local help_lines = {
       "# jj-fugitive Diff View Help",
       "",
@@ -180,37 +181,7 @@ local function setup_diff_keymaps(bufnr, filename)
       "",
       "Press any key to continue...",
     }
-
-    local help_buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, help_lines)
-    vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
-    vim.api.nvim_buf_set_option(help_buf, "filetype", "markdown")
-
-    local win_width = vim.api.nvim_get_option("columns")
-    local win_height = vim.api.nvim_get_option("lines")
-    local width = math.min(60, win_width - 4)
-    local height = math.min(#help_lines + 2, win_height - 4)
-
-    local win_opts = {
-      relative = "editor",
-      width = width,
-      height = height,
-      row = (win_height - height) / 2,
-      col = (win_width - width) / 2,
-      style = "minimal",
-      border = "rounded",
-    }
-
-    local help_win = vim.api.nvim_open_win(help_buf, true, win_opts)
-
-    -- Close help on any key
-    vim.keymap.set("n", "<CR>", function()
-      vim.api.nvim_win_close(help_win, true)
-    end, { buffer = help_buf, noremap = true, silent = true })
-
-    vim.keymap.set("n", "<Esc>", function()
-      vim.api.nvim_win_close(help_win, true)
-    end, { buffer = help_buf, noremap = true, silent = true })
+    ui.show_help_popup("jj-fugitive Diff Help", help_lines)
   end, opts)
 end
 
@@ -242,7 +213,7 @@ function M.show_file_diff(filename, options)
     local current_bufname = vim.api.nvim_buf_get_name(current_bufnr)
 
     -- Only update if we're in a jj-related buffer
-    if current_bufname:match("jj%-") then
+    if require("jj-fugitive.ui").is_jj_buffer(current_bufnr) then
       -- Create format description for buffer name
       local format_desc = ""
       if options.color_words then
@@ -420,6 +391,7 @@ function M.show_file_diff_sidebyside(filename)
     end, opts)
 
     vim.keymap.set("n", "g?", function()
+      local ui = require("jj-fugitive.ui")
       local help_lines = {
         "# jj-fugitive Side-by-Side Diff Help",
         "",
@@ -435,36 +407,7 @@ function M.show_file_diff_sidebyside(filename)
         "",
         "Press any key to continue...",
       }
-
-      local help_buf = vim.api.nvim_create_buf(false, true)
-      vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, help_lines)
-      vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
-      vim.api.nvim_buf_set_option(help_buf, "filetype", "markdown")
-
-      local win_width = vim.api.nvim_get_option("columns")
-      local win_height = vim.api.nvim_get_option("lines")
-      local width = math.min(60, win_width - 4)
-      local height = math.min(#help_lines + 2, win_height - 4)
-
-      local win_opts = {
-        relative = "editor",
-        width = width,
-        height = height,
-        row = (win_height - height) / 2,
-        col = (win_width - width) / 2,
-        style = "minimal",
-        border = "rounded",
-      }
-
-      local help_win = vim.api.nvim_open_win(help_buf, true, win_opts)
-
-      vim.keymap.set("n", "<CR>", function()
-        vim.api.nvim_win_close(help_win, true)
-      end, { buffer = help_buf, noremap = true, silent = true })
-
-      vim.keymap.set("n", "<Esc>", function()
-        vim.api.nvim_win_close(help_win, true)
-      end, { buffer = help_buf, noremap = true, silent = true })
+      ui.show_help_popup("jj-fugitive Diff (Side-by-Side) Help", help_lines)
     end, opts)
   end
 
