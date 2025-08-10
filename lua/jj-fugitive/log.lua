@@ -108,10 +108,10 @@ end
 
 -- Setup keymaps for commit detail view with navigation back to log
 local function setup_commit_detail_keymaps(bufnr)
-  local opts = { buffer = bufnr, noremap = true, silent = true }
+  local ui = require("jj-fugitive.ui")
 
   -- Back to previous view (log or status)
-  vim.keymap.set("n", "b", function()
+  ui.map(bufnr, "n", "b", function()
     local has_previous = pcall(vim.api.nvim_buf_get_var, bufnr, "jj_previous_view")
     if has_previous then
       local previous_view = vim.api.nvim_buf_get_var(bufnr, "jj_previous_view")
@@ -126,12 +126,12 @@ local function setup_commit_detail_keymaps(bufnr)
     else
       M.show_log({ update_current = true })
     end
-  end, opts)
+  end)
 
   -- Quit
-  vim.keymap.set("n", "q", function()
+  ui.map(bufnr, "n", "q", function()
     vim.cmd("bdelete!")
-  end, opts)
+  end)
 end
 
 -- Show commit details with consistent diff formatting
@@ -462,13 +462,13 @@ function show_commit_diff_sidebyside(commit_id)
 
   -- Set up keymaps for both buffers
   local function setup_commit_diff_keymaps(bufnr)
-    local opts_local = { buffer = bufnr, noremap = true, silent = true }
-    vim.keymap.set("n", "q", function()
+    local ui = require("jj-fugitive.ui")
+    ui.map(bufnr, "n", "q", function()
       vim.cmd("tabclose")
-    end, opts_local)
-    vim.keymap.set("n", "b", function()
+    end)
+    ui.map(bufnr, "n", "b", function()
       vim.cmd("tabclose")
-    end, opts_local)
+    end)
   end
 
   setup_commit_diff_keymaps(left_bufnr)
@@ -571,44 +571,44 @@ end
 
 -- Setup log buffer keymaps
 local function setup_log_keymaps(bufnr, commit_data)
-  local opts = { noremap = true, silent = true, buffer = bufnr }
+  local ui = require("jj-fugitive.ui")
 
   -- Show commit details
-  vim.keymap.set("n", "<CR>", function()
+  ui.map(bufnr, "n", "<CR>", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     show_commit_details(commit_id, { update_current = true })
-  end, opts)
+  end)
 
-  vim.keymap.set("n", "o", function()
+  ui.map(bufnr, "n", "o", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     show_commit_details(commit_id, { update_current = true })
-  end, opts)
+  end)
 
   -- Edit at commit
-  vim.keymap.set("n", "e", function()
+  ui.map(bufnr, "n", "e", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     edit_at_commit(commit_id)
-  end, opts)
+  end)
 
   -- New commit after this one
-  vim.keymap.set("n", "n", function()
+  ui.map(bufnr, "n", "n", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     new_after_commit(commit_id)
-  end, opts)
+  end)
 
   -- Rebase onto commit
-  vim.keymap.set("n", "r", function()
+  ui.map(bufnr, "n", "r", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     rebase_onto_commit(commit_id)
-  end, opts)
+  end)
 
   -- Abandon commit
-  vim.keymap.set("n", "A", function()
+  ui.map(bufnr, "n", "A", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
@@ -632,10 +632,10 @@ local function setup_log_keymaps(bufnr, commit_data)
     else
       vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
     end
-  end, opts)
+  end)
 
   -- Squash commit into its parent
-  vim.keymap.set("n", "s", function()
+  ui.map(bufnr, "n", "s", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
@@ -659,10 +659,10 @@ local function setup_log_keymaps(bufnr, commit_data)
     else
       vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
     end
-  end, opts)
+  end)
 
   -- Split commit into two
-  vim.keymap.set("n", "S", function()
+  ui.map(bufnr, "n", "S", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
@@ -686,10 +686,10 @@ local function setup_log_keymaps(bufnr, commit_data)
     else
       vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
     end
-  end, opts)
+  end)
 
   -- Duplicate commit (like "yank")
-  vim.keymap.set("n", "y", function()
+  ui.map(bufnr, "n", "y", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
@@ -713,24 +713,24 @@ local function setup_log_keymaps(bufnr, commit_data)
     else
       vim.api.nvim_echo({ { "No commit selected", "WarningMsg" } }, false, {})
     end
-  end, opts)
+  end)
 
   -- Show unified diff for commit
-  vim.keymap.set("n", "d", function()
+  ui.map(bufnr, "n", "d", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     show_commit_diff(commit_id, { update_current = true })
-  end, opts)
+  end)
 
   -- Show side-by-side diff for commit
-  vim.keymap.set("n", "D", function()
+  ui.map(bufnr, "n", "D", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     show_commit_diff(commit_id, { update_current = true, sidebyside = true })
-  end, opts)
+  end)
 
   -- Toggle between diff and commit details
-  vim.keymap.set("n", "<Tab>", function()
+  ui.map(bufnr, "n", "<Tab>", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     -- Check current buffer to decide what to toggle to
@@ -742,29 +742,29 @@ local function setup_log_keymaps(bufnr, commit_data)
       -- Currently showing log or details, switch to diff
       show_commit_diff(commit_id, { update_current = true })
     end
-  end, opts)
+  end)
 
   -- Close log view
-  vim.keymap.set("n", "q", function()
+  ui.map(bufnr, "n", "q", function()
     vim.cmd("close")
-  end, opts)
+  end)
 
   -- Refresh log
-  vim.keymap.set("n", "R", function()
+  ui.map(bufnr, "n", "R", function()
     M.show_log()
-  end, opts)
+  end)
 
   -- Expand log view (show more commits using -r .. with increased limit)
-  vim.keymap.set("n", "=", function()
+  ui.map(bufnr, "n", "=", function()
     expand_log_view(bufnr)
-  end, opts)
+  end)
 
-  vim.keymap.set("n", "+", function()
+  ui.map(bufnr, "n", "+", function()
     expand_log_view(bufnr)
-  end, opts)
+  end)
 
   -- Navigate to parent revision (vim-fugitive P)
-  vim.keymap.set("n", "P", function()
+  ui.map(bufnr, "n", "P", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
@@ -797,10 +797,10 @@ local function setup_log_keymaps(bufnr, commit_data)
         end
       end
     end
-  end, opts)
+  end)
 
   -- Navigate to next (child) revision (vim-fugitive N)
-  vim.keymap.set("n", "N", function()
+  ui.map(bufnr, "n", "N", function()
     local line = vim.api.nvim_get_current_line()
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
@@ -833,10 +833,10 @@ local function setup_log_keymaps(bufnr, commit_data)
         end
       end
     end
-  end, opts)
+  end)
 
   -- Show help (vim-fugitive standard)
-  vim.keymap.set("n", "g?", function()
+  ui.map(bufnr, "n", "g?", function()
     local help_lines = {
       "# jj-fugitive Log View Help",
       "",
@@ -877,37 +877,8 @@ local function setup_log_keymaps(bufnr, commit_data)
       "Press any key to continue...",
     }
 
-    local help_buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, help_lines)
-    vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
-    vim.api.nvim_buf_set_option(help_buf, "filetype", "markdown")
-
-    local win_width = vim.api.nvim_get_option("columns")
-    local win_height = vim.api.nvim_get_option("lines")
-    local width = math.min(70, win_width - 4)
-    local height = math.min(#help_lines + 2, win_height - 4)
-
-    local win_opts = {
-      relative = "editor",
-      width = width,
-      height = height,
-      row = (win_height - height) / 2,
-      col = (win_width - width) / 2,
-      style = "minimal",
-      border = "rounded",
-    }
-
-    local help_win = vim.api.nvim_open_win(help_buf, true, win_opts)
-
-    -- Close help on any key
-    vim.keymap.set("n", "<CR>", function()
-      vim.api.nvim_win_close(help_win, true)
-    end, { buffer = help_buf, noremap = true, silent = true })
-
-    vim.keymap.set("n", "<Esc>", function()
-      vim.api.nvim_win_close(help_win, true)
-    end, { buffer = help_buf, noremap = true, silent = true })
-  end, opts)
+    require("jj-fugitive.ui").show_help_popup("jj-fugitive Log Help", help_lines, { width = 70 })
+  end)
 end
 
 -- Main function to show log view

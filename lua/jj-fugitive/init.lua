@@ -606,9 +606,7 @@ function M.jhelp(args)
 
   vim.cmd("split")
   vim.api.nvim_set_current_buf(bufnr)
-  vim.api.nvim_buf_call(bufnr, function()
-    vim.cmd("setlocal statusline=jj-help")
-  end)
+  require("jj-fugitive.ui").set_statusline(bufnr, "jj-help")
 end
 
 return M

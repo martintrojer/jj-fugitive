@@ -121,10 +121,10 @@ local function reload_status_content(bufnr)
   return true
 end
 local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore status_info
-  local opts = { noremap = true, silent = true, buffer = bufnr }
+  local ui = require("jj-fugitive.ui")
 
   -- Reload status (vim-fugitive uses R)
-  vim.keymap.set("n", "R", function()
+  ui.map(bufnr, "n", "R", function()
     -- Get current buffer for reload
     local current_buf = vim.api.nvim_get_current_buf()
 
@@ -133,20 +133,20 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     if buf_name:match("jj%-status$") then
       reload_status_content(current_buf)
     end
-  end, opts)
+  end)
 
   -- Commit current changes
-  vim.keymap.set("n", "cc", function()
+  ui.map(bufnr, "n", "cc", function()
     local commit_msg = vim.fn.input("Commit message: ")
     if commit_msg and commit_msg ~= "" then
       local main_module = require("jj-fugitive.init")
       main_module.run_jj_command_from_module({ "commit", "-m", commit_msg })
       M.show_status()
     end
-  end, opts)
+  end)
 
   -- Commit amend (vim-fugitive ca)
-  vim.keymap.set("n", "ca", function()
+  ui.map(bufnr, "n", "ca", function()
     local main_module = require("jj-fugitive.init")
     -- Get current commit description
     local current_desc = main_module.run_jj_command_from_module({
@@ -167,10 +167,10 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       vim.api.nvim_echo({ { "Amended commit description", "MoreMsg" } }, false, {})
       M.show_status()
     end
-  end, opts)
+  end)
 
   -- Commit extend (vim-fugitive ce) - add changes to current commit
-  vim.keymap.set("n", "ce", function()
+  ui.map(bufnr, "n", "ce", function()
     local main_module = require("jj-fugitive.init")
     -- In jj, this is like doing a describe + commit in one step
     local commit_msg = vim.fn.input("Extend commit message: ")
@@ -179,28 +179,28 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       vim.api.nvim_echo({ { "Extended commit with changes", "MoreMsg" } }, false, {})
       M.show_status()
     end
-  end, opts)
+  end)
 
   -- Commit new (vim-fugitive cn) - create new commit after current
-  vim.keymap.set("n", "cn", function()
+  ui.map(bufnr, "n", "cn", function()
     local main_module = require("jj-fugitive.init")
     main_module.run_jj_command_from_module({ "new" })
     vim.api.nvim_echo({ { "Created new commit", "MoreMsg" } }, false, {})
     M.show_status()
-  end, opts)
+  end)
 
   -- Create new change
-  vim.keymap.set("n", "new", function()
+  ui.map(bufnr, "n", "new", function()
     local main_module = require("jj-fugitive.init")
     main_module.run_jj_command_from_module({ "new" })
     M.show_status()
-  end, opts)
+  end)
 
   -- jj-idiomatic file operations (no staging area in jj)
   -- Note: jj automatically tracks all files, no manual tracking needed
 
   -- Restore file from parent revision (jj restore)
-  vim.keymap.set("n", "r", function()
+  ui.map(bufnr, "n", "r", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
@@ -222,10 +222,10 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
         end
       end
     end
-  end, opts)
+  end)
 
   -- Absorb changes into mutable ancestors (jj absorb)
-  vim.keymap.set("n", "a", function()
+  ui.map(bufnr, "n", "a", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
@@ -262,10 +262,10 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
         end
       end
     end
-  end, opts)
+  end)
 
   -- Unified diff view (replaces old D key)
-  vim.keymap.set("n", "d", function()
+  ui.map(bufnr, "n", "d", function()
     local line = vim.api.nvim_get_current_line()
 
     -- Check if it's a file change line (e.g., "M filename")
@@ -288,10 +288,10 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
         previous_view = "status",
       })
     end
-  end, opts)
+  end)
 
   -- Side-by-side diff view
-  vim.keymap.set("n", "D", function()
+  ui.map(bufnr, "n", "D", function()
     local line = vim.api.nvim_get_current_line()
 
     -- Check if it's a file change line (e.g., "M filename")
@@ -314,64 +314,64 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
         previous_view = "status",
       })
     end
-  end, opts)
+  end)
 
   -- Toggle between inline and split diff view
-  vim.keymap.set("n", "<Tab>", function()
+  ui.map(bufnr, "n", "<Tab>", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       require("jj-fugitive.diff").toggle_diff_view(filename)
     end
-  end, opts)
+  end)
 
   -- Open file under cursor (simple file opening)
-  vim.keymap.set("n", "o", function()
+  ui.map(bufnr, "n", "o", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       vim.cmd("edit " .. vim.fn.fnameescape(filename))
     end
-  end, opts)
+  end)
 
   -- Open file in horizontal split
-  vim.keymap.set("n", "s", function()
+  ui.map(bufnr, "n", "s", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       vim.cmd("split " .. vim.fn.fnameescape(filename))
     end
-  end, opts)
+  end)
 
   -- Open file in vertical split (replacing gO)
-  vim.keymap.set("n", "v", function()
+  ui.map(bufnr, "n", "v", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       vim.cmd("vsplit " .. vim.fn.fnameescape(filename))
     end
-  end, opts)
+  end)
 
   -- Open file in new tab (replacing O)
-  vim.keymap.set("n", "t", function()
+  ui.map(bufnr, "n", "t", function()
     local line = vim.api.nvim_get_current_line()
     local filename = line:match("^[A-Z] (.+)")
     if filename then
       vim.cmd("tabedit " .. vim.fn.fnameescape(filename))
     end
-  end, opts)
+  end)
 
   -- Close status buffer
-  vim.keymap.set("n", "q", function()
+  ui.map(bufnr, "n", "q", function()
     vim.cmd("close")
-  end, opts)
+  end)
 
-  vim.keymap.set("n", "gq", function()
+  ui.map(bufnr, "n", "gq", function()
     vim.cmd("close")
-  end, opts)
+  end)
 
   -- Show diff for file under cursor or commit details for commit lines (vim-fugitive standard)
-  vim.keymap.set("n", "<CR>", function()
+  ui.map(bufnr, "n", "<CR>", function()
     local line = vim.api.nvim_get_current_line()
 
     -- Check if it's a file change line (e.g., "M filename")
@@ -399,16 +399,15 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
         previous_view = "status",
       })
     end
-  end, opts)
+  end)
 
   -- Launch log view (use 'l' for log)
-  vim.keymap.set("n", "l", function()
+  ui.map(bufnr, "n", "l", function()
     require("jj-fugitive.log").show_log()
-  end, opts)
+  end)
 
   -- Show help (vim-fugitive standard)
-  vim.keymap.set("n", "g?", function()
-    local ui = require("jj-fugitive.ui")
+  ui.map(bufnr, "n", "g?", function()
     local help_lines = {
       "# jj-fugitive Status Window Help",
       "",
@@ -451,7 +450,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       help_lines,
       { close_keys = { "q", "g", "?", "o", "D", "l", "R" } }
     )
-  end, opts)
+  end)
 end
 
 local function setup_buffer_highlighting(bufnr)
