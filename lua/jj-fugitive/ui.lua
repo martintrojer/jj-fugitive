@@ -52,8 +52,10 @@ end
 function M.show_help_popup(title, lines, opts)
   opts = opts or {}
 
-  local help_buf = M.create_scratch_buffer({ filetype = "markdown", modifiable = false })
+  -- Create as modifiable to insert content, then lock it down
+  local help_buf = M.create_scratch_buffer({ filetype = "markdown", modifiable = true })
   vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, lines or {})
+  vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
 
   local win_width = vim.api.nvim_get_option("columns")
   local win_height = vim.api.nvim_get_option("lines")
