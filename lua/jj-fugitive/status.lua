@@ -18,6 +18,7 @@ local function get_or_create_status_buffer()
   vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
   vim.api.nvim_buf_set_name(bufnr, "jj-status")
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
   return bufnr
 end
 

@@ -96,8 +96,8 @@ end
 
 -- Simple buffer name predicate for jj buffers used by the plugin
 function M.is_jj_buffer(bufnr)
-  local name = vim.api.nvim_buf_get_name(bufnr)
-  return name:match("jj%-") ~= nil
+  local ok, val = pcall(vim.api.nvim_buf_get_var, bufnr, "jj_plugin_buffer")
+  return ok and val == true
 end
 
 -- Set a custom statusline for a buffer

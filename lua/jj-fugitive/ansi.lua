@@ -246,6 +246,9 @@ function M.create_colored_buffer(content, buffer_name, header_lines, options)
   -- Setup highlighting with parsed ANSI colors
   M.setup_diff_highlighting(bufnr, highlights, options)
 
+  -- Mark this as a jj-fugitive plugin buffer to enable safe updates
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
+
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
   return bufnr

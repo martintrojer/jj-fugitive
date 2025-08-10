@@ -302,6 +302,8 @@ local function get_or_create_sidebyside_buffer(name_pattern)
   local unique_name = name_pattern .. " [" .. timestamp .. "]"
   vim.api.nvim_buf_set_name(bufnr, unique_name)
 
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
+
   return bufnr
 end
 
