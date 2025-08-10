@@ -334,8 +334,9 @@ function M.show_file_diff_sidebyside(filename)
     end
   end
 
-  -- Create side-by-side layout
+  -- Create side-by-side layout in a dedicated tab and mark it
   vim.cmd("tabnew")
+  vim.t.jj_sbs_diff = { filename = filename }
 
   -- Left side: original content
   local original_buf = get_or_create_sidebyside_buffer("jj-diff: " .. filename .. " (original)")
@@ -463,15 +464,13 @@ function M.toggle_diff_view(filename)
   end
 
   -- Check current buffer to determine what view we're in
-  local current_bufname = vim.api.nvim_buf_get_name(0)
-
-  -- If we're in a side-by-side view (tab with multiple windows), switch to unified
-  if vim.fn.tabpagenr("$") > 1 and current_bufname:match("jj%-diff.*%(") then
-    -- Close current tab and show unified diff
+  -- Use a tab-scoped marker to detect side-by-side mode
+  if vim.t.jj_sbs_diff then
+    -- Close current sbs tab and show unified diff in previous tab
     vim.cmd("tabclose")
     M.show_file_diff(filename)
   else
-    -- We're in unified view or somewhere else, switch to side-by-side
+    -- Switch to side-by-side in a dedicated tab
     M.show_file_diff_sidebyside(filename)
   end
 end

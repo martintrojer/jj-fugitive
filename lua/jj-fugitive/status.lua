@@ -482,19 +482,22 @@ function M.show_status()
 
   local bufnr = get_or_create_status_buffer()
 
-  -- Check if keymaps are already set up by looking for the 'R' mapping (changed from 'r')
-  local existing_keymap = vim.fn.maparg("R", "n", false, true)
-  local is_new_buffer = not existing_keymap or existing_keymap.buffer ~= 1
+  -- Check if keymaps/highlighting have already been set for this status buffer
+  local keymaps_already_set = false
+  pcall(function()
+    keymaps_already_set = vim.api.nvim_buf_get_var(bufnr, "jj_status_keymaps") == true
+  end)
 
   -- Set buffer content
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
-  -- Setup keymaps and highlighting only for new buffers
-  if is_new_buffer then
+  -- Setup keymaps and highlighting only once per status buffer
+  if not keymaps_already_set then
     setup_buffer_keymaps(bufnr, status_info)
     setup_buffer_highlighting(bufnr)
+    pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_keymaps", true)
   end
 
   -- Open in current window or split
