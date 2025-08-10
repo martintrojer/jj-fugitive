@@ -107,4 +107,16 @@ function M.set_statusline(bufnr, text)
   end)
 end
 
+-- Buffer-local keymap helper with sane defaults
+-- mode: string or table, lhs: string, rhs: fn|string, opts: table
+function M.map(bufnr, mode, lhs, rhs, opts)
+  local base = { buffer = bufnr, noremap = true, silent = true }
+  if opts then
+    for k, v in pairs(opts) do
+      base[k] = v
+    end
+  end
+  vim.keymap.set(mode, lhs, rhs, base)
+end
+
 return M

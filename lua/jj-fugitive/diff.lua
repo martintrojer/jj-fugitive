@@ -97,47 +97,47 @@ end
 
 -- Setup diff buffer keymaps
 local function setup_diff_keymaps(bufnr, filename)
-  local opts = { noremap = true, silent = true, buffer = bufnr }
+  local ui = require("jj-fugitive.ui")
 
   -- Close diff buffer
-  vim.keymap.set("n", "q", function()
+  ui.map(bufnr, "n", "q", function()
     vim.cmd("close")
-  end, opts)
+  end)
 
   -- Toggle between unified and side-by-side view
-  vim.keymap.set("n", "<Tab>", function()
+  ui.map(bufnr, "n", "<Tab>", function()
     M.toggle_diff_view(filename)
-  end, opts)
+  end)
 
   -- Switch to side-by-side view
-  vim.keymap.set("n", "s", function()
+  ui.map(bufnr, "n", "s", function()
     M.show_file_diff_sidebyside(filename)
-  end, opts)
+  end)
 
   -- Switch to unified view
-  vim.keymap.set("n", "u", function()
+  ui.map(bufnr, "n", "u", function()
     M.show_file_diff(filename)
-  end, opts)
+  end)
 
   -- Toggle different diff formats
-  vim.keymap.set("n", "f", function()
+  ui.map(bufnr, "n", "f", function()
     M.show_file_diff_format_selector(filename)
-  end, opts)
+  end)
 
   -- Refresh diff
-  vim.keymap.set("n", "r", function()
+  ui.map(bufnr, "n", "r", function()
     M.show_file_diff(filename)
-  end, opts)
+  end)
 
   -- Open the file being diffed
-  vim.keymap.set("n", "o", function()
+  ui.map(bufnr, "n", "o", function()
     if filename then
       vim.cmd("edit " .. vim.fn.fnameescape(filename))
     end
-  end, opts)
+  end)
 
   -- Capital D: Show side-by-side diff (like vim-fugitive)
-  vim.keymap.set("n", "D", function()
+  ui.map(bufnr, "n", "D", function()
     if filename then
       M.show_file_diff_sidebyside(filename)
     else
@@ -147,20 +147,19 @@ local function setup_diff_keymaps(bufnr, filename)
         {}
       )
     end
-  end, opts)
+  end)
 
   -- Add vim diff navigation (vim-fugitive standard)
-  vim.keymap.set("n", "[c", function()
+  ui.map(bufnr, "n", "[c", function()
     vim.cmd("normal! [c")
-  end, opts)
+  end)
 
-  vim.keymap.set("n", "]c", function()
+  ui.map(bufnr, "n", "]c", function()
     vim.cmd("normal! ]c")
-  end, opts)
+  end)
 
   -- Show help (vim-fugitive uses g?)
-  vim.keymap.set("n", "g?", function()
-    local ui = require("jj-fugitive.ui")
+  ui.map(bufnr, "n", "g?", function()
     local help_lines = {
       "# jj-fugitive Diff View Help",
       "",
@@ -182,7 +181,7 @@ local function setup_diff_keymaps(bufnr, filename)
       "Press any key to continue...",
     }
     ui.show_help_popup("jj-fugitive Diff Help", help_lines)
-  end, opts)
+  end)
 end
 
 -- Show diff in unified format with native jj colorization
@@ -271,20 +270,15 @@ function M.show_file_diff(filename, options)
   setup_diff_keymaps(bufnr, filename)
 
   -- Add status line info with current format
-  vim.api.nvim_buf_call(bufnr, function()
-    local file_desc = filename or "all changes"
-    local format_desc = options.format or "default"
-    if options.color_words then
-      format_desc = "color-words"
-    end
-    vim.cmd(
-      "setlocal statusline=jj-diff:\\ "
-        .. vim.fn.escape(file_desc, " \\ ")
-        .. "\\ ("
-        .. format_desc
-        .. ")"
-    )
-  end)
+  local file_desc = filename or "all changes"
+  local format_desc = options.format or "default"
+  if options.color_words then
+    format_desc = "color-words"
+  end
+  require("jj-fugitive.ui").set_statusline(
+    bufnr,
+    "jj-diff: " .. file_desc .. " (" .. format_desc .. ")"
+  )
 end
 
 local function get_or_create_sidebyside_buffer(name_pattern)
@@ -376,22 +370,17 @@ function M.show_file_diff_sidebyside(filename)
 
   -- Setup keymaps for both buffers
   local setup_sidebyside_keys = function(buf)
-    local opts = { noremap = true, silent = true, buffer = buf }
-
-    vim.keymap.set("n", "q", function()
+    local ui = require("jj-fugitive.ui")
+    ui.map(buf, "n", "q", function()
       vim.cmd("tabclose")
-    end, opts)
-
-    vim.keymap.set("n", "u", function()
+    end)
+    ui.map(buf, "n", "u", function()
       M.show_file_diff(filename)
-    end, opts)
-
-    vim.keymap.set("n", "o", function()
+    end)
+    ui.map(buf, "n", "o", function()
       vim.cmd("edit " .. vim.fn.fnameescape(filename))
-    end, opts)
-
-    vim.keymap.set("n", "g?", function()
-      local ui = require("jj-fugitive.ui")
+    end)
+    ui.map(buf, "n", "g?", function()
       local help_lines = {
         "# jj-fugitive Side-by-Side Diff Help",
         "",
@@ -408,7 +397,7 @@ function M.show_file_diff_sidebyside(filename)
         "Press any key to continue...",
       }
       ui.show_help_popup("jj-fugitive Diff (Side-by-Side) Help", help_lines)
-    end, opts)
+    end)
   end
 
   setup_sidebyside_keys(original_buf)
@@ -418,17 +407,14 @@ function M.show_file_diff_sidebyside(filename)
   vim.cmd("windo diffthis")
 
   -- Set status line
-  vim.api.nvim_buf_call(original_buf, function()
-    vim.cmd(
-      "setlocal statusline=jj-diff:\\ " .. filename .. "\\ (original)\\ \\ [Press\\ ?\\ for\\ help]"
-    )
-  end)
-
-  vim.api.nvim_buf_call(current_buf, function()
-    vim.cmd(
-      "setlocal statusline=jj-diff:\\ " .. filename .. "\\ (current)\\ \\ [Press\\ ?\\ for\\ help]"
-    )
-  end)
+  require("jj-fugitive.ui").set_statusline(
+    original_buf,
+    "jj-diff: " .. filename .. " (original) [Press ? for help]"
+  )
+  require("jj-fugitive.ui").set_statusline(
+    current_buf,
+    "jj-diff: " .. filename .. " (current) [Press ? for help]"
+  )
 end
 
 -- Show diff format selector

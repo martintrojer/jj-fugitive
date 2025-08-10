@@ -1008,9 +1008,7 @@ function M.show_log(options)
   end
 
   -- Set status line
-  vim.api.nvim_buf_call(bufnr, function()
-    vim.cmd("setlocal statusline=jj-log:\\ Repository\\ History")
-  end)
+  require("jj-fugitive.ui").set_statusline(bufnr, "jj-log: Repository History")
 end
 
 -- Export show_commit_details for use by other modules
