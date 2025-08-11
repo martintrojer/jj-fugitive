@@ -449,7 +449,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     ui.show_help_popup(
       "jj-fugitive Status Help",
       help_lines,
-      { close_keys = { "q", "g", "?", "o", "D", "l", "R" } }
+      { close_keys = { "q", "g", "?", "o", "D", "l", "R" }, mark_plugin = true }
     )
   end)
 end
@@ -482,11 +482,9 @@ function M.show_status()
 
   local bufnr = get_or_create_status_buffer()
 
-  -- Check if keymaps/highlighting have already been set for this status buffer
-  local keymaps_already_set = false
-  pcall(function()
-    keymaps_already_set = vim.api.nvim_buf_get_var(bufnr, "jj_status_keymaps") == true
-  end)
+  -- Check/set one-time initialization for this buffer
+  local ui = require("jj-fugitive.ui")
+  local first_time = ui.set_once(bufnr, "status_keymaps")
 
   -- Set buffer content
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
@@ -494,10 +492,9 @@ function M.show_status()
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
   -- Setup keymaps and highlighting only once per status buffer
-  if not keymaps_already_set then
+  if first_time then
     setup_buffer_keymaps(bufnr, status_info)
     setup_buffer_highlighting(bufnr)
-    pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_keymaps", true)
   end
 
   -- Open in current window or split

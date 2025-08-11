@@ -877,7 +877,11 @@ local function setup_log_keymaps(bufnr, commit_data)
       "Press any key to continue...",
     }
 
-    require("jj-fugitive.ui").show_help_popup("jj-fugitive Log Help", help_lines, { width = 70 })
+    require("jj-fugitive.ui").show_help_popup(
+      "jj-fugitive Log Help",
+      help_lines,
+      { width = 70, mark_plugin = true }
+    )
   end)
 end
 

@@ -57,6 +57,11 @@ function M.show_help_popup(title, lines, opts)
   vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, lines or {})
   vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
 
+  -- Optionally mark this as a plugin buffer
+  if opts.mark_plugin then
+    pcall(vim.api.nvim_buf_set_var, help_buf, "jj_plugin_buffer", true)
+  end
+
   local win_width = vim.api.nvim_get_option("columns")
   local win_height = vim.api.nvim_get_option("lines")
   local width = math.min(opts.width or 60, win_width - 4)
@@ -119,6 +124,21 @@ function M.map(bufnr, mode, lhs, rhs, opts)
     end
   end
   vim.keymap.set(mode, lhs, rhs, base)
+end
+
+-- Mark a per-buffer flag once and return true if this is the first time
+-- Usage: if ui.set_once(bufnr, "status_keymaps") then ... end
+function M.set_once(bufnr, key)
+  local var = "jj_once_" .. tostring(key)
+  local already = false
+  pcall(function()
+    already = vim.api.nvim_buf_get_var(bufnr, var) == true
+  end)
+  if already then
+    return false
+  end
+  pcall(vim.api.nvim_buf_set_var, bufnr, var, true)
+  return true
 end
 
 return M

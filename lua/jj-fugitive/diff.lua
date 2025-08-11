@@ -180,7 +180,7 @@ local function setup_diff_keymaps(bufnr, filename)
       "",
       "Press any key to continue...",
     }
-    ui.show_help_popup("jj-fugitive Diff Help", help_lines)
+    ui.show_help_popup("jj-fugitive Diff Help", help_lines, { mark_plugin = true })
   end)
 end
 
@@ -399,7 +399,7 @@ function M.show_file_diff_sidebyside(filename)
         "",
         "Press any key to continue...",
       }
-      ui.show_help_popup("jj-fugitive Diff (Side-by-Side) Help", help_lines)
+      ui.show_help_popup("jj-fugitive Diff (Side-by-Side) Help", help_lines, { mark_plugin = true })
     end)
   end
 
