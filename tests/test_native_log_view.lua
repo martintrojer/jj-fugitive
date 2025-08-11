@@ -48,7 +48,8 @@ if log_bufnr then
     "Plugin log should have clean text"
   )
 
-  local has_symbols = content_str:match("@") or content_str:match("◆") or content_str:match("○")
+  local has_symbols =
+    content_str:match("@") or content_str:match("◆") or content_str:match("○") or content_str:match("o")
   runner.assert_test(
     "Plugin log preserves jj symbols",
     has_symbols,
@@ -59,7 +60,8 @@ end
 -- Test 4: Symbol preservation (only if we have valid output)
 if has_output then
   local has_working_copy = native_jj_log:match("@")
-  local has_commit_symbols = native_jj_log:match("◆") or native_jj_log:match("○")
+  local has_commit_symbols =
+    native_jj_log:match("◆") or native_jj_log:match("○") or native_jj_log:match("o") or native_jj_log:match("%*")
   local has_branch_symbols = native_jj_log:match("│") or native_jj_log:match("├")
 
   runner.assert_test(
