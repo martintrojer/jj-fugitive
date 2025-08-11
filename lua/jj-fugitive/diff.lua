@@ -324,9 +324,24 @@ function M.show_file_diff_sidebyside(filename)
     original_content = ""
   end
 
-  -- Get current file content
+  -- Get current file content (prefer in-memory modified buffer if available)
   local current_content = ""
-  if vim.fn.filereadable(filename) == 1 then
+  local abs = vim.fn.fnamemodify(filename, ":p")
+  local found_buf = nil
+  for _, b in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(b) then
+      local name = vim.api.nvim_buf_get_name(b)
+      if name ~= "" and vim.fn.fnamemodify(name, ":p") == abs then
+        found_buf = b
+        break
+      end
+    end
+  end
+
+  if found_buf and vim.api.nvim_buf_get_option(found_buf, "modified") then
+    local lines = vim.api.nvim_buf_get_lines(found_buf, 0, -1, false)
+    current_content = table.concat(lines, "\n")
+  elseif vim.fn.filereadable(filename) == 1 then
     local file = io.open(filename, "r")
     if file then
       current_content = file:read("*all")

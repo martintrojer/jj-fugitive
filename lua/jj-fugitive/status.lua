@@ -65,6 +65,20 @@ local function parse_status_output(output)
   return status_info
 end
 
+-- Extract the current filename from a status line.
+-- Handles rename lines of the form: "R old/path -> new/path" by returning new/path.
+local function status_filename_from_line(line)
+  local s = line:match("^[A-Z] (.+)")
+  if not s then
+    return nil
+  end
+  local new = s:match(" -> (.+)$")
+  if new then
+    return new
+  end
+  return s
+end
+
 local function format_status_buffer(status_info)
   local lines = {}
 
@@ -203,7 +217,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
   -- Restore file from parent revision (jj restore)
   ui.map(bufnr, "n", "r", function()
     local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
+    local filename = status_filename_from_line(line)
     if filename then
       -- Ask for confirmation since this will discard changes
       local choice = vim.fn.confirm(
@@ -228,7 +242,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
   -- Absorb changes into mutable ancestors (jj absorb)
   ui.map(bufnr, "n", "a", function()
     local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
+    local filename = status_filename_from_line(line)
     if filename then
       -- Ask for confirmation since this will modify commits
       local choice = vim.fn.confirm(
@@ -270,7 +284,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local line = vim.api.nvim_get_current_line()
 
     -- Check if it's a file change line (e.g., "M filename")
-    local filename = line:match("^[A-Z] (.+)")
+    local filename = status_filename_from_line(line)
     if filename then
       require("jj-fugitive.diff").show_file_diff(filename, { update_current = true })
       return
@@ -296,7 +310,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local line = vim.api.nvim_get_current_line()
 
     -- Check if it's a file change line (e.g., "M filename")
-    local filename = line:match("^[A-Z] (.+)")
+    local filename = status_filename_from_line(line)
     if filename then
       require("jj-fugitive.diff").show_file_diff_sidebyside(filename)
       return
@@ -320,7 +334,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
   -- Toggle between inline and split diff view
   ui.map(bufnr, "n", "<Tab>", function()
     local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
+    local filename = status_filename_from_line(line)
     if filename then
       require("jj-fugitive.diff").toggle_diff_view(filename)
     end
@@ -329,7 +343,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
   -- Open file under cursor (simple file opening)
   ui.map(bufnr, "n", "o", function()
     local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
+    local filename = status_filename_from_line(line)
     if filename then
       vim.cmd("edit " .. vim.fn.fnameescape(filename))
     end
@@ -338,7 +352,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
   -- Open file in horizontal split
   ui.map(bufnr, "n", "s", function()
     local line = vim.api.nvim_get_current_line()
-    local filename = line:match("^[A-Z] (.+)")
+    local filename = status_filename_from_line(line)
     if filename then
       vim.cmd("split " .. vim.fn.fnameescape(filename))
     end
