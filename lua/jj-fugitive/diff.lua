@@ -99,10 +99,8 @@ end
 local function setup_diff_keymaps(bufnr, filename)
   local ui = require("jj-fugitive.ui")
 
-  -- Close diff buffer
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd("close")
-  end)
+  -- Back/close (common abstraction)
+  ui.setup_exit_keymaps(bufnr, { close_cmd = "close" })
 
   -- Toggle between unified and side-by-side view
   ui.map(bufnr, "n", "<Tab>", function()
@@ -168,7 +166,7 @@ local function setup_diff_keymaps(bufnr, filename)
       "  ]c      - Next change",
       "",
       "Operations:",
-      "  q       - Close diff view",
+      "  b/q     - Back/close diff view",
       "  D       - Show side-by-side diff",
       "  Tab     - Toggle between unified/side-by-side view",
       "  s       - Switch to side-by-side view",
@@ -244,6 +242,11 @@ function M.show_file_diff(filename, options)
           ["^# Changes.*$"] = "JjDiffChangeHeader",
         },
       })
+
+      -- Record previous view if provided for 'b' navigation
+      if options.previous_view then
+        pcall(vim.api.nvim_buf_set_var, current_bufnr, "jj_previous_view", options.previous_view)
+      end
 
       -- Update buffer name only if it's different
       if current_bufname ~= bufname then
@@ -391,6 +394,9 @@ function M.show_file_diff_sidebyside(filename)
   local setup_sidebyside_keys = function(buf)
     local ui = require("jj-fugitive.ui")
     ui.map(buf, "n", "q", function()
+      vim.cmd("tabclose")
+    end)
+    ui.map(buf, "n", "b", function()
       vim.cmd("tabclose")
     end)
     ui.map(buf, "n", "u", function()

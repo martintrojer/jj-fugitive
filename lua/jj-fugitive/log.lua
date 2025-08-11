@@ -110,28 +110,8 @@ end
 local function setup_commit_detail_keymaps(bufnr)
   local ui = require("jj-fugitive.ui")
 
-  -- Back to previous view (log or status)
-  ui.map(bufnr, "n", "b", function()
-    local has_previous = pcall(vim.api.nvim_buf_get_var, bufnr, "jj_previous_view")
-    if has_previous then
-      local previous_view = vim.api.nvim_buf_get_var(bufnr, "jj_previous_view")
-      if previous_view == "status" then
-        -- Go back to status view
-        require("jj-fugitive.status").show_status()
-      else
-        -- Go back to log view (default behavior)
-        local log_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
-        M.show_log({ limit = log_limit, update_current = true })
-      end
-    else
-      M.show_log({ update_current = true })
-    end
-  end)
-
-  -- Quit
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd("bdelete!")
-  end)
+  -- Unified 'b'/'q' handling
+  ui.setup_exit_keymaps(bufnr, { close_cmd = "close" })
 end
 
 -- Show commit details with consistent diff formatting
@@ -206,6 +186,9 @@ local function show_commit_details(commit_id, opts)
   -- Open in new window
   vim.cmd("split")
   vim.api.nvim_set_current_buf(bufnr)
+
+  -- Record previous view for unified 'b' behavior
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_previous_view", opts.previous_view or "log")
 
   -- Setup navigation keymaps
   setup_commit_detail_keymaps(bufnr)
@@ -355,6 +338,9 @@ local function show_commit_diff(commit_id, opts)
   -- Open in new window
   vim.cmd("split")
   vim.api.nvim_set_current_buf(bufnr)
+
+  -- Record previous view for unified 'b' behavior
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_previous_view", opts.previous_view or "log")
 
   -- Setup navigation keymaps
   setup_commit_detail_keymaps(bufnr)
@@ -745,9 +731,10 @@ local function setup_log_keymaps(bufnr, commit_data)
   end)
 
   -- Close log view
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd("close")
-  end)
+  ui.setup_exit_keymaps(bufnr, { close_cmd = "close" })
+
+  -- Back/close (for consistency across views)
+  -- handled by setup_exit_keymaps
 
   -- Refresh log
   ui.map(bufnr, "n", "R", function()
@@ -862,7 +849,7 @@ local function setup_log_keymaps(bufnr, commit_data)
       "View Actions:",
       "  =, +      - Expand log view (show more commits with --limit)",
       "  R         - Refresh log view",
-      "  q         - Close log view",
+      "  b/q       - Close log view",
       "  g?        - Show this help",
       "",
       "Visual Indicators:",
@@ -911,7 +898,7 @@ function M.show_log(options)
   local header_lines = {
     "",
     "# jj Log View" .. limit_text,
-    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, b/q=close, g?=help",
     "",
   }
 

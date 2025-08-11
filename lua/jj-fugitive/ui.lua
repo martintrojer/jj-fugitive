@@ -141,4 +141,56 @@ function M.set_once(bufnr, key)
   return true
 end
 
+-- Back/quit helpers (added for consistent 'b' and 'q' behavior)
+-- Resolve previous view and navigate or run a fallback action
+function M.go_back_or_close(bufnr, fallback)
+  local ok, prev = pcall(vim.api.nvim_buf_get_var, bufnr, "jj_previous_view")
+  if ok and type(prev) == "string" then
+    if prev == "status" then
+      pcall(function()
+        require("jj-fugitive.status").show_status()
+      end)
+      return
+    elseif prev == "log" then
+      pcall(function()
+        require("jj-fugitive.log").show_log({ update_current = true })
+      end)
+      return
+    end
+  end
+
+  if type(fallback) == "function" then
+    fallback()
+  else
+    vim.cmd(tostring(fallback or "close"))
+  end
+end
+
+-- Setup common 'q' (close) and 'b' (back) keymaps
+-- opts = { close_cmd = 'close'|'bdelete!'|..., include_gq = boolean }
+function M.setup_exit_keymaps(bufnr, opts)
+  opts = opts or {}
+  local close_cmd = opts.close_cmd or "close"
+  local include_gq = opts.include_gq
+
+  -- q to close
+  M.map(bufnr, "n", "q", function()
+    vim.cmd(close_cmd)
+  end)
+
+  -- optional gq to close (some views support this)
+  if include_gq then
+    M.map(bufnr, "n", "gq", function()
+      vim.cmd(close_cmd)
+    end)
+  end
+
+  -- b to go back or close
+  M.map(bufnr, "n", "b", function()
+    M.go_back_or_close(bufnr, function()
+      vim.cmd(close_cmd)
+    end)
+  end)
+end
+
 return M

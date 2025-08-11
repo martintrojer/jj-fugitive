@@ -113,7 +113,7 @@ local function format_status_buffer(status_info)
     "# Tab = toggle diff view (inline/split), d = unified diff, D = side-by-side diff"
   )
   table.insert(lines, "# r = restore, a = absorb, cc = commit, ca = amend, l = log view")
-  table.insert(lines, "# R = reload status, q = close, g? = help")
+  table.insert(lines, "# R = reload status, b/q = close, g? = help")
 
   return lines
 end
@@ -286,7 +286,10 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     -- Check if it's a file change line (e.g., "M filename")
     local filename = status_filename_from_line(line)
     if filename then
-      require("jj-fugitive.diff").show_file_diff(filename, { update_current = true })
+      require("jj-fugitive.diff").show_file_diff(
+        filename,
+        { update_current = true, previous_view = "status" }
+      )
       return
     end
 
@@ -376,14 +379,8 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     end
   end)
 
-  -- Close status buffer
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd("close")
-  end)
-
-  ui.map(bufnr, "n", "gq", function()
-    vim.cmd("close")
-  end)
+  -- Back/close (common abstraction)
+  ui.setup_exit_keymaps(bufnr, { close_cmd = "close", include_gq = true })
 
   -- Show diff for file under cursor or commit details for commit lines (vim-fugitive standard)
   ui.map(bufnr, "n", "<CR>", function()
@@ -392,7 +389,10 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     -- Check if it's a file change line (e.g., "M filename")
     local filename = line:match("^[A-Z] (.+)")
     if filename then
-      require("jj-fugitive.diff").show_file_diff(filename, { update_current = true })
+      require("jj-fugitive.diff").show_file_diff(
+        filename,
+        { update_current = true, previous_view = "status" }
+      )
       return
     end
 
@@ -454,7 +454,7 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       "Navigation & misc:",
       "  l       - Show log view (jj log)",
       "  R       - Reload status (refresh working copy state)",
-      "  q       - Close status window",
+      "  b/q     - Close status window",
       "  g?      - Show this help",
       "",
       "Press any key to close help...",
