@@ -203,6 +203,8 @@ function M.jj(args)
     M.diff(rest_args)
   elseif command == "log" then
     M.log(rest_args)
+  elseif command == "browse" then
+    require("jj-fugitive.browse").browse()
   else
     -- For all other commands, pass through to jj directly
     local result = run_jj_command(args)

@@ -20,3 +20,8 @@ vim.api.nvim_create_user_command("JHelp", function(opts)
 end, {
   nargs = "*",
 })
+
+-- GBrowse-like command
+vim.api.nvim_create_user_command("JBrowse", function()
+  require("jj-fugitive.browse").browse()
+end, { nargs = 0 })
