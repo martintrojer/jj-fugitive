@@ -63,8 +63,10 @@ runner.section("Test 3: Content analysis")
 
 if default_log then
   local has_working_copy = default_log:match("@")
-  local has_commit_symbol =
-    default_log:match("◆") or default_log:match("○") or default_log:match("o") or default_log:match("%*")
+  local has_commit_symbol = default_log:match("◆")
+    or default_log:match("○")
+    or default_log:match("o")
+    or default_log:match("%*")
   local has_elided = default_log:match("~")
 
   runner.assert_test("Default log contains working copy (@)", has_working_copy, "No @ symbol found")
@@ -80,7 +82,10 @@ end
 if full_repo_log then
   local commit_count = 0
   for line in full_repo_log:gmatch("[^\n]+") do
-    if line:match("^[^%s]") and (line:match("@") or line:match("◆") or line:match("○") or line:match("o")) then
+    if
+      line:match("^[^%s]")
+      and (line:match("@") or line:match("◆") or line:match("○") or line:match("o"))
+    then
       commit_count = commit_count + 1
     end
   end

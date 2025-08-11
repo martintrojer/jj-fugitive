@@ -49,7 +49,11 @@ runner.assert_test(
   tabs_after_unified == tabs_before_toggle,
   "Should be back to initial tab count for diff"
 )
-runner.assert_test("SBS marker cleared", vim.t.jj_sbs_diff == nil, "Should clear jj_sbs_diff tab marker")
+runner.assert_test(
+  "SBS marker cleared",
+  vim.t.jj_sbs_diff == nil,
+  "Should clear jj_sbs_diff tab marker"
+)
 
 -- Ensure unrelated tab still exists (tab count at least initial unrelated count)
 local final_tabs = vim.fn.tabpagenr("$")
@@ -65,4 +69,3 @@ pcall(function()
 end)
 
 runner.finish()
-

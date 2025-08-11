@@ -20,14 +20,26 @@ local log_buf = runner.find_buffer("jj%-log")
 runner.assert_test("Log buffer exists", log_buf ~= nil, "jj-log buffer should be present")
 if log_buf then
   local is_plugin = ui.is_jj_buffer(log_buf)
-  runner.assert_test("Log buffer marked as plugin", is_plugin == true, "jj-log buffer should be flagged")
+  runner.assert_test(
+    "Log buffer marked as plugin",
+    is_plugin == true,
+    "jj-log buffer should be flagged"
+  )
 end
 
 -- Help popup should NOT be treated as plugin buffer
 do
-  local help_buf, help_win = ui.show_help_popup("Test Help", { "Line 1", "Line 2" }, { width = 40, height = 5 })
+  local help_buf, help_win = ui.show_help_popup(
+    "Test Help",
+    { "Line 1", "Line 2" },
+    { width = 40, height = 5 }
+  )
   local is_plugin = ui.is_jj_buffer(help_buf)
-  runner.assert_test("Help buffer not plugin", is_plugin == false, "help popup should not be flagged as plugin")
+  runner.assert_test(
+    "Help buffer not plugin",
+    is_plugin == false,
+    "help popup should not be flagged as plugin"
+  )
   if help_win and vim.api.nvim_win_is_valid(help_win) then
     vim.api.nvim_win_close(help_win, true)
   end
@@ -38,7 +50,11 @@ do
   local scratch = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_name(scratch, "plain-scratch")
   local is_plugin = ui.is_jj_buffer(scratch)
-  runner.assert_test("Scratch buffer not plugin", is_plugin == false, "plain scratch should not be flagged")
+  runner.assert_test(
+    "Scratch buffer not plugin",
+    is_plugin == false,
+    "plain scratch should not be flagged"
+  )
 end
 
 -- update_current from non-plugin buffer should not try to update it
@@ -52,7 +68,11 @@ do
   local ok = pcall(function()
     log.show_log({ update_current = true })
   end)
-  runner.assert_test("update_current from non-plugin ok", ok, "show_log(update_current) should not error")
+  runner.assert_test(
+    "update_current from non-plugin ok",
+    ok,
+    "show_log(update_current) should not error"
+  )
 
   -- Original plain buffer must remain not flagged as plugin
   local is_plugin = ui.is_jj_buffer(plain)
@@ -83,4 +103,3 @@ if status_buf then
 end
 
 runner.finish()
-
