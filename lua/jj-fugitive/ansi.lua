@@ -1,5 +1,9 @@
 local M = {}
 
+-- Dedicated namespace for jj-fugitive ANSI highlights to avoid clearing others
+local ns = vim.api.nvim_create_namespace("jj_fugitive_ansi")
+M.ns = ns
+
 -- Parse ANSI escape sequences and convert to Neovim highlighting
 function M.parse_ansi_colors(text)
   local highlights = {}
@@ -218,7 +222,7 @@ function M.setup_diff_highlighting(bufnr, highlights, options)
 
       -- Apply the highlight to the buffer
       local col_end = hl.col_end == -1 and -1 or hl.col_end
-      pcall(vim.api.nvim_buf_add_highlight, bufnr, 0, group, hl.line, hl.col_start, col_end)
+      pcall(vim.api.nvim_buf_add_highlight, bufnr, ns, group, hl.line, hl.col_start, col_end)
     end
   end
 end
@@ -265,7 +269,7 @@ function M.update_colored_buffer(bufnr, content, header_lines, options)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {})
 
   -- Clear existing highlights
-  vim.api.nvim_buf_clear_namespace(bufnr, -1, 0, -1)
+  vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
   -- Process content and extract ANSI colors
   local processed_lines, highlights = M.process_diff_content(content, header_lines, options)

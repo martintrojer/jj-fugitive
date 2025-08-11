@@ -964,8 +964,11 @@ function M.show_log(options)
   -- Store current limit in buffer variable for expand functionality
   vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", options.limit or 0)
 
-  -- Setup keymaps for interaction
-  setup_log_keymaps(bufnr, commit_data)
+  -- Setup keymaps for interaction (once per buffer)
+  local ui = require("jj-fugitive.ui")
+  if ui.set_once(bufnr, "log_keymaps") then
+    setup_log_keymaps(bufnr, commit_data)
+  end
 
   if not options.update_current then
     -- Open in current window or split
