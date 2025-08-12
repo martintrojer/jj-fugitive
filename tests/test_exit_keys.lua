@@ -22,9 +22,15 @@ if status_module then
     local keymaps = vim.api.nvim_buf_get_keymap(status_buf, "n")
     local want = { q = false, b = false, gq = false }
     for _, km in ipairs(keymaps) do
-      if km.lhs == "q" then want.q = true end
-      if km.lhs == "b" then want.b = true end
-      if km.lhs == "gq" then want.gq = true end
+      if km.lhs == "q" then
+        want.q = true
+      end
+      if km.lhs == "b" then
+        want.b = true
+      end
+      if km.lhs == "gq" then
+        want.gq = true
+      end
     end
     runner.assert_test("Status 'q' mapped", want.q, "q should close status")
     runner.assert_test("Status 'b' mapped", want.b, "b should close status")
@@ -34,15 +40,21 @@ end
 
 runner.section("Log view exit keys")
 if log_module then
-  pcall(function() log_module.show_log({ limit = 5 }) end)
+  pcall(function()
+    log_module.show_log({ limit = 5 })
+  end)
   local log_buf = runner.find_buffer("jj%-log")
   runner.assert_test("Log buffer exists", log_buf ~= nil, "Log buffer should exist")
   if log_buf then
     local keymaps = vim.api.nvim_buf_get_keymap(log_buf, "n")
     local want = { q = false, b = false }
     for _, km in ipairs(keymaps) do
-      if km.lhs == "q" then want.q = true end
-      if km.lhs == "b" then want.b = true end
+      if km.lhs == "q" then
+        want.q = true
+      end
+      if km.lhs == "b" then
+        want.b = true
+      end
     end
     runner.assert_test("Log 'q' mapped", want.q, "q should close log")
     runner.assert_test("Log 'b' mapped", want.b, "b should close log")
@@ -69,30 +81,45 @@ if diff_module and status_module then
       ui.go_back_or_close(cur)
     end)
     local status_buf = runner.find_buffer("jj%-status")
-    runner.assert_test("Returned to status view", status_buf ~= nil, "Should find status buffer after back")
+    runner.assert_test(
+      "Returned to status view",
+      status_buf ~= nil,
+      "Should find status buffer after back"
+    )
 
-    pcall(function() os.remove(test_file) end)
+    pcall(function()
+      os.remove(test_file)
+    end)
   end
 end
 
 runner.section("Commit details back behavior to log")
 if log_module then
   -- Open a log buffer first to ensure jj buffer
-  pcall(function() log_module.show_log({ limit = 3 }) end)
+  pcall(function()
+    log_module.show_log({ limit = 3 })
+  end)
   -- Grab a recent commit id
   local out = vim.fn.system({ "jj", "log", "--limit", "1", "--no-graph" })
-  local commit = out and out:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])")
+  local commit = out
+    and out:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])")
   if commit then
-    pcall(function() log_module.show_commit_details(commit, { update_current = true }) end)
+    pcall(function()
+      log_module.show_commit_details(commit, { update_current = true })
+    end)
     local cur = vim.api.nvim_get_current_buf()
     local keymaps = vim.api.nvim_buf_get_keymap(cur, "n")
     local has_b = false
     for _, km in ipairs(keymaps) do
-      if km.lhs == "b" then has_b = true end
+      if km.lhs == "b" then
+        has_b = true
+      end
     end
     runner.assert_test("Commit details 'b' mapped", has_b, "b should be mapped in commit details")
     -- simulate back
-    pcall(function() ui.go_back_or_close(cur) end)
+    pcall(function()
+      ui.go_back_or_close(cur)
+    end)
     local log_buf = runner.find_buffer("jj%-log")
     runner.assert_test("Returned to log view", log_buf ~= nil, "Should find log buffer after back")
   else
@@ -101,4 +128,3 @@ if log_module then
 end
 
 runner.finish()
-

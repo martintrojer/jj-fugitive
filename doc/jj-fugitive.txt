@@ -33,6 +33,16 @@ COMMANDS                                                *jj-fugitive-commands*
 :J log [options]        Show revision history in native jj log view with
                         authentic formatting. Supports all jj log options.
 
+:J browse               Open current file/selection on the Git remote in a
+                        browser (GBrowse-like). Infers remote from `jj git
+                        remote list`, prefers `main` bookmark for revision,
+                        falls back to current commit. Supports GitHub/GitLab
+                        style line anchors.
+
+                                                                     *:JBrowse*
+:JBrowse                Shorthand for |:J browse| to open current file/lines
+                        on the remote host.
+
                                                                       *:JHelp*
 :JHelp [command]        Show contextual help for jj commands with inline
                         documentation and usage examples.
@@ -98,7 +108,7 @@ new                     Create new working copy change (jj new)
 Navigation & Misc:
 l                       Show log view
 R                       Reload status
-q                       Close status window
+b/q                     Close status window
 g?                      Show help
 
 ==============================================================================
@@ -130,7 +140,7 @@ View Operations:
 P                       Navigate to parent revision
 N                       Navigate to next/child revision
 R                       Refresh log view
-q                       Close log view
+b/q                     Close log view
 g?                      Show help
 
 VISUAL INDICATORS                                    *jj-fugitive-log-visual*
@@ -160,11 +170,34 @@ Navigation:
 ]c                      Jump to next change
 
 Operations:
-q                       Close diff view
+b/q                     Close diff view
 f                       Select diff format (git, color-words, etc.)
 r                       Refresh diff
 o                       Open file in editor
 g?                      Show help
+
+==============================================================================
+BROWSE (GBrowse)                                        *jj-fugitive-browse*
+
+|:J browse| and |:JBrowse| open the current file and line(s) on the configured
+Git remote in your default browser.
+
+Behavior:
+- Remote detection: Uses `jj git remote list`, prefers `origin`.
+- Revision selection: Prefers `main` bookmark if present; otherwise uses the
+  current `@` commit hash exported to Git.
+- File path: Uses relative path from repository root.
+- Line anchors: Uses the current cursor line, or the visual selection range.
+- Providers: Supports GitHub and GitLab URL formats; falls back to GitHub
+  style if unknown.
+
+Examples:
+  :J browse          Open current file at main branch (or current commit)
+  :JBrowse           Same as above (shorthand)
+
+Notes:
+- If your `main` bookmark does not track the desired branch on the host, set
+  it appropriately via `jj bookmark set main` before browsing.
 
 DIFF FORMATS                                        *jj-fugitive-diff-formats*
 

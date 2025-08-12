@@ -292,7 +292,7 @@ function M.complete(arglead, cmdline, cursorpos) -- luacheck: ignore cursorpos
     end
 
     -- Also include our custom commands (prioritize status, diff, and log)
-    local custom_commands = { "status", "diff", "log" }
+    local custom_commands = { "status", "diff", "log", "browse" }
     for _, cmd in ipairs(custom_commands) do
       if
         (arglead == "" or cmd:find("^" .. vim.pesc(arglead)))

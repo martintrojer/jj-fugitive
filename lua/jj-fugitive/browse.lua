@@ -184,7 +184,11 @@ local function open_url(url)
   end
   if not ok then
     vim.fn.setreg("+", url)
-    vim.api.nvim_echo({ { "URL copied to clipboard: ", "MoreMsg" }, { url, "Underlined" } }, false, {})
+    vim.api.nvim_echo(
+      { { "URL copied to clipboard: ", "MoreMsg" }, { url, "Underlined" } },
+      false,
+      {}
+    )
   end
   return true
 end

@@ -102,3 +102,9 @@ For interactive commands, the plugin should:
 - **Text Editor**: `describe`, `commit` (for commit messages)
 - **Diff Editor**: `diffedit`, `split`, `commit -i`, `resolve`
 - **Mixed**: `split` uses diff editor for changes, then text editor for description
+## Non-interactive convenience
+
+### `browse` (GBrowse-equivalent)
+- Opens a browser, not an editor; the plugin builds a remote URL and calls the
+  OS opener (or copies the URL to the clipboard). Implemented as `:J browse`
+  and `:JBrowse`.

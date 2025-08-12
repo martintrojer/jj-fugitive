@@ -58,6 +58,8 @@ jj git clone https://github.com/martintrojer/jj-fugitive.nvim ~/.local/share/nvi
 | `:J log` | Show interactive log view with enhanced formatting |
 | `:J diff` | Show enhanced diff for current buffer |
 | `:J diff [file]` | Show enhanced diff for specified file |
+| `:J browse` | Open current file/lines on remote (GBrowse-like) |
+| `:JBrowse` | Shorthand for `:J browse` |
 | `:J <any-jj-command>` | Execute any jj command with smart completion |
 
 ## Usage Examples
@@ -112,7 +114,7 @@ The `:J` command provides intelligent tab completion at every nesting level:
 " ca       - Amend current commit description
 " l        - Show log view
 " R        - Reload status
-" q        - Close status buffer
+" b/q      - Close status buffer
 " g?       - Show help
 ```
 
@@ -134,7 +136,7 @@ The `:J` command provides intelligent tab completion at every nesting level:
 " s        - Squash commit into its parent (jj squash)
 " =, +     - Expand log view (show 50 more commits)
 " R        - Refresh log view
-" q        - Close log view
+" b/q      - Close log view
 " g?       - Show help
 ```
 
@@ -156,8 +158,20 @@ The `:J` command provides intelligent tab completion at every nesting level:
 " ]c       - Next change
 " r        - Refresh diff
 " o        - Open file in editor
-" q        - Close diff buffer
+" b/q      - Close diff buffer
 " g?       - Show help
+
+### Browse current file on remote (GBrowse-like)
+
+```vim
+" Open current file and line (or visual selection) on the remote host
+:J browse
+
+" Shorthand command
+:JBrowse
+```
+Supports SSH/HTTPS remotes (GitHub/GitLab-style), prefers the `main` bookmark for
+the revision, and falls back to the current `@` commit when needed.
 ```
 
 ## Documentation
