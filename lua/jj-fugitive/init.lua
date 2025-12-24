@@ -51,6 +51,9 @@ local function find_jj_root(start_path)
   return nil
 end
 
+-- Forward declaration for refresh_status_buffer_if_open
+local refresh_status_buffer_if_open
+
 -- Get the repository root, trying current buffer's directory first, then cwd
 local function get_repo_root()
   -- First try the directory of the current buffer
@@ -269,7 +272,7 @@ function M.diff(args)
 end
 
 function M.log(args)
-  local options = {}
+  local opts = {}
 
   if args and args ~= "" then
     -- Parse basic options
@@ -306,7 +309,7 @@ end
 
 -- Refresh status buffer if it's currently open
 -- Returns true if status buffer was found and refreshed, false otherwise
-local function refresh_status_buffer_if_open()
+refresh_status_buffer_if_open = function()
   local status_module = require("jj-fugitive.status")
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_valid(buf) then
@@ -418,7 +421,6 @@ function M.describe_interactive(cmd_parts)
       local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
       -- Filter out comment lines and empty lines
-      local ui = require("jj-fugitive.ui")
       local filtered_lines = {}
       for _, line in ipairs(lines) do
         if not line:match(ui.PATTERNS.COMMENT_LINE) and not line:match(ui.PATTERNS.EMPTY_LINE) then
@@ -429,8 +431,7 @@ function M.describe_interactive(cmd_parts)
       local new_description = table.concat(filtered_lines, "\n"):gsub("%s+$", "") -- Trim trailing whitespace
 
       if new_description == "" then
-        local ui = require("jj-fugitive.ui")
-        ui.err_write("Empty description - not saved")
+        require("jj-fugitive.ui").err_write("Empty description - not saved")
         return
       end
 
@@ -511,8 +512,7 @@ function M.commit_interactive(cmd_parts)
       local new_description = table.concat(filtered_lines, "\n"):gsub("%s+$", "") -- Trim trailing whitespace
 
       if new_description == "" then
-        local ui = require("jj-fugitive.ui")
-        ui.err_write("Empty description - not saved")
+        require("jj-fugitive.ui").err_write("Empty description - not saved")
         return
       end
 
@@ -556,9 +556,7 @@ end
 
 function M.split_interactive(cmd_parts) -- luacheck: ignore cmd_parts
   local ui = require("jj-fugitive.ui")
-  ui.err_write(
-    "Interactive split requires diff editor integration (not yet implemented)"
-  )
+  ui.err_write("Interactive split requires diff editor integration (not yet implemented)")
   vim.api.nvim_echo({
     { "Alternative: Use ", "Normal" },
     { "jj split -i ", "String" },
@@ -568,9 +566,7 @@ end
 
 function M.diffedit_interactive(cmd_parts) -- luacheck: ignore cmd_parts
   local ui = require("jj-fugitive.ui")
-  ui.err_write(
-    "Interactive diffedit requires diff editor integration (not yet implemented)"
-  )
+  ui.err_write("Interactive diffedit requires diff editor integration (not yet implemented)")
   vim.api.nvim_echo({
     { "Alternative: Use ", "Normal" },
     { "jj diffedit ", "String" },
@@ -580,9 +576,7 @@ end
 
 function M.resolve_interactive(cmd_parts) -- luacheck: ignore cmd_parts
   local ui = require("jj-fugitive.ui")
-  ui.err_write(
-    "Interactive resolve requires merge tool integration (not yet implemented)"
-  )
+  ui.err_write("Interactive resolve requires merge tool integration (not yet implemented)")
   vim.api.nvim_echo({
     { "Alternative: Use ", "Normal" },
     { "jj resolve ", "String" },

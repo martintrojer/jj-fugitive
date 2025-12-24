@@ -195,9 +195,9 @@ end
 
 -- Main entrypoint: open current file/lines at remote
 function M.browse()
+  local ui = require("jj-fugitive.ui")
   local remote_url, err = get_origin_url()
   if not remote_url then
-    local ui = require("jj-fugitive.ui")
     ui.err_write(err or "No git remote found")
     return
   end

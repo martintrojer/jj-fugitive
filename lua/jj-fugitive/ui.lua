@@ -8,17 +8,17 @@ M.PATTERNS = {
   WORKING_COPY_HEADER = "^Working copy",
   WORKING_COPY_CHANGES = "^Working copy changes:",
   PARENT_COMMIT = "^Parent commit",
-  
+
   -- Commit ID patterns
   COMMIT_ID_8_HEX = "([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$",
   COMMIT_ID_WORKING_COPY = "^Working copy%s+%(@%)%s*:%s*%w+%s+([a-f0-9]+)",
   COMMIT_ID_PARENT = "^Parent commit%s+%(@%-%):%s*%w+%s+([a-f0-9]+)",
-  
+
   -- Common line patterns
   EMPTY_LINE = "^%s*$",
   COMMENT_LINE = "^%s*#",
   COMMITTER_LINE = "^Committer:",
-  
+
   -- Flag/option patterns
   FLAG_START = "^%-", -- Starts with dash (short or long flag)
   LONG_FLAG_START = "^%-%-", -- Starts with double dash (long flag)
@@ -285,16 +285,6 @@ function M.find_buffer_by_pattern(pattern)
     end
   end
   return nil
-end
-
--- Trim whitespace from string
-local function trim(str)
-  return str:gsub("^%s*", ""):gsub("%s*$", "")
-end
-
--- Check if string is empty
-local function is_empty(str)
-  return not str or str == ""
 end
 
 return M

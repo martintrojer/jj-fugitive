@@ -247,7 +247,6 @@ function M.show_file_diff(filename, opts)
 
       -- Record previous view if provided for 'b' navigation
       if opts.previous_view then
-        local ui = require("jj-fugitive.ui")
         ui.store_view_context(current_bufnr, opts.previous_view, nil)
       end
 

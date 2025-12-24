@@ -466,7 +466,7 @@ function show_commit_diff_sidebyside(commit_id)
   vim.cmd("diffthis")
 
   -- Set up keymaps for both buffers
-  local ui = require("jj-fugitive.ui")
+  -- Reuse ui from line 383
   ui.setup_sidebyside_keymaps(left_bufnr, nil)
   ui.setup_sidebyside_keymaps(right_bufnr, nil)
 end
@@ -525,7 +525,7 @@ local function expand_log_view(bufnr)
   local header_lines = {
     "",
     string.format("# jj Log View (showing %d commits)", new_limit),
-    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, q=quit, g?=help", -- luacheck: ignore 631
     "",
   }
 
@@ -611,13 +611,15 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this is destructive
-      if ui.confirm_action(
-        string.format(
-          "Abandon commit %s? This will rebase its descendants onto its parent.",
-          commit_id
-        ),
-        true
-      ) then
+      if
+        ui.confirm_action(
+          string.format(
+            "Abandon commit %s? This will rebase its descendants onto its parent.",
+            commit_id
+          ),
+          true
+        )
+      then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "abandon", commit_id })
         if result then
@@ -636,13 +638,15 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this will modify the commit
-      if ui.confirm_action(
-        string.format(
-          "Squash commit %s into its parent? This will move its changes to the parent.",
-          commit_id
-        ),
-        true
-      ) then
+      if
+        ui.confirm_action(
+          string.format(
+            "Squash commit %s into its parent? This will move its changes to the parent.",
+            commit_id
+          ),
+          true
+        )
+      then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "squash", "-r", commit_id })
         if result then
@@ -661,13 +665,15 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this will modify the commit
-      if ui.confirm_action(
-        string.format(
-          "Split commit %s into two? This will open an interactive editor to select changes.",
-          commit_id
-        ),
-        true
-      ) then
+      if
+        ui.confirm_action(
+          string.format(
+            "Split commit %s into two? This will open an interactive editor to select changes.",
+            commit_id
+          ),
+          true
+        )
+      then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "split", "-r", commit_id })
         if result then
@@ -686,13 +692,15 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this will create a new commit
-      if ui.confirm_action(
-        string.format(
-          "Duplicate commit %s? This will create a copy with the same content.",
-          commit_id
-        ),
-        true
-      ) then
+      if
+        ui.confirm_action(
+          string.format(
+            "Duplicate commit %s? This will create a copy with the same content.",
+            commit_id
+          ),
+          true
+        )
+      then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "duplicate", commit_id })
         if result then
@@ -894,7 +902,7 @@ function M.show_log(opts)
   -- Extract commit data for interactive features
   local commit_data = extract_commit_ids_from_log(log_output)
   if #commit_data == 0 then
-    vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
+    vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {}) -- luacheck: ignore 631
     return
   end
 
@@ -903,7 +911,7 @@ function M.show_log(opts)
   local header_lines = {
     "",
     "# jj Log View" .. limit_text,
-    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, b/q=close, g?=help",
+    "# Navigate: j/k, P/N=parent/next, Enter=details, d=diff, D=side-by-side, Tab=toggle, e=edit, +=expand, b/q=close, g?=help", -- luacheck: ignore 631
     "",
   }
 
@@ -957,8 +965,9 @@ function M.show_log(opts)
   vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
 
   -- Setup keymaps for interaction (once per buffer)
-  local ui = require("jj-fugitive.ui")
-  if ui.set_once(bufnr, "log_keymaps") then
+  -- Reuse ui from line 897
+  local ui_module = require("jj-fugitive.ui")
+  if ui_module.set_once(bufnr, "log_keymaps") then
     setup_log_keymaps(bufnr, commit_data)
   end
 
@@ -969,10 +978,14 @@ function M.show_log(opts)
 
   -- Position cursor on first commit line (skip headers)
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  -- Reuse ui_module from line 969
   for i, line in ipairs(lines) do
     -- Look for the first actual commit line (not header)
-    local ui = require("jj-fugitive.ui")
-    if not line:match(ui.PATTERNS.COMMENT_LINE) and line ~= "" and get_commit_from_line(line, commit_data) then
+    if
+      not line:match(ui_module.PATTERNS.COMMENT_LINE)
+      and line ~= ""
+      and get_commit_from_line(line, commit_data)
+    then
       vim.api.nvim_win_set_cursor(0, { i, 0 })
       break
     end

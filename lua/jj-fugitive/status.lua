@@ -220,13 +220,15 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local filename = status_filename_from_line(line)
     if filename then
       -- Ask for confirmation since this will discard changes
-      if ui.confirm_action(
-        string.format(
-          "Restore '%s' from parent revision? This will discard current changes.",
-          filename
-        ),
-        true
-      ) then
+      if
+        ui.confirm_action(
+          string.format(
+            "Restore '%s' from parent revision? This will discard current changes.",
+            filename
+          ),
+          true
+        )
+      then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "restore", filename })
         if result then
@@ -243,13 +245,15 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
     local filename = status_filename_from_line(line)
     if filename then
       -- Ask for confirmation since this will modify commits
-      if ui.confirm_action(
-        string.format(
-          "Absorb changes in '%s' into mutable ancestors? This will move changes to appropriate commits.",
-          filename
-        ),
-        true
-      ) then
+      if
+        ui.confirm_action(
+          string.format(
+            "Absorb changes in '%s' into mutable ancestors? This will move changes to appropriate commits.",
+            filename
+          ),
+          true
+        )
+      then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "absorb", filename })
         if result then
@@ -259,10 +263,12 @@ local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore stat
       end
     else
       -- If no specific file, absorb all changes
-      if ui.confirm_action(
-        "Absorb all working copy changes into mutable ancestors? This will move changes to appropriate commits.",
-        true
-      ) then
+      if
+        ui.confirm_action(
+          "Absorb all working copy changes into mutable ancestors? This will move changes to appropriate commits.",
+          true
+        )
+      then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "absorb" })
         if result then
@@ -476,7 +482,6 @@ function M.show_status()
     -- Find the line with the first file (lines start at 1)
     -- The format is: header, empty, working copy info, empty, "Working copy changes:", then files
     for i, line in ipairs(lines) do
-      local ui = require("jj-fugitive.ui")
       if line:match(ui.PATTERNS.STATUS_LINE) then -- First line that starts with a status character and space
         vim.api.nvim_win_set_cursor(0, { i, 0 })
         break

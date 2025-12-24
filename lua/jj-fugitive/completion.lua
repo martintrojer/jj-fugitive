@@ -9,18 +9,19 @@ local function trim(str)
   return str:gsub("^%s*", ""):gsub("%s*$", "")
 end
 
--- Helper to check if string is empty
-local function is_empty(str)
-  return not str or str == ""
-end
-
 -- Common help parsing framework
 -- command_args: table of command arguments (e.g., {"jj", "--help"})
 -- cache_key: string key for caching
 -- section_type: "commands" or "options"
 -- parse_line_fn: function(line) -> item or table of items or nil
 -- fallback_data: optional fallback data if parsing fails
-local function parse_help_output(command_args, cache_key, section_type, parse_line_fn, fallback_data)
+local function parse_help_output(
+  command_args,
+  cache_key,
+  section_type,
+  parse_line_fn,
+  fallback_data
+)
   local now = os.time()
 
   -- Check cache first
@@ -187,7 +188,10 @@ local function parse_command_flags(command)
         desc = "Print help information" -- Default for help flags
       end
       -- Return both flags as separate items (need special handling)
-      return { { name = "-" .. short_flag, description = desc }, { name = "--" .. long_flag, description = desc } }
+      return {
+        { name = "-" .. short_flag, description = desc },
+        { name = "--" .. long_flag, description = desc },
+      }
     else
       -- Look for long flags only: "      --flag"
       local flag = line:match("^%s*%-%-([a-z][a-z0-9%-]*)")
