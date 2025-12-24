@@ -4,45 +4,54 @@ local M = {}
 local ns = vim.api.nvim_create_namespace("jj_fugitive_ansi")
 M.ns = ns
 
+-- ANSI color code constants
+local ANSI_CODES = {
+  RESET = "0",
+  BOLD = "1",
+  UNDERLINE = "4",
+  NO_UNDERLINE = "24",
+  DEFAULT_FG = "39",
+}
+
+-- ANSI color mappings - basic 3/4 bit colors
+local ANSI_COLORS = {
+  ["30"] = "Black",
+  ["31"] = "Red",
+  ["32"] = "Green",
+  ["33"] = "Yellow",
+  ["34"] = "Blue",
+  ["35"] = "Magenta",
+  ["36"] = "Cyan",
+  ["37"] = "White",
+  ["90"] = "DarkGray",
+  ["91"] = "LightRed",
+  ["92"] = "LightGreen",
+  ["93"] = "LightYellow",
+  ["94"] = "LightBlue",
+  ["95"] = "LightMagenta",
+  ["96"] = "LightCyan",
+  ["97"] = "White",
+}
+
+-- Map 256-color palette indices to reasonable colors for diff
+local COLOR_256_MAP = {
+  ["1"] = "Red", -- red for deletions
+  ["2"] = "Green", -- green for additions
+  ["3"] = "Yellow", -- yellow for changes
+  ["4"] = "Blue", -- blue
+  ["5"] = "Magenta", -- magenta
+  ["6"] = "Cyan", -- cyan
+  ["9"] = "LightRed", -- bright red
+  ["10"] = "LightGreen", -- bright green
+  ["11"] = "LightYellow", -- bright yellow
+}
+
 -- Parse ANSI escape sequences and convert to Neovim highlighting
 function M.parse_ansi_colors(text)
   local highlights = {}
   local clean_text = ""
   local pos = 1
   local current_style = {}
-
-  -- ANSI color code mappings - basic 3/4 bit colors
-  local ansi_colors = {
-    ["30"] = "Black",
-    ["31"] = "Red",
-    ["32"] = "Green",
-    ["33"] = "Yellow",
-    ["34"] = "Blue",
-    ["35"] = "Magenta",
-    ["36"] = "Cyan",
-    ["37"] = "White",
-    ["90"] = "DarkGray",
-    ["91"] = "LightRed",
-    ["92"] = "LightGreen",
-    ["93"] = "LightYellow",
-    ["94"] = "LightBlue",
-    ["95"] = "LightMagenta",
-    ["96"] = "LightCyan",
-    ["97"] = "White",
-  }
-
-  -- Map 256-color palette indices to reasonable colors for diff
-  local ansi_256_colors = {
-    ["1"] = "Red", -- red for deletions
-    ["2"] = "Green", -- green for additions
-    ["3"] = "Yellow", -- yellow for changes
-    ["4"] = "Blue", -- blue
-    ["5"] = "Magenta", -- magenta
-    ["6"] = "Cyan", -- cyan
-    ["9"] = "LightRed", -- bright red
-    ["10"] = "LightGreen", -- bright green
-    ["11"] = "LightYellow", -- bright yellow
-  }
 
   while pos <= #text do
     local esc_start, esc_end = text:find("\27%[[0-9;]*m", pos)
@@ -66,24 +75,24 @@ function M.parse_ansi_colors(text)
       local codes = text:sub(esc_start + 2, esc_end - 1) -- Remove \27[ and m
 
       -- Handle different codes
-      if codes == "0" or codes == "" then
+      if codes == ANSI_CODES.RESET or codes == "" then
         -- Reset all styles
         current_style = {}
-      elseif codes == "1" then
+      elseif codes == ANSI_CODES.BOLD then
         -- Bold
         current_style.bold = true
         current_style.group = "Bold"
-      elseif codes == "4" then
+      elseif codes == ANSI_CODES.UNDERLINE then
         -- Underline
         current_style.underline = true
         current_style.group = "Underlined"
-      elseif codes == "24" then
+      elseif codes == ANSI_CODES.NO_UNDERLINE then
         -- No underline
         current_style.underline = false
         if not current_style.bold and not (current_style.color or current_style.bg_color) then
           current_style = {}
         end
-      elseif codes == "39" then
+      elseif codes == ANSI_CODES.DEFAULT_FG then
         -- Default foreground color (reset)
         current_style.color = nil
         if
@@ -107,16 +116,16 @@ function M.parse_ansi_colors(text)
           if code == "38" and codes_list[i + 1] == "5" and codes_list[i + 2] then
             -- 256-color foreground: 38;5;n
             local color_index = codes_list[i + 2]
-            local color = ansi_256_colors[color_index]
+            local color = COLOR_256_MAP[color_index]
             if color then
               current_style.color = color
               current_style.group = color
             end
             i = i + 3
-          elseif ansi_colors[code] then
+          elseif ANSI_COLORS[code] then
             -- Basic color
-            current_style.color = ansi_colors[code]
-            current_style.group = ansi_colors[code]
+            current_style.color = ANSI_COLORS[code]
+            current_style.group = ANSI_COLORS[code]
             i = i + 1
           else
             i = i + 1
@@ -177,9 +186,9 @@ function M.process_diff_content(diff_content, header_lines, _)
 end
 
 -- Setup standard diff highlighting and apply parsed ANSI colors
-function M.setup_diff_highlighting(bufnr, highlights, options)
-  options = options or {}
-  local prefix = options.prefix or "JjDiff"
+function M.setup_diff_highlighting(bufnr, highlights, opts)
+  opts = opts or {}
+  local prefix = opts.prefix or "JjDiff"
 
   vim.api.nvim_buf_call(bufnr, function()
     -- Set the filetype to 'diff' for standard diff highlighting
@@ -193,11 +202,11 @@ function M.setup_diff_highlighting(bufnr, highlights, options)
     vim.cmd(string.format("highlight %sBold gui=bold cterm=bold", prefix))
 
     -- Add custom highlighting based on options
-    if options.custom_syntax then
-      for pattern, group in pairs(options.custom_syntax) do
+    if opts.custom_syntax then
+      for pattern, group in pairs(opts.custom_syntax) do
         vim.cmd(string.format("syntax match %s '%s'", group, pattern))
-        if options.custom_highlights and options.custom_highlights[group] then
-          vim.cmd(string.format("highlight default %s", options.custom_highlights[group]))
+        if opts.custom_highlights and opts.custom_highlights[group] then
+          vim.cmd(string.format("highlight default %s", opts.custom_highlights[group]))
         else
           vim.cmd(string.format("highlight default link %s Comment", group))
         end
@@ -228,27 +237,24 @@ function M.setup_diff_highlighting(bufnr, highlights, options)
 end
 
 -- Create a colored diff/show buffer with consistent formatting
-function M.create_colored_buffer(content, buffer_name, header_lines, options)
-  options = options or {}
+function M.create_colored_buffer(content, buffer_name, header_lines, opts)
+  opts = opts or {}
 
   -- Create unique buffer name with timestamp to avoid conflicts
+  local ui = require("jj-fugitive.ui")
   local timestamp = os.time()
   local unique_name = string.format("%s [%d]", buffer_name, timestamp)
-  local bufnr = vim.api.nvim_create_buf(false, true)
-
-  -- Set buffer options
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_name(bufnr, unique_name)
+  local bufnr = ui.create_scratch_buffer({
+    name = unique_name,
+    modifiable = true,
+  })
 
   -- Process content and extract ANSI colors
-  local processed_lines, highlights = M.process_diff_content(content, header_lines, options)
+  local processed_lines, highlights = M.process_diff_content(content, header_lines, opts)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
 
   -- Setup highlighting with parsed ANSI colors
-  M.setup_diff_highlighting(bufnr, highlights, options)
+  M.setup_diff_highlighting(bufnr, highlights, opts)
 
   -- Mark this as a jj-fugitive plugin buffer to enable safe updates
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
@@ -259,8 +265,8 @@ function M.create_colored_buffer(content, buffer_name, header_lines, options)
 end
 
 -- Update existing buffer with new colored content
-function M.update_colored_buffer(bufnr, content, header_lines, options)
-  options = options or {}
+function M.update_colored_buffer(bufnr, content, header_lines, opts)
+  opts = opts or {}
 
   -- Make buffer modifiable temporarily
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
@@ -272,11 +278,11 @@ function M.update_colored_buffer(bufnr, content, header_lines, options)
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
   -- Process content and extract ANSI colors
-  local processed_lines, highlights = M.process_diff_content(content, header_lines, options)
+  local processed_lines, highlights = M.process_diff_content(content, header_lines, opts)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
 
   -- Setup highlighting with parsed ANSI colors
-  M.setup_diff_highlighting(bufnr, highlights, options)
+  M.setup_diff_highlighting(bufnr, highlights, opts)
 
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 end

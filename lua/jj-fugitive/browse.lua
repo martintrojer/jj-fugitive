@@ -197,31 +197,32 @@ end
 function M.browse()
   local remote_url, err = get_origin_url()
   if not remote_url then
-    vim.api.nvim_err_writeln(err or "No git remote found")
+    local ui = require("jj-fugitive.ui")
+    ui.err_write(err or "No git remote found")
     return
   end
   local remote, perr = M.parse_remote_url(remote_url)
   if not remote then
-    vim.api.nvim_err_writeln(perr)
+    ui.err_write(perr)
     return
   end
 
   local rel = get_relative_path()
   if not rel then
-    vim.api.nvim_err_writeln("No file in current buffer or not inside repository")
+    ui.err_write("No file in current buffer or not inside repository")
     return
   end
 
   local rev = get_default_rev()
   if not rev then
-    vim.api.nvim_err_writeln("Unable to determine revision (no 'main' and no current commit)")
+    ui.err_write("Unable to determine revision (no 'main' and no current commit)")
     return
   end
 
   local s, e = get_line_range()
   local url = M.build_file_url(remote.web_base, remote.host, rel, rev, s, e)
   if not url then
-    vim.api.nvim_err_writeln("Failed to build browse URL")
+    ui.err_write("Failed to build browse URL")
     return
   end
 

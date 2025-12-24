@@ -1,8 +1,8 @@
 local M = {}
 
 -- Get diff output from jj with native colorization
-local function get_jj_diff(filename, options)
-  options = options or {}
+local function get_jj_diff(filename, opts)
+  opts = opts or {}
 
   -- Use the main module's repository-aware command runner
   local main_module = require("jj-fugitive.init")
@@ -10,7 +10,7 @@ local function get_jj_diff(filename, options)
   local cmd_args = { "diff" }
 
   -- Enable colors by default for better output
-  if options.color ~= false then
+  if opts.color ~= false then
     table.insert(cmd_args, "--color")
     table.insert(cmd_args, "always")
   else
@@ -19,26 +19,26 @@ local function get_jj_diff(filename, options)
   end
 
   -- Handle mutually exclusive options properly
-  if options.color_words then
+  if opts.color_words then
     -- color-words cannot be used with --git
     table.insert(cmd_args, "--color-words")
-  elseif options.tool then
+  elseif opts.tool then
     -- tool option overrides format
     table.insert(cmd_args, "--tool")
-    table.insert(cmd_args, options.tool)
+    table.insert(cmd_args, opts.tool)
   else
     -- Use git format for better compatibility and familiar output (default)
     table.insert(cmd_args, "--git")
   end
 
   -- Add context lines if specified (works with git format)
-  if options.context and not options.color_words then
+  if opts.context and not opts.color_words then
     table.insert(cmd_args, "--context")
-    table.insert(cmd_args, tostring(options.context))
+    table.insert(cmd_args, tostring(opts.context))
   end
 
   -- Add whitespace options
-  if options.ignore_whitespace then
+  if opts.ignore_whitespace then
     table.insert(cmd_args, "--ignore-all-space")
   end
 
@@ -57,16 +57,16 @@ end
 local ansi = require("jj-fugitive.ansi")
 
 -- Create a diff buffer with ANSI color parsing and highlighting
-local function create_diff_buffer(filename, diff_content, options)
-  options = options or {}
+local function create_diff_buffer(filename, diff_content, opts)
+  opts = opts or {}
 
   -- Create format description for buffer name
   local format_desc = ""
-  if options.color_words then
+  if opts.color_words then
     format_desc = " (color-words)"
-  elseif options.context then
-    format_desc = " (context:" .. options.context .. ")"
-  elseif options.ignore_whitespace then
+  elseif opts.context then
+    format_desc = " (context:" .. opts.context .. ")"
+  elseif opts.ignore_whitespace then
     format_desc = " (no-ws)"
   end
 
@@ -74,7 +74,7 @@ local function create_diff_buffer(filename, diff_content, options)
 
   -- Create header lines for file diff
   local header_lines = nil
-  if filename and not options.no_header then
+  if filename and not opts.no_header then
     header_lines = {
       "",
       "# File: " .. filename,
@@ -183,16 +183,18 @@ local function setup_diff_keymaps(bufnr, filename)
 end
 
 -- Show diff in unified format with native jj colorization
-function M.show_file_diff(filename, options)
-  options = options or { format = "git" } -- Default to git format
+function M.show_file_diff(filename, opts)
+  opts = opts or { format = "git" } -- Default to git format
 
-  local diff_output, err = get_jj_diff(filename, options)
+  local diff_output, err = get_jj_diff(filename, opts)
   if not diff_output then
-    vim.api.nvim_err_writeln(err)
+    local ui = require("jj-fugitive.ui")
+    ui.err_write(err)
     return
   end
 
-  if diff_output:match("^%s*$") then
+  local ui = require("jj-fugitive.ui")
+  if diff_output:match(ui.PATTERNS.EMPTY_LINE) then
     vim.api.nvim_echo(
       { { "No changes in " .. (filename or "working copy"), "WarningMsg" } },
       false,
@@ -204,7 +206,7 @@ function M.show_file_diff(filename, options)
   local bufnr
 
   -- Check if we should update current buffer instead of creating new window
-  if options.update_current then
+  if opts.update_current then
     -- Update the current buffer instead of creating new buffer
     local current_bufnr = vim.api.nvim_get_current_buf()
     local current_bufname = vim.api.nvim_buf_get_name(current_bufnr)
@@ -213,11 +215,11 @@ function M.show_file_diff(filename, options)
     if require("jj-fugitive.ui").is_jj_buffer(current_bufnr) then
       -- Create format description for buffer name
       local format_desc = ""
-      if options.color_words then
+      if opts.color_words then
         format_desc = " (color-words)"
-      elseif options.context then
-        format_desc = " (context:" .. options.context .. ")"
-      elseif options.ignore_whitespace then
+      elseif opts.context then
+        format_desc = " (context:" .. opts.context .. ")"
+      elseif opts.ignore_whitespace then
         format_desc = " (no-ws)"
       end
 
@@ -225,7 +227,7 @@ function M.show_file_diff(filename, options)
 
       -- Create header lines for file diff
       local header_lines = nil
-      if filename and not options.no_header then
+      if filename and not opts.no_header then
         header_lines = {
           "",
           "# File: " .. filename,
@@ -244,8 +246,9 @@ function M.show_file_diff(filename, options)
       })
 
       -- Record previous view if provided for 'b' navigation
-      if options.previous_view then
-        pcall(vim.api.nvim_buf_set_var, current_bufnr, "jj_previous_view", options.previous_view)
+      if opts.previous_view then
+        local ui = require("jj-fugitive.ui")
+        ui.store_view_context(current_bufnr, opts.previous_view, nil)
       end
 
       -- Update buffer name only if it's different
@@ -255,10 +258,10 @@ function M.show_file_diff(filename, options)
       bufnr = current_bufnr
     else
       -- Fallback to creating new buffer if not in jj buffer
-      bufnr = create_diff_buffer(filename, diff_output, options)
+      bufnr = create_diff_buffer(filename, diff_output, opts)
     end
   else
-    bufnr = create_diff_buffer(filename, diff_output, options)
+    bufnr = create_diff_buffer(filename, diff_output, opts)
 
     -- Open in new window (split or tab depending on environment)
     if vim.fn.has("gui_running") == 1 or vim.env.DISPLAY then
@@ -274,8 +277,8 @@ function M.show_file_diff(filename, options)
 
   -- Add status line info with current format
   local file_desc = filename or "all changes"
-  local format_desc = options.format or "default"
-  if options.color_words then
+  local format_desc = opts.format or "default"
+  if opts.color_words then
     format_desc = "color-words"
   end
   require("jj-fugitive.ui").set_statusline(
@@ -286,34 +289,28 @@ end
 
 local function get_or_create_sidebyside_buffer(name_pattern)
   -- Check if a buffer with this pattern already exists
-  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(bufnr) then
-      local name = vim.api.nvim_buf_get_name(bufnr)
-      if name:match(vim.pesc(name_pattern)) then
-        return bufnr
-      end
-    end
+  local ui = require("jj-fugitive.ui")
+  local escaped_pattern = vim.pesc(name_pattern)
+  local existing_buf = ui.find_buffer_by_pattern(escaped_pattern)
+  if existing_buf then
+    return existing_buf
   end
 
   -- Create new buffer if none exists
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-
-  -- Add timestamp to make buffer name unique
   local timestamp = os.time()
   local unique_name = name_pattern .. " [" .. timestamp .. "]"
-  vim.api.nvim_buf_set_name(bufnr, unique_name)
-
-  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
-
-  return bufnr
+  return ui.create_scratch_buffer({
+    name = unique_name,
+    modifiable = true,
+    mark_plugin = true,
+  })
 end
 
 -- Show diff in side-by-side format
 function M.show_file_diff_sidebyside(filename)
   if not filename then
-    vim.api.nvim_err_writeln("Side-by-side diff requires a specific file")
+    local ui = require("jj-fugitive.ui")
+    ui.err_write("Side-by-side diff requires a specific file")
     return
   end
 
@@ -391,20 +388,12 @@ function M.show_file_diff_sidebyside(filename)
   vim.api.nvim_set_current_buf(current_buf)
 
   -- Setup keymaps for both buffers
-  local setup_sidebyside_keys = function(buf)
-    local ui = require("jj-fugitive.ui")
-    ui.map(buf, "n", "q", function()
-      vim.cmd("tabclose")
-    end)
-    ui.map(buf, "n", "b", function()
-      vim.cmd("tabclose")
-    end)
-    ui.map(buf, "n", "u", function()
-      M.show_file_diff(filename)
-    end)
-    ui.map(buf, "n", "o", function()
-      vim.cmd("edit " .. vim.fn.fnameescape(filename))
-    end)
+  local ui = require("jj-fugitive.ui")
+  ui.setup_sidebyside_keymaps(original_buf, filename)
+  ui.setup_sidebyside_keymaps(current_buf, filename)
+
+  -- Add help keymap to both buffers
+  local function add_help_keymap(buf)
     ui.map(buf, "n", "g?", function()
       local help_lines = {
         "# jj-fugitive Side-by-Side Diff Help",
@@ -425,8 +414,8 @@ function M.show_file_diff_sidebyside(filename)
     end)
   end
 
-  setup_sidebyside_keys(original_buf)
-  setup_sidebyside_keys(current_buf)
+  add_help_keymap(original_buf)
+  add_help_keymap(current_buf)
 
   -- Enable diff mode
   vim.cmd("windo diffthis")
@@ -467,7 +456,7 @@ function M.show_file_diff_format_selector(filename)
     if choice then
       local index = tonumber(choice:match("^(%d+)%."))
       if index and formats[index] then
-        M.show_file_diff(filename, formats[index].options)
+        M.show_file_diff(filename, formats[index].opts)
       end
     end
   end)

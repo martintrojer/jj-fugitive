@@ -1,5 +1,16 @@
 local M = {}
 
+-- Buffer name patterns for jj-fugitive buffers
+local BUFFER_PATTERNS = {
+  STATUS = "jj%-status$",
+  DIFF = "jj%-diff:",
+  LOG = "jj%-log",
+  SHOW = "jj%-show:",
+  COMMIT = "jj%-commit",
+  DESCRIBE = "jj%-describe%-",
+  HELP = "jj%-help",
+}
+
 -- Cache for repository roots to avoid repeated filesystem traversal
 local repo_root_cache = {}
 
@@ -56,17 +67,9 @@ local function get_repo_root()
   return find_jj_root(vim.fn.getcwd())
 end
 
-local function run_jj_command(args, options)
-  options = options or {} -- luacheck: ignore options
-
-  -- Find the repository root
-  local repo_root = get_repo_root()
-  if not repo_root then
-    vim.api.nvim_err_writeln("Not in a jj repository. Current directory: " .. vim.fn.getcwd())
-    return nil
-  end
-
-  local cmd = { "jj" }
+-- Build command arguments from string or table
+local function build_command_args(base_cmd, args)
+  local cmd = type(base_cmd) == "table" and base_cmd or { base_cmd }
   if type(args) == "string" and args ~= "" then
     for arg in args:gmatch("%S+") do
       table.insert(cmd, arg)
@@ -76,13 +79,28 @@ local function run_jj_command(args, options)
       table.insert(cmd, arg)
     end
   end
+  return cmd
+end
+
+local function run_jj_command(args, opts)
+  opts = opts or {} -- luacheck: ignore opts
+  local ui = require("jj-fugitive.ui")
+
+  -- Find the repository root
+  local repo_root = get_repo_root()
+  if not repo_root then
+    ui.err_write("Not in a jj repository. Current directory: " .. vim.fn.getcwd())
+    return nil
+  end
+
+  local cmd = build_command_args("jj", args)
 
   -- Run the command from the repository root
   -- Use local-directory change to avoid affecting other windows/tabs
   local old_cwd = vim.fn.getcwd()
   local success = pcall(vim.cmd, "lcd " .. vim.fn.fnameescape(repo_root))
   if not success then
-    vim.api.nvim_err_writeln("Failed to change to repository root: " .. repo_root)
+    ui.err_write("Failed to change to repository root: " .. repo_root)
     return nil
   end
 
@@ -93,7 +111,7 @@ local function run_jj_command(args, options)
   pcall(vim.cmd, "lcd " .. vim.fn.fnameescape(old_cwd))
 
   if exit_code ~= 0 then
-    vim.api.nvim_err_writeln("jj command failed: " .. result)
+    ui.err_write("jj command failed: " .. result)
     return nil
   end
   return result, repo_root
@@ -213,19 +231,7 @@ function M.jj(args)
       if command == "commit" or command == "new" or command == "edit" then
         print(result)
         -- If status buffer is open, refresh it
-        local status_module = require("jj-fugitive.status")
-        for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(bufnr) then
-            local name = vim.api.nvim_buf_get_name(bufnr)
-            if name:match("jj%-status$") then
-              -- Refresh status buffer if it exists
-              vim.schedule(function()
-                status_module.show_status()
-              end)
-              break
-            end
-          end
-        end
+        refresh_status_buffer_if_open()
       else
         print(result)
       end
@@ -268,7 +274,7 @@ function M.log(args)
   if args and args ~= "" then
     -- Parse basic options
     if args:match("%-%-limit%s+(%d+)") then
-      options.limit = tonumber(args:match("%-%-limit%s+(%d+)"))
+      opts.limit = tonumber(args:match("%-%-limit%s+(%d+)"))
     end
 
     -- Parse revisions
@@ -277,11 +283,11 @@ function M.log(args)
       table.insert(revisions, rev)
     end
     if #revisions > 0 then
-      options.revisions = revisions
+      opts.revisions = revisions
     end
   end
 
-  require("jj-fugitive.log").show_log(options)
+  require("jj-fugitive.log").show_log(opts)
 end
 
 function M.complete(arglead, cmdline, cursorpos)
@@ -289,13 +295,63 @@ function M.complete(arglead, cmdline, cursorpos)
 end
 
 -- Expose the repository-aware command runner for other modules
-function M.run_jj_command_from_module(args, options)
-  return run_jj_command(args, options)
+function M.run_jj_command_from_module(args, opts)
+  return run_jj_command(args, opts)
 end
 
 -- Expose repository root detection for other modules
 function M.get_repo_root()
   return get_repo_root()
+end
+
+-- Refresh status buffer if it's currently open
+-- Returns true if status buffer was found and refreshed, false otherwise
+local function refresh_status_buffer_if_open()
+  local status_module = require("jj-fugitive.status")
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name:match(BUFFER_PATTERNS.STATUS) then
+        vim.schedule(function()
+          status_module.show_status()
+        end)
+        return true
+      end
+    end
+  end
+  return false
+end
+
+-- Extract description from jj show output
+local function extract_description_from_show(show_output)
+  local ui = require("jj-fugitive.ui")
+  local description = ""
+  local in_description = false
+  for line in show_output:gmatch("[^\n]*") do
+    if line:match(ui.PATTERNS.EMPTY_LINE) and in_description then
+      break -- End of description
+    elseif in_description then
+      if description ~= "" then
+        description = description .. "\n"
+      end
+      description = description .. line:gsub("^    ", "") -- Remove indentation
+    elseif line:match(ui.PATTERNS.COMMITTER_LINE) then
+      in_description = true -- Description starts after committer line
+    end
+  end
+  return description
+end
+
+-- Filter out comment lines and empty lines from buffer content
+local function filter_comment_lines(lines)
+  local ui = require("jj-fugitive.ui")
+  local filtered = {}
+  for _, line in ipairs(lines) do
+    if not line:match(ui.PATTERNS.COMMENT_LINE) and not line:match(ui.PATTERNS.EMPTY_LINE) then
+      table.insert(filtered, line)
+    end
+  end
+  return filtered
 end
 
 -- Interactive command implementation
@@ -305,7 +361,8 @@ function M.describe_interactive(cmd_parts)
   local i = 2 -- Start after command name
   while i <= #cmd_parts do
     local part = cmd_parts[i]
-    if not part:match("^%-") then -- Not a flag
+    local ui = require("jj-fugitive.ui")
+    if not part:match(ui.PATTERNS.FLAG_START) then -- Not a flag
       table.insert(revisions, part)
     end
     i = i + 1
@@ -327,7 +384,8 @@ function M.describe_interactive(cmd_parts)
   local description = ""
   local in_description = false
   for line in show_result:gmatch("[^\n]*") do
-    if line:match("^%s*$") and in_description then
+    local ui = require("jj-fugitive.ui")
+    if line:match(ui.PATTERNS.EMPTY_LINE) and in_description then
       break -- End of description
     elseif in_description then
       if description ~= "" then
@@ -340,16 +398,14 @@ function M.describe_interactive(cmd_parts)
   end
 
   -- Create buffer for editing
-  local bufnr = vim.api.nvim_create_buf(false, true)
+  local ui = require("jj-fugitive.ui")
   local buffer_name = string.format("jj-describe-%s", revision)
-
-  -- Set buffer options
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "acwrite")
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_name(bufnr, buffer_name)
-  vim.api.nvim_buf_set_option(bufnr, "filetype", "gitcommit")
+  local bufnr = ui.create_scratch_buffer({
+    name = buffer_name,
+    buftype = "acwrite",
+    filetype = "gitcommit",
+    modifiable = true,
+  })
 
   -- Set buffer content to current description
   local description_lines = vim.split(description, "\n")
@@ -362,9 +418,10 @@ function M.describe_interactive(cmd_parts)
       local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
       -- Filter out comment lines and empty lines
+      local ui = require("jj-fugitive.ui")
       local filtered_lines = {}
       for _, line in ipairs(lines) do
-        if not line:match("^%s*#") and not line:match("^%s*$") then
+        if not line:match(ui.PATTERNS.COMMENT_LINE) and not line:match(ui.PATTERNS.EMPTY_LINE) then
           table.insert(filtered_lines, line)
         end
       end
@@ -372,7 +429,8 @@ function M.describe_interactive(cmd_parts)
       local new_description = table.concat(filtered_lines, "\n"):gsub("%s+$", "") -- Trim trailing whitespace
 
       if new_description == "" then
-        vim.api.nvim_err_writeln("Empty description - not saved")
+        local ui = require("jj-fugitive.ui")
+        ui.err_write("Empty description - not saved")
         return
       end
 
@@ -383,18 +441,7 @@ function M.describe_interactive(cmd_parts)
         print("Description updated for " .. revision)
 
         -- Refresh status buffer if open
-        local status_module = require("jj-fugitive.status")
-        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(buf) then
-            local name = vim.api.nvim_buf_get_name(buf)
-            if name:match("jj%-status$") then
-              vim.schedule(function()
-                status_module.show_status()
-              end)
-              break
-            end
-          end
-        end
+        refresh_status_buffer_if_open()
       end
     end,
   })
@@ -422,7 +469,8 @@ function M.commit_interactive(cmd_parts)
   local i = 2 -- Start after command name
   while i <= #cmd_parts do
     local part = cmd_parts[i]
-    if not part:match("^%-") then -- Not a flag
+    local ui = require("jj-fugitive.ui")
+    if not part:match(ui.PATTERNS.FLAG_START) then -- Not a flag
       table.insert(filesets, part)
     end
     i = i + 1
@@ -435,32 +483,17 @@ function M.commit_interactive(cmd_parts)
   end
 
   -- Extract description from show output
-  local description = ""
-  local in_description = false
-  for line in show_result:gmatch("[^\n]*") do
-    if line:match("^%s*$") and in_description then
-      break -- End of description
-    elseif in_description then
-      if description ~= "" then
-        description = description .. "\n"
-      end
-      description = description .. line:gsub("^    ", "") -- Remove indentation
-    elseif line:match("^Committer:") then
-      in_description = true -- Description starts after committer line
-    end
-  end
+  local description = extract_description_from_show(show_result)
 
   -- Create buffer for editing
-  local bufnr = vim.api.nvim_create_buf(false, true)
+  local ui = require("jj-fugitive.ui")
   local buffer_name = "jj-commit"
-
-  -- Set buffer options
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "acwrite")
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_name(bufnr, buffer_name)
-  vim.api.nvim_buf_set_option(bufnr, "filetype", "gitcommit")
+  local bufnr = ui.create_scratch_buffer({
+    name = buffer_name,
+    buftype = "acwrite",
+    filetype = "gitcommit",
+    modifiable = true,
+  })
 
   -- Set buffer content to current description
   local description_lines = vim.split(description, "\n")
@@ -473,17 +506,13 @@ function M.commit_interactive(cmd_parts)
       local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 
       -- Filter out comment lines and empty lines
-      local filtered_lines = {}
-      for _, line in ipairs(lines) do
-        if not line:match("^%s*#") and not line:match("^%s*$") then
-          table.insert(filtered_lines, line)
-        end
-      end
+      local filtered_lines = filter_comment_lines(lines)
 
       local new_description = table.concat(filtered_lines, "\n"):gsub("%s+$", "") -- Trim trailing whitespace
 
       if new_description == "" then
-        vim.api.nvim_err_writeln("Empty description - not saved")
+        local ui = require("jj-fugitive.ui")
+        ui.err_write("Empty description - not saved")
         return
       end
 
@@ -499,18 +528,7 @@ function M.commit_interactive(cmd_parts)
         print("Commit created: " .. new_description:gsub("\n.*", "") .. "...") -- Show first line
 
         -- Refresh status buffer if open
-        local status_module = require("jj-fugitive.status")
-        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-          if vim.api.nvim_buf_is_valid(buf) then
-            local name = vim.api.nvim_buf_get_name(buf)
-            if name:match("jj%-status$") then
-              vim.schedule(function()
-                status_module.show_status()
-              end)
-              break
-            end
-          end
-        end
+        refresh_status_buffer_if_open()
       end
     end,
   })
@@ -537,7 +555,8 @@ function M.commit_interactive(cmd_parts)
 end
 
 function M.split_interactive(cmd_parts) -- luacheck: ignore cmd_parts
-  vim.api.nvim_err_writeln(
+  local ui = require("jj-fugitive.ui")
+  ui.err_write(
     "Interactive split requires diff editor integration (not yet implemented)"
   )
   vim.api.nvim_echo({
@@ -548,7 +567,8 @@ function M.split_interactive(cmd_parts) -- luacheck: ignore cmd_parts
 end
 
 function M.diffedit_interactive(cmd_parts) -- luacheck: ignore cmd_parts
-  vim.api.nvim_err_writeln(
+  local ui = require("jj-fugitive.ui")
+  ui.err_write(
     "Interactive diffedit requires diff editor integration (not yet implemented)"
   )
   vim.api.nvim_echo({
@@ -559,7 +579,8 @@ function M.diffedit_interactive(cmd_parts) -- luacheck: ignore cmd_parts
 end
 
 function M.resolve_interactive(cmd_parts) -- luacheck: ignore cmd_parts
-  vim.api.nvim_err_writeln(
+  local ui = require("jj-fugitive.ui")
+  ui.err_write(
     "Interactive resolve requires merge tool integration (not yet implemented)"
   )
   vim.api.nvim_echo({
@@ -595,16 +616,15 @@ function M.jhelp(args)
     return
   end
 
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_name(bufnr, "jj-help")
+  local ui = require("jj-fugitive.ui")
+  local bufnr = ui.create_scratch_buffer({
+    name = "jj-help",
+    filetype = "help",
+    modifiable = false,
+  })
 
   local lines = vim.split(out, "\n")
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  vim.api.nvim_buf_set_option(bufnr, "filetype", "help")
 
   vim.cmd("split")
   vim.api.nvim_set_current_buf(bufnr)

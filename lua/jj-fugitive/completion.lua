@@ -2,46 +2,78 @@ local M = {}
 
 -- Cache for command help parsing results
 local help_cache = {}
-local cache_ttl = 300 -- 5 minutes cache TTL
+local CACHE_TTL = 300 -- 5 minutes cache TTL
 
--- Parse jj help output to extract commands with descriptions
-local function parse_jj_commands()
-  local cache_key = "jj_commands"
+-- Helper to trim whitespace
+local function trim(str)
+  return str:gsub("^%s*", ""):gsub("%s*$", "")
+end
+
+-- Helper to check if string is empty
+local function is_empty(str)
+  return not str or str == ""
+end
+
+-- Common help parsing framework
+-- command_args: table of command arguments (e.g., {"jj", "--help"})
+-- cache_key: string key for caching
+-- section_type: "commands" or "options"
+-- parse_line_fn: function(line) -> item or table of items or nil
+-- fallback_data: optional fallback data if parsing fails
+local function parse_help_output(command_args, cache_key, section_type, parse_line_fn, fallback_data)
   local now = os.time()
 
   -- Check cache first
-  if help_cache[cache_key] and help_cache[cache_key].timestamp + cache_ttl > now then
+  if help_cache[cache_key] and help_cache[cache_key].timestamp + CACHE_TTL > now then
     return help_cache[cache_key].data
   end
 
-  local help_output = vim.fn.system({ "jj", "--help" })
+  local help_output = vim.fn.system(command_args)
   if vim.v.shell_error ~= 0 then
+    -- Return fallback data if provided
+    if fallback_data then
+      return fallback_data
+    end
     return {}
   end
 
-  local commands = {}
-  local in_commands_section = false
+  local results = {}
+  local in_target_section = false
+  local section_start_pattern = section_type == "commands" and "^Commands:" or "^Options:"
+  local section_end_patterns = {
+    "^Options:",
+    "^OPTIONS:",
+    "^Commands:",
+    "^COMMANDS:",
+    "^Usage:",
+  }
 
   for line in help_output:gmatch("[^\r\n]+") do
-    -- Look for the Commands section
-    if line:match("^Commands:") or line:match("^COMMANDS:") then
-      in_commands_section = true
-    elseif line:match("^Options:") or line:match("^OPTIONS:") or line:match("^Usage:") then
-      in_commands_section = false
-    elseif in_commands_section then
-      -- Parse command lines with descriptions
-      -- Format: "  command    Description of the command"
-      local cmd, desc = line:match("^%s+([a-z][a-z0-9%-]*)%s+(.+)")
-      if cmd and desc then
-        table.insert(commands, {
-          name = cmd,
-          description = desc:gsub("^%s+", ""):gsub("%s+$", ""), -- trim whitespace
-        })
-      else
-        -- Fallback: just the command name
-        local cmd_only = line:match("^%s+([a-z][a-z0-9%-]*)")
-        if cmd_only then
-          table.insert(commands, { name = cmd_only, description = "" })
+    -- Look for target section
+    if line:match(section_start_pattern) or line:match("^" .. section_type:upper() .. ":") then
+      in_target_section = true
+    else
+      -- Check if we've hit an end pattern
+      for _, pattern in ipairs(section_end_patterns) do
+        if line:match(pattern) and not line:match(section_start_pattern) then
+          in_target_section = false
+          break
+        end
+      end
+    end
+
+    if in_target_section then
+      local item = parse_line_fn(line)
+      if item then
+        -- Handle both single items and arrays of items (for flags with multiple per line)
+        if type(item) == "table" and item[1] and type(item[1]) == "table" and item[1].name then
+          -- Array of items
+          for _, sub_item in ipairs(item) do
+            table.insert(results, sub_item)
+          end
+        else
+          -- Single item
+          table.insert(results, item)
         end
       end
     end
@@ -49,21 +81,55 @@ local function parse_jj_commands()
 
   -- Cache the result
   help_cache[cache_key] = {
-    data = commands,
+    data = results,
     timestamp = now,
   }
 
-  return commands
+  return results
+end
+
+-- Parse jj help output to extract commands with descriptions
+local function parse_jj_commands()
+  local function parse_command_line(line)
+    -- Parse command lines with descriptions
+    -- Format: "  command    Description of the command"
+    local cmd, desc = line:match("^%s+([a-z][a-z0-9%-]*)%s+(.+)")
+    if cmd and desc then
+      return { name = cmd, description = trim(desc) }
+    else
+      -- Fallback: just the command name
+      local cmd_only = line:match("^%s+([a-z][a-z0-9%-]*)")
+      if cmd_only then
+        return { name = cmd_only, description = "" }
+      end
+    end
+    return nil
+  end
+
+  return parse_help_output({ "jj", "--help" }, "jj_commands", "commands", parse_command_line, nil)
 end
 
 -- Parse subcommands for commands that have them (like 'git', 'bookmark', etc.)
 local function parse_subcommands(command)
   local cache_key = "jj_" .. command .. "_subcommands"
-  local now = os.time()
 
-  -- Check cache first
-  if help_cache[cache_key] and help_cache[cache_key].timestamp + cache_ttl > now then
-    return help_cache[cache_key].data
+  -- Fallback for environments where help parsing might fail
+  local fallback_subcommands = {
+    bookmark = { "create", "delete", "list", "set", "move", "rename", "track", "untrack" },
+    git = { "push", "fetch", "pull", "clone", "remote", "import", "export" },
+    branch = { "create", "delete", "list", "set" },
+    config = { "get", "set", "list", "unset" },
+    operation = { "log", "undo", "restore", "abandon" },
+    op = { "log", "undo", "restore", "abandon" },
+    workspace = { "add", "forget", "list", "root" },
+  }
+
+  local fallback_data = nil
+  if fallback_subcommands[command] then
+    fallback_data = {}
+    for _, subcmd in ipairs(fallback_subcommands[command]) do
+      table.insert(fallback_data, { name = subcmd, description = "" })
+    end
   end
 
   -- Split command into parts for proper argument passing
@@ -74,76 +140,33 @@ local function parse_subcommands(command)
   end
   table.insert(args, "--help")
 
-  local help_output = vim.fn.system(args)
-  if vim.v.shell_error ~= 0 then
-    -- Fallback for environments where help parsing might fail
-    -- Use hardcoded common subcommands for known commands
-    local fallback_subcommands = {
-      bookmark = { "create", "delete", "list", "set", "move", "rename", "track", "untrack" },
-      git = { "push", "fetch", "pull", "clone", "remote", "import", "export" },
-      branch = { "create", "delete", "list", "set" },
-      config = { "get", "set", "list", "unset" },
-      operation = { "log", "undo", "restore", "abandon" },
-      op = { "log", "undo", "restore", "abandon" },
-      workspace = { "add", "forget", "list", "root" },
-    }
-
-    if fallback_subcommands[command] then
-      local fallback_result = {}
-      for _, subcmd in ipairs(fallback_subcommands[command]) do
-        table.insert(fallback_result, { name = subcmd, description = "" })
-      end
-      return fallback_result
-    end
-
-    return {}
-  end
-
-  local subcommands = {}
-  local in_commands_section = false
-
-  for line in help_output:gmatch("[^\r\n]+") do
-    -- Look for Commands section in subcommand help
-    if line:match("^Commands:") or line:match("^COMMANDS:") then
-      in_commands_section = true
-    elseif line:match("^Options:") or line:match("^OPTIONS:") or line:match("^Usage:") then
-      in_commands_section = false
-    elseif in_commands_section then
-      -- Parse subcommand lines with descriptions
-      local subcmd, desc = line:match("^%s+([a-z][a-z0-9%-]*)%s+(.+)")
-      if subcmd and desc then
-        table.insert(subcommands, {
-          name = subcmd,
-          description = desc:gsub("^%s+", ""):gsub("%s+$", ""),
-        })
-      else
-        -- Fallback: just the subcommand name
-        local subcmd_only = line:match("^%s+([a-z][a-z0-9%-]*)")
-        if subcmd_only then
-          table.insert(subcommands, { name = subcmd_only, description = "" })
-        end
+  local function parse_subcommand_line(line)
+    -- Parse subcommand lines with descriptions
+    local subcmd, desc = line:match("^%s+([a-z][a-z0-9%-]*)%s+(.+)")
+    if subcmd and desc then
+      return { name = subcmd, description = trim(desc) }
+    else
+      -- Fallback: just the subcommand name
+      local subcmd_only = line:match("^%s+([a-z][a-z0-9%-]*)")
+      if subcmd_only then
+        return { name = subcmd_only, description = "" }
       end
     end
+    return nil
   end
 
-  -- Cache the result
-  help_cache[cache_key] = {
-    data = subcommands,
-    timestamp = now,
-  }
-
-  return subcommands
+  return parse_help_output(args, cache_key, "commands", parse_subcommand_line, fallback_data)
 end
 
 -- Parse command-specific help to extract flags with descriptions
 local function parse_command_flags(command)
   local cache_key = "jj_" .. command .. "_flags"
-  local now = os.time()
 
-  -- Check cache first
-  if help_cache[cache_key] and help_cache[cache_key].timestamp + cache_ttl > now then
-    return help_cache[cache_key].data
-  end
+  -- Fallback for environments where help parsing might fail
+  local fallback_flags = {
+    { name = "--help", description = "Print help" },
+    { name = "-h", description = "Print help" },
+  }
 
   -- Split command into parts for proper argument passing
   local command_parts = vim.split(command, "%s+")
@@ -153,64 +176,44 @@ local function parse_command_flags(command)
   end
   table.insert(args, "--help")
 
-  local help_output = vim.fn.system(args)
-  if vim.v.shell_error ~= 0 then
-    -- Fallback for environments where help parsing might fail - provide common flags
-    local fallback_flags = {
-      { name = "--help", description = "Print help" },
-      { name = "-h", description = "Print help" },
-    }
-
-    return fallback_flags
-  end
-
-  local flags = {}
-  local in_options_section = false
-
-  for line in help_output:gmatch("[^\r\n]+") do
-    -- Look for Options section
-    if line:match("^Options:") or line:match("^OPTIONS:") then
-      in_options_section = true
-    elseif line:match("^Commands:") or line:match("^COMMANDS:") or line:match("^Usage:") then
-      in_options_section = false
-    elseif in_options_section then
-      -- Parse flag lines with descriptions
-      -- Handle multi-line descriptions by looking at current and next lines
-      local current_line = line
-
-      -- Look for patterns like: "  -h, --help" (flags on one line)
-      local short_flag, long_flag = current_line:match("^%s*%-([a-zA-Z]),%s*%-%-([a-z][a-z0-9%-]*)")
-      if short_flag and long_flag then
-        -- This is a flag line, description might be on next line or same line
-        local desc = current_line:match("^%s*%-[a-zA-Z],%s*%-%-[a-z][a-z0-9%-]*%s+(.+)")
+  local function parse_flag_line(line)
+    -- Parse flag lines with descriptions
+    -- Look for patterns like: "  -h, --help" (flags on one line)
+    local short_flag, long_flag = line:match("^%s*%-([a-zA-Z]),%s*%-%-([a-z][a-z0-9%-]*)")
+    if short_flag and long_flag then
+      -- This is a flag line, description might be on next line or same line
+      local desc = line:match("^%s*%-[a-zA-Z],%s*%-%-[a-z][a-z0-9%-]*%s+(.+)")
+      if not desc then
+        desc = "Print help information" -- Default for help flags
+      end
+      -- Return both flags as separate items (need special handling)
+      return { { name = "-" .. short_flag, description = desc }, { name = "--" .. long_flag, description = desc } }
+    else
+      -- Look for long flags only: "      --flag"
+      local flag = line:match("^%s*%-%-([a-z][a-z0-9%-]*)")
+      if flag then
+        local desc = line:match("^%s*%-%-[a-z][a-z0-9%-]*%s+(.+)")
         if not desc then
-          desc = "Print help information" -- Default for help flags
+          desc = "" -- No description found
         end
-        table.insert(flags, { name = "-" .. short_flag, description = desc })
-        table.insert(flags, { name = "--" .. long_flag, description = desc })
+        return { { name = "--" .. flag, description = desc } }
       else
-        -- Look for long flags only: "      --flag"
-        local flag = current_line:match("^%s*%-%-([a-z][a-z0-9%-]*)")
-        if flag then
-          local desc = current_line:match("^%s*%-%-[a-z][a-z0-9%-]*%s+(.+)")
+        -- Look for short flags only: "  -f"
+        local short = line:match("^%s*%-([a-zA-Z])%s")
+        if short then
+          local desc = line:match("^%s*%-[a-zA-Z]%s+(.+)")
           if not desc then
-            desc = "" -- No description found
+            desc = ""
           end
-          table.insert(flags, { name = "--" .. flag, description = desc })
-        else
-          -- Look for short flags only: "  -f"
-          local short = current_line:match("^%s*%-([a-zA-Z])%s")
-          if short then
-            local desc = current_line:match("^%s*%-[a-zA-Z]%s+(.+)")
-            if not desc then
-              desc = ""
-            end
-            table.insert(flags, { name = "-" .. short, description = desc })
-          end
+          return { { name = "-" .. short, description = desc } }
         end
       end
     end
+    return nil
   end
+
+  -- Use the framework (it handles multiple flags per line automatically)
+  local flags = parse_help_output(args, cache_key, "options", parse_flag_line, fallback_flags)
 
   -- Add common global flags that work with most commands
   local global_flags = {
@@ -235,10 +238,10 @@ local function parse_command_flags(command)
     end
   end
 
-  -- Cache the result
+  -- Update cache with final results
   help_cache[cache_key] = {
     data = flags,
-    timestamp = now,
+    timestamp = os.time(),
   }
 
   return flags
@@ -422,13 +425,14 @@ function M.get_changed_files()
   local files = {}
   local in_changes = false
 
+  local ui = require("jj-fugitive.ui")
   for line in result:gmatch("[^\r\n]+") do
-    if line:match("^Working copy changes:") then
+    if line:match(ui.PATTERNS.WORKING_COPY_CHANGES) then
       in_changes = true
-    elseif line:match("^Working copy") or line:match("^Parent commit") then
+    elseif line:match(ui.PATTERNS.WORKING_COPY_HEADER) or line:match(ui.PATTERNS.PARENT_COMMIT) then
       in_changes = false
-    elseif in_changes and line:match("^[A-Z]") then
-      local filename = line:match("^[A-Z] (.+)")
+    elseif in_changes and line:match(ui.PATTERNS.STATUS_LINE) then
+      local filename = line:match(ui.PATTERNS.STATUS_FILENAME)
       if filename then
         table.insert(files, filename)
       end

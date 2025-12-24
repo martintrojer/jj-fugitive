@@ -1,14 +1,42 @@
 local M = {}
 
+-- Regex pattern constants for common patterns used across the plugin
+M.PATTERNS = {
+  -- Status view patterns
+  STATUS_LINE = "^[A-Z] ", -- Matches status lines like "M file.txt"
+  STATUS_FILENAME = "^[A-Z] (.+)", -- Extracts filename from status line
+  WORKING_COPY_HEADER = "^Working copy",
+  WORKING_COPY_CHANGES = "^Working copy changes:",
+  PARENT_COMMIT = "^Parent commit",
+  
+  -- Commit ID patterns
+  COMMIT_ID_8_HEX = "([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$",
+  COMMIT_ID_WORKING_COPY = "^Working copy%s+%(@%)%s*:%s*%w+%s+([a-f0-9]+)",
+  COMMIT_ID_PARENT = "^Parent commit%s+%(@%-%):%s*%w+%s+([a-f0-9]+)",
+  
+  -- Common line patterns
+  EMPTY_LINE = "^%s*$",
+  COMMENT_LINE = "^%s*#",
+  COMMITTER_LINE = "^Committer:",
+  
+  -- Flag/option patterns
+  FLAG_START = "^%-", -- Starts with dash (short or long flag)
+  LONG_FLAG_START = "^%-%-", -- Starts with double dash (long flag)
+}
+
 -- Create a standard scratch buffer with common options
--- opts = { name=string, unique=true|false, filetype=string, modifiable=false }
+-- opts = {
+--   name=string, unique=true|false, filetype=string, modifiable=false,
+--   buftype="nofile"|"acwrite", mark_plugin=true|false
+-- }
 function M.create_scratch_buffer(opts)
   opts = opts or {}
 
   local bufnr = vim.api.nvim_create_buf(false, true)
 
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
+  -- Set buffer options with defaults
+  vim.api.nvim_buf_set_option(bufnr, "buftype", opts.buftype or "nofile")
+  vim.api.nvim_buf_set_option(bufnr, "bufhidden", opts.bufhidden or "wipe")
   vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", opts.modifiable == true)
 
@@ -23,6 +51,11 @@ function M.create_scratch_buffer(opts)
       name = string.format("%s [%d]", name, ts)
     end
     vim.api.nvim_buf_set_name(bufnr, name)
+  end
+
+  -- Mark as plugin buffer if requested
+  if opts.mark_plugin then
+    pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
   end
 
   return bufnr
@@ -114,14 +147,18 @@ function M.set_statusline(bufnr, text)
   end)
 end
 
+-- Standardized error message writing
+-- Provides consistent error formatting across the plugin
+function M.err_write(msg)
+  vim.api.nvim_err_writeln(msg)
+end
+
 -- Buffer-local keymap helper with sane defaults
 -- mode: string or table, lhs: string, rhs: fn|string, opts: table
 function M.map(bufnr, mode, lhs, rhs, opts)
   local base = { buffer = bufnr, noremap = true, silent = true }
   if opts then
-    for k, v in pairs(opts) do
-      base[k] = v
-    end
+    base = vim.tbl_extend("force", base, opts)
   end
   vim.keymap.set(mode, lhs, rhs, base)
 end
@@ -191,6 +228,73 @@ function M.setup_exit_keymaps(bufnr, opts)
       vim.cmd(close_cmd)
     end)
   end)
+end
+
+-- Show a confirmation dialog and return true if user confirms
+-- message: string - The confirmation message
+-- default_no: boolean - If true, default to "No" (default: false)
+function M.confirm_action(message, default_no)
+  local default_choice = default_no and 2 or 1
+  return vim.fn.confirm(message, "&Yes\n&No", default_choice) == 1
+end
+
+-- Get buffer variable safely with default value
+-- Returns the variable value or default if not found/error
+function M.get_buf_var_safe(bufnr, var_name, default)
+  local ok, val = pcall(vim.api.nvim_buf_get_var, bufnr, var_name)
+  return ok and val or default
+end
+
+-- Store view context (previous view and log limit) for navigation
+-- This is used to enable 'b' key to navigate back to previous views
+function M.store_view_context(bufnr, previous_view, log_limit)
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_previous_view", previous_view or "log")
+  if log_limit then
+    pcall(vim.api.nvim_buf_set_var, bufnr, "jj_log_limit", log_limit)
+  end
+end
+
+-- Setup side-by-side diff buffer keymaps
+-- Common keymaps for side-by-side diff views (used in diff.lua and log.lua)
+function M.setup_sidebyside_keymaps(bufnr, filename)
+  M.map(bufnr, "n", "q", function()
+    vim.cmd("tabclose")
+  end)
+  M.map(bufnr, "n", "b", function()
+    vim.cmd("tabclose")
+  end)
+  if filename then
+    M.map(bufnr, "n", "u", function()
+      require("jj-fugitive.diff").show_file_diff(filename)
+    end)
+    M.map(bufnr, "n", "o", function()
+      vim.cmd("edit " .. vim.fn.fnameescape(filename))
+    end)
+  end
+end
+
+-- Find buffer by name pattern
+-- Returns the first buffer that matches the pattern, or nil if not found
+function M.find_buffer_by_pattern(pattern)
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(bufnr) then
+      local name = vim.api.nvim_buf_get_name(bufnr)
+      if name:match(pattern) then
+        return bufnr
+      end
+    end
+  end
+  return nil
+end
+
+-- Trim whitespace from string
+local function trim(str)
+  return str:gsub("^%s*", ""):gsub("%s*$", "")
+end
+
+-- Check if string is empty
+local function is_empty(str)
+  return not str or str == ""
 end
 
 return M

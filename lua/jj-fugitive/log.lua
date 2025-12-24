@@ -7,8 +7,8 @@ local ansi = require("jj-fugitive.ansi")
 local show_commit_diff_sidebyside
 
 -- Get native jj log output with colors preserved
-local function get_jj_log(options)
-  options = options or {}
+local function get_jj_log(opts)
+  opts = opts or {}
 
   -- Use the main module's repository-aware command runner
   local main_module = require("jj-fugitive.init")
@@ -20,14 +20,14 @@ local function get_jj_log(options)
   table.insert(cmd_args, "always")
 
   -- Limit number of commits if specified
-  if options.limit then
+  if opts.limit then
     table.insert(cmd_args, "--limit")
-    table.insert(cmd_args, tostring(options.limit))
+    table.insert(cmd_args, tostring(opts.limit))
   end
 
   -- Add revisions if specified (supports -r flag)
-  if options.revisions then
-    for _, rev in ipairs(options.revisions) do
+  if opts.revisions then
+    for _, rev in ipairs(opts.revisions) do
       table.insert(cmd_args, "-r")
       table.insert(cmd_args, rev)
     end
@@ -85,10 +85,35 @@ local function extract_commit_ids_from_log(output)
   return commit_data
 end
 
+-- Extract commit ID from a line using multiple patterns in order of specificity
+-- This handles both status view lines and log view lines
+local function extract_commit_id_from_line(line)
+  local ui = require("jj-fugitive.ui")
+  if not line or line == "" or line:match(ui.PATTERNS.COMMENT_LINE) then
+    return nil
+  end
+
+  -- Try multiple patterns in order of specificity
+  local patterns = {
+    ui.PATTERNS.COMMIT_ID_WORKING_COPY,
+    ui.PATTERNS.COMMIT_ID_PARENT,
+    ui.PATTERNS.COMMIT_ID_8_HEX,
+  }
+
+  for _, pattern in ipairs(patterns) do
+    local id = line:match(pattern)
+    if id and #id >= 8 then
+      return id
+    end
+  end
+  return nil
+end
+
 -- Get commit ID from current line in native jj log format
 local function get_commit_from_line(line, commit_data)
+  local ui = require("jj-fugitive.ui")
   -- Skip header lines
-  if line:match("^#") or line == "" then
+  if line:match(ui.PATTERNS.COMMENT_LINE) or line == "" then
     return nil
   end
 
@@ -100,10 +125,7 @@ local function get_commit_from_line(line, commit_data)
   end
 
   -- Fallback: try to extract directly from line
-  -- Look for 8-character hex at end of line
-  local commit_id =
-    line:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])$")
-  return commit_id
+  return extract_commit_id_from_line(line)
 end
 
 -- Setup keymaps for commit detail view with navigation back to log
@@ -148,13 +170,10 @@ local function show_commit_details(commit_id, opts)
     -- Only update if we're in a jj-related buffer
     if require("jj-fugitive.ui").is_jj_buffer(current_bufnr) then
       -- Store original buffer info for navigation back
+      local ui = require("jj-fugitive.ui")
       local previous_view = opts.previous_view or "log"
-      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", previous_view)
-      local log_limit = 0 -- Default to no limit (standard jj log)
-      pcall(function()
-        log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")
-      end)
-      vim.api.nvim_buf_set_var(current_bufnr, "jj_log_limit", log_limit)
+      local log_limit = ui.get_buf_var_safe(current_bufnr, "jj_log_limit", 0)
+      ui.store_view_context(current_bufnr, previous_view, log_limit)
 
       -- Update buffer content
       ansi.update_colored_buffer(current_bufnr, result, header_lines, {
@@ -188,7 +207,8 @@ local function show_commit_details(commit_id, opts)
   vim.api.nvim_set_current_buf(bufnr)
 
   -- Record previous view for unified 'b' behavior
-  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_previous_view", opts.previous_view or "log")
+  local ui = require("jj-fugitive.ui")
+  ui.store_view_context(bufnr, opts.previous_view, nil)
 
   -- Setup navigation keymaps
   setup_commit_detail_keymaps(bufnr)
@@ -238,8 +258,8 @@ local function rebase_onto_commit(commit_id)
   end
 
   -- Ask for confirmation
-  local choice = vim.fn.confirm("Rebase current commit onto " .. commit_id .. "?", "&Yes\n&No", 2)
-  if choice ~= 1 then
+  local ui = require("jj-fugitive.ui")
+  if not ui.confirm_action("Rebase current commit onto " .. commit_id .. "?", true) then
     return
   end
 
@@ -300,13 +320,10 @@ local function show_commit_diff(commit_id, opts)
     -- Only update if we're in a jj-related buffer
     if require("jj-fugitive.ui").is_jj_buffer(current_bufnr) then
       -- Store original buffer info for navigation back
+      local ui = require("jj-fugitive.ui")
       local previous_view = opts.previous_view or "log"
-      vim.api.nvim_buf_set_var(current_bufnr, "jj_previous_view", previous_view)
-      local log_limit = 0 -- Default to no limit (standard jj log)
-      pcall(function()
-        log_limit = vim.api.nvim_buf_get_var(current_bufnr, "jj_log_limit")
-      end)
-      vim.api.nvim_buf_set_var(current_bufnr, "jj_log_limit", log_limit)
+      local log_limit = ui.get_buf_var_safe(current_bufnr, "jj_log_limit", 0)
+      ui.store_view_context(current_bufnr, previous_view, log_limit)
 
       -- Update buffer content
       ansi.update_colored_buffer(current_bufnr, result, header_lines, {
@@ -340,7 +357,8 @@ local function show_commit_diff(commit_id, opts)
   vim.api.nvim_set_current_buf(bufnr)
 
   -- Record previous view for unified 'b' behavior
-  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_previous_view", opts.previous_view or "log")
+  local ui = require("jj-fugitive.ui")
+  ui.store_view_context(bufnr, opts.previous_view, nil)
 
   -- Setup navigation keymaps
   setup_commit_detail_keymaps(bufnr)
@@ -362,7 +380,8 @@ function show_commit_diff_sidebyside(commit_id)
     commit_id,
   })
 
-  if not files_result or files_result:match("^%s*$") then
+  local ui = require("jj-fugitive.ui")
+  if not files_result or files_result:match(ui.PATTERNS.EMPTY_LINE) then
     vim.api.nvim_echo({ { "No files changed in commit " .. commit_id, "WarningMsg" } }, false, {})
     return
   end
@@ -447,18 +466,9 @@ function show_commit_diff_sidebyside(commit_id)
   vim.cmd("diffthis")
 
   -- Set up keymaps for both buffers
-  local function setup_commit_diff_keymaps(bufnr)
-    local ui = require("jj-fugitive.ui")
-    ui.map(bufnr, "n", "q", function()
-      vim.cmd("tabclose")
-    end)
-    ui.map(bufnr, "n", "b", function()
-      vim.cmd("tabclose")
-    end)
-  end
-
-  setup_commit_diff_keymaps(left_bufnr)
-  setup_commit_diff_keymaps(right_bufnr)
+  local ui = require("jj-fugitive.ui")
+  ui.setup_sidebyside_keymaps(left_bufnr, nil)
+  ui.setup_sidebyside_keymaps(right_bufnr, nil)
 end
 
 -- Expand log view with more commits using -r .. flag with increased limit
@@ -482,7 +492,8 @@ local function expand_log_view(bufnr)
   -- Get new log output using -r .. with increased limit to show more commits
   local log_output, err = get_jj_log({ revisions = { ".." }, limit = new_limit })
   if not log_output then
-    vim.api.nvim_err_writeln(err)
+    local ui = require("jj-fugitive.ui")
+    ui.err_write(err)
     return
   end
 
@@ -497,7 +508,8 @@ local function expand_log_view(bufnr)
   local current_commit_count = 0
   local current_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for _, line in ipairs(current_lines) do
-    if not line:match("^#") and line ~= "" and line:match("[◆@○]") then
+    local ui = require("jj-fugitive.ui")
+    if not line:match(ui.PATTERNS.COMMENT_LINE) and line ~= "" and line:match("[◆@○]") then
       current_commit_count = current_commit_count + 1
     end
   end
@@ -599,15 +611,13 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this is destructive
-      local choice = vim.fn.confirm(
+      if ui.confirm_action(
         string.format(
           "Abandon commit %s? This will rebase its descendants onto its parent.",
           commit_id
         ),
-        "&Yes\n&No",
-        2
-      )
-      if choice == 1 then
+        true
+      ) then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "abandon", commit_id })
         if result then
@@ -626,15 +636,13 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this will modify the commit
-      local choice = vim.fn.confirm(
+      if ui.confirm_action(
         string.format(
           "Squash commit %s into its parent? This will move its changes to the parent.",
           commit_id
         ),
-        "&Yes\n&No",
-        2
-      )
-      if choice == 1 then
+        true
+      ) then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "squash", "-r", commit_id })
         if result then
@@ -653,15 +661,13 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this will modify the commit
-      local choice = vim.fn.confirm(
+      if ui.confirm_action(
         string.format(
           "Split commit %s into two? This will open an interactive editor to select changes.",
           commit_id
         ),
-        "&Yes\n&No",
-        2
-      )
-      if choice == 1 then
+        true
+      ) then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "split", "-r", commit_id })
         if result then
@@ -680,15 +686,13 @@ local function setup_log_keymaps(bufnr, commit_data)
     local commit_id = get_commit_from_line(line, commit_data)
     if commit_id then
       -- Ask for confirmation since this will create a new commit
-      local choice = vim.fn.confirm(
+      if ui.confirm_action(
         string.format(
           "Duplicate commit %s? This will create a copy with the same content.",
           commit_id
         ),
-        "&Yes\n&No",
-        2
-      )
-      if choice == 1 then
+        true
+      ) then
         local main_module = require("jj-fugitive.init")
         local result = main_module.run_jj_command_from_module({ "duplicate", commit_id })
         if result then
@@ -873,16 +877,17 @@ local function setup_log_keymaps(bufnr, commit_data)
 end
 
 -- Main function to show log view
-function M.show_log(options)
-  options = options or {}
+function M.show_log(opts)
+  opts = opts or {}
   -- No default limit - use standard jj log behavior
 
   -- Only set revisions if explicitly provided
   -- Default jj log behavior shows recent commits without needing -r ..
 
-  local log_output, err = get_jj_log(options)
+  local log_output, err = get_jj_log(opts)
   if not log_output then
-    vim.api.nvim_err_writeln(err)
+    local ui = require("jj-fugitive.ui")
+    ui.err_write(err)
     return
   end
 
@@ -894,7 +899,7 @@ function M.show_log(options)
   end
 
   -- Use native jj output with ANSI processing
-  local limit_text = options.limit and string.format(" (limit: %d)", options.limit) or ""
+  local limit_text = opts.limit and string.format(" (limit: %d)", opts.limit) or ""
   local header_lines = {
     "",
     "# jj Log View" .. limit_text,
@@ -906,7 +911,7 @@ function M.show_log(options)
   local bufnr
 
   -- If update_current is true, update the current buffer instead of creating new one
-  if options.update_current then
+  if opts.update_current then
     bufnr = vim.api.nvim_get_current_buf()
 
     -- Only update if we're in a jj-related buffer
@@ -927,11 +932,11 @@ function M.show_log(options)
       pcall(vim.api.nvim_buf_del_var, bufnr, "jj_previous_view")
     else
       -- Fallback to creating new buffer if not in jj buffer
-      options.update_current = false
+      opts.update_current = false
     end
   end
 
-  if not options.update_current then
+  if not opts.update_current then
     -- Create buffer with native jj log output and ANSI color processing
     bufnr = ansi.create_colored_buffer(log_output, bufname, header_lines, {
       prefix = "JjLog",
@@ -949,7 +954,7 @@ function M.show_log(options)
   end)
 
   -- Store current limit in buffer variable for expand functionality
-  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", options.limit or 0)
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
 
   -- Setup keymaps for interaction (once per buffer)
   local ui = require("jj-fugitive.ui")
@@ -957,7 +962,7 @@ function M.show_log(options)
     setup_log_keymaps(bufnr, commit_data)
   end
 
-  if not options.update_current then
+  if not opts.update_current then
     -- Open in current window or split
     require("jj-fugitive.ui").ensure_buffer_visible(bufnr)
   end
@@ -966,7 +971,8 @@ function M.show_log(options)
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for i, line in ipairs(lines) do
     -- Look for the first actual commit line (not header)
-    if not line:match("^#") and line ~= "" and get_commit_from_line(line, commit_data) then
+    local ui = require("jj-fugitive.ui")
+    if not line:match(ui.PATTERNS.COMMENT_LINE) and line ~= "" and get_commit_from_line(line, commit_data) then
       vim.api.nvim_win_set_cursor(0, { i, 0 })
       break
     end
@@ -979,5 +985,6 @@ end
 -- Export show_commit_details for use by other modules
 M.show_commit_details = show_commit_details
 M.show_commit_diff = show_commit_diff
+M.extract_commit_id_from_line = extract_commit_id_from_line
 
 return M
