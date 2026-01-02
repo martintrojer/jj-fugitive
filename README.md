@@ -25,7 +25,7 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 
 ```lua
 {
-  "martintrojer/jj-fugitive.nvim",
+  "martintrojer/jj-fugitive",
   config = function()
     -- Plugin loads automatically
   end,
@@ -35,17 +35,17 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 ### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
-use "martintrojer/jj-fugitive.nvim"
+use "martintrojer/jj-fugitive"
 ```
 
 ### Manual Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/martintrojer/jj-fugitive.nvim ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive.nvim
+git clone https://github.com/martintrojer/jj-fugitive ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive
 
 # Or using jj
-jj git clone https://github.com/martintrojer/jj-fugitive.nvim ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive.nvim
+jj git clone https://github.com/martintrojer/jj-fugitive ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive
 ```
 
 ## Commands
