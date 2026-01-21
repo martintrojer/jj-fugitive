@@ -6,232 +6,71 @@ A Neovim plugin that brings vim-fugitive-style version control integration for J
 
 jj-fugitive provides seamless jj version control integration within Neovim, mimicking the workflow and feel of vim-fugitive but adapted for jj's unique features and commands. The plugin offers native jj log formatting, interactive status and diff views, comprehensive command completion, and robust ANSI color processing.
 
-## Current Implementation Status
+## Documentation
 
-### ✅ Implemented Features
+For detailed documentation, see:
 
-#### Core Commands
-- `:J` - Main jj interface with subcommands (✅ **COMPLETE**)
-- `:J status` - Interactive status view with file navigation (✅ **COMPLETE**)
-- `:J log` - Native jj log view with authentic formatting and symbols (✅ **COMPLETE**)
-- `:J diff <file>` - Enhanced diff view with ANSI color support (✅ **COMPLETE**)
-- `:JHelp` - Inline help system with command documentation (✅ **COMPLETE**)
+- **[User Guide](doc/README.md)** - Complete feature list, keybindings, and usage examples
+- **[Development Guide](doc/development.md)** - Setup, testing, and contribution instructions
+- **[Interactive Commands](doc/interactive_commands.md)** - Technical reference for editor interception
+- **[Test Documentation](tests/README.md)** - Test suite structure and running tests
 
-#### Advanced Features
-- **Native jj Integration**: Preserves authentic jj log formatting (@, ◆, ○, │, ~)
-- **ANSI Color Processing**: Unified color handling across all views
-- **Interactive Navigation**: Enter key functionality in log and status views
-- **Expandable Log View**: Expand log view to show more commits with `=` or `+` keys
-- **Repository Detection**: Works from any subdirectory within jj repo
-- **Multi-Level Command Completion**: Full tab completion with nested subcommand support at every nesting level
-- **Improved Diff Navigation**: Intuitive keybindings and toggle functionality for diff views
-- **Error Handling**: Robust error detection and user feedback
+### Additional Documentation
 
-#### Architecture
-- **6 Core Modules**: ansi.lua, completion.lua, diff.lua, init.lua, log.lua, status.lua
-- **49+ Functions**: Comprehensive functionality across all modules
-- **22 Test Files**: Extensive test coverage with intelligent discovery
+- **[Enhanced Diff](doc/enhanced-diff.md)** - Detailed diff improvements
+- **[:J Command](doc/j-command.md)** - Universal jj command with multi-level smart completion
+- **[Status Buffer](doc/jstatus.md)** - Interactive status buffer details
+- **[Diff Viewer](doc/jdiff.md)** - Enhanced diff viewer details
 
-### 🚧 Future Features (Not Yet Implemented)
+## Quick Reference
 
-#### Navigation Commands
-- `:JNext` - Move to next child revision
-- `:JPrev` - Move to parent revision
-- `:JEdit` - Set specific revision as working copy
+```vim
+:J                      " Show interactive status buffer
+:J status               " Show interactive status buffer
+:J log                  " Show native jj log view
+:J diff [file]          " Show diff for file
+:JHelp                  " Show available commands
+```
 
-#### Bookmark Management
-- `:JBookmark` - List, create, and manage bookmarks
-- Integration with branch-like workflows
+## Architecture
 
-#### Git Integration
-- `:JGitFetch` - Fetch from Git remotes
-- `:JGitPush` - Push to Git remotes
-
-## Current Architecture
-
-### Module Structure
 ```
 lua/jj-fugitive/
 ├── init.lua          # Main plugin entry point and :J command dispatcher
-├── status.lua         # Interactive status view with file navigation
+├── status.lua        # Interactive status view with file navigation
 ├── log.lua           # Native jj log view with authentic formatting
 ├── diff.lua          # Enhanced diff view with ANSI color support
-├── completion.lua    # Command completion and help system  
+├── completion.lua    # Command completion and help system
+├── browse.lua        # Remote URL construction for :JBrowse
 └── ansi.lua          # Unified ANSI color processing and buffer creation
 ```
 
-### Key Design Principles
-- **Native jj Integration**: Preserves authentic jj output formatting and colors
-- **Idiomatic jj Workflow**: Designed around jj's change-centric model (no staging area)
-- **Modular Architecture**: 6 focused modules with clear responsibilities
-- **ANSI Color Processing**: Unified system for color parsing and buffer highlighting
-- **Repository Detection**: Automatic jj repository root detection from any subdirectory
-- **Error Handling**: Comprehensive error detection with user-friendly messages
-- **Selective vim-fugitive Compatibility**: Adapts vim-fugitive patterns that make sense for jj
-
-### User Experience Features
-- **Interactive Navigation**: Enter key functionality in log and status views
-- **Contextual Commands**: Commands adapt based on cursor position and file type
-- **Multi-Level Tab Completion**: Full completion for jj commands, nested subcommands, flags, and file paths at every nesting level
-- **Visual Feedback**: Progress indicators and status messages
-- **Keyboard Shortcuts**: Intuitive keybindings for common operations
-
-### jj vs Git Workflow Differences
-- **No Staging Area**: jj automatically tracks all files, no manual staging needed
-- **Working Copy as Commit**: Your working directory is always a commit
-- **Change-Centric**: Focus on "changes" rather than individual commits
-- **Automatic Rebasing**: Descendants automatically rebase when you modify commits
-- **No File Tracking Commands**: Files are auto-tracked, removed Git-style `-`, `s`, `u` commands
-
-## Quick Start Usage
-
-### Basic Commands
-```vim
-:J status          \" Interactive status view
-:J log             \" Native jj log with authentic formatting  
-:J diff <file>     \" Enhanced diff view for specific file
-:JHelp             \" Show available commands and help
-```
-
-### Interactive Features
-- **Status View**: Press `Enter` on file to see diff, `l` for log view
-- **Log View**: Press `Enter` on commit to see details and diff, `=` or `+` to expand view
-- **Multi-Level Tab Completion**: Use `<Tab>` for command, subcommand, flag, and file completion at every nesting level
-- **Repository Detection**: Works from any subdirectory in jj repo
-
-### Example Workflow
-```vim
-:J status          \" See what files have changed
-\" Navigate to file, press Enter to see diff (new behavior!)
-:J log --limit 10  \" View recent commits with native jj formatting
-\" Navigate to commit, press Enter to see details, d for diff
-\" Press = or + to expand log view and see more commits
-
-\" Enhanced completion examples (works at every nesting level):
-:J git <Tab>       \" Shows git subcommands: push, fetch, clone, etc.
-:J git push <Tab>  \" Shows git push flags: --bookmark, --branch, --help, etc.
-:J bookmark <Tab>  \" Shows bookmark subcommands: list, create, delete, etc.
-:J bookmark create <Tab>  \" Shows bookmark create flags and options
-:J status <Tab>    \" Shows status command flags: --help, --limit, etc.
-:J log <Tab>       \" Shows log command flags: --limit, --template, -r, etc.
-
-\" Improved diff navigation:
-\" In status view: <CR>=diff, o=open file, Tab=toggle diff view
-\" In log view: d=diff, D=side-by-side, Tab=toggle diff/details
-\" In diff view: Tab=toggle unified/side-by-side, s=side-by-side, u=unified
-```
-
-## Testing Strategy
-
-### Comprehensive Test Suite (25 Tests)
-- **Unit Tests**: Core jj command wrappers and module loading
-- **Integration Tests**: Cross-component functionality and ANSI processing
-- **End-to-End Tests**: Complete user workflow simulation
-- **Regression Tests**: Prevention of known issues
-- **CI Tests**: Automated testing with GitHub Actions
-
-### Test Categories
-- **Core Functionality**: Status, diff, log, completion (4 tests)
-- **Native Integration**: jj log format, ANSI processing, repository detection (3 tests)
-- **Advanced Features**: Interactive navigation, keybindings, cursor positioning (4 tests)
-- **Color & Format**: ANSI color rendering, format consistency (5 tests)
-- **User Experience**: End-to-end workflows, vim-fugitive compatibility (4 tests)
-- **Enhanced Completion**: Nested subcommand completion, partial matching (1 test)
-- **Multi-Level Completion**: Commands and flags at every nesting level (1 test)
-- **Improved Diff Navigation**: Enhanced diff view keybindings and toggle functionality (1 test)
-- **Documentation & Quality**: Documentation completeness (2 tests)
-
-### Intelligent Test Discovery
-- Automatic discovery of all `test_*.lua` files
-- Parallel execution with detailed reporting
-- CI environment detection for timing-sensitive tests
-- Demo file support (non-critical)
-- Executable management (automatic chmod +x)
-
 ## Dependencies
-- Neovim with Lua support
+
+- Neovim 0.8+ with Lua support
 - jj CLI tool installed and accessible in PATH
 
-## Development Commands
+## Development Quick Start
 
-### Prerequisites
 ```bash
-# Required tools
-brew install luacheck     # Lua linting
-brew install stylua       # Lua formatting
-brew install jj           # Jujutsu CLI (if not already installed)
-
-# Or install via package managers
-# Ubuntu/Debian: apt install luacheck stylua
-# Arch: pacman -S luacheck stylua-bin
-```
-
-### Testing
-```bash
-# Run comprehensive test suite (RECOMMENDED)
-# Includes: linting, formatting, all 22 functional tests
+# Run comprehensive test suite
 ./tests/run_tests.sh
 
-# Run only functional tests (skip linting/formatting)
-# Useful for CI or when linting/formatting are handled separately
-./tests/run_tests.sh --tests-only
-
-# Show help with all options
-./tests/run_tests.sh --help
-
-# Run specific test categories
-./tests/test_status_functionality.lua      # Status view tests
-./tests/test_log_functionality.lua         # Log view tests  
-./tests/test_native_log_view.lua           # Native jj format tests
-./tests/test_commit_extraction.lua         # ANSI processing tests
-./tests/test_repository_detection.lua      # Subdirectory detection
-./tests/test_completion_enhancement.lua    # Enhanced completion tests
-./tests/test_multi_level_completion.lua    # Multi-level completion tests
-./tests/test_improved_diff_navigation.lua  # Improved diff navigation tests
-
-# Run all tests matching pattern
-./tests/test_log*.lua                      # All log-related tests
-./tests/test_*functionality.lua           # All functionality tests
-
-# Manual/interactive testing
-nvim tests/manual_test.lua
-./tests/demo_log_view.lua                  # Interactive log demo
-./tests/demo_enhanced_diff.lua             # Interactive diff demo
-```
-
-### Linting & Formatting
-```bash
-# Check linting (included in test runner)
-luacheck .
-
-# Check formatting (included in test runner)
-stylua --check .
+# Run linting and formatting
+luacheck . && stylua --check .
 
 # Auto-fix formatting
 stylua .
-
-# Pre-commit workflow (recommended)
-luacheck . && stylua --check . && ./tests/run_tests.sh
 ```
 
-### Continuous Integration
-```bash
-# Simulate CI environment locally
-export CI=true
-./tests/run_tests.sh
-
-# GitHub Actions automatically runs:
-# - luacheck (lint job)
-# - stylua --check (format job) 
-# - ./tests/run_tests.sh (test job)
-# On push to main and all pull requests
-```
+For detailed development instructions, see [doc/development.md](doc/development.md).
 
 ## Version Control Workflow
 
 This project uses Jujutsu (jj) for version control. Here are the common commands:
 
 ### Committing Changes
+
 ```bash
 # Stage and describe your changes
 jj describe -m "Your commit message"
@@ -244,6 +83,7 @@ jj commit -m "Your commit message"
 ```
 
 ### Working with GitHub
+
 ```bash
 # Add GitHub remote (first time setup)
 jj git remote add origin https://github.com/username/jj-fugitive.nvim.git
@@ -274,6 +114,7 @@ jj bookmark delete fix-issue-123
 ```
 
 ### Common Workflow
+
 ```bash
 # Check status
 jj status
@@ -297,27 +138,31 @@ jj bookmark set main    # Move main to current working copy
 jj git push --bookmark main
 ```
 
-### Important Notes & Best Practices
+## Important Notes & Best Practices
 
-#### Repository Management
+### Repository Management
+
 - jj requires explicit bookmarks for GitHub integration
 - Always update the `main` bookmark before pushing: `jj bookmark set main`
 - Use `--bookmark` flag to push specific branches to GitHub
 - The working copy becomes immutable after pushing, so jj creates a new commit on top
 
-#### jj Log Viewing
+### jj Log Viewing
+
 - **IMPORTANT**: `jj log` by default shows only recent commits
 - **Always use `-r ..` to see more history**: `jj log -r ..` shows all commits from root
 - **Combine with --limit**: `jj log -r .. --limit 50` for controlled output
 - This is crucial for understanding the full repository history
 
-#### Development Workflow
+### Development Workflow
+
 - **Always run tests before committing**: `./tests/run_tests.sh`
 - **Use descriptive commit messages**: Follow the project's commit style
 - **Test from subdirectories**: Ensure repository detection works
 - **Check CI status**: GitHub Actions must pass before merging
 
-#### Commit Message Format
+### Commit Message Format
+
 ```bash
 jj describe -m "$(cat <<'EOF'
 Brief description of changes
@@ -326,23 +171,23 @@ Brief description of changes
 - Detailed point 2
 - Reference to issue if applicable
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
 Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
 
-#### Testing Best Practices
+### Testing Best Practices
+
 - Run full test suite before pushing: `./tests/run_tests.sh`
 - Test specific functionality after changes: `./tests/test_<feature>.lua`
 - Use CI environment simulation: `export CI=true && ./tests/run_tests.sh`
 - Add new tests for new features following existing patterns
 - Ensure tests pass in both interactive and headless modes
 
-#### CI Integration
+### CI Integration
+
 - GitHub Actions runs on every push to main and PR
 - Tests run against Neovim stable and nightly
-- All 22 tests must pass for successful CI
+- All tests must pass for successful CI
 - Linting and formatting are enforced
 - Failed CI prevents merging
