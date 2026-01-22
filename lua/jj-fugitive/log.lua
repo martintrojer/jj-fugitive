@@ -445,6 +445,7 @@ function show_commit_diff_sidebyside(commit_id)
   vim.api.nvim_buf_set_lines(left_bufnr, 0, -1, false, vim.split(parent_content, "\n"))
   vim.api.nvim_buf_set_option(left_bufnr, "modifiable", false)
   vim.api.nvim_buf_set_option(left_bufnr, "readonly", true)
+  vim.api.nvim_buf_set_option(left_bufnr, "modified", false)
 
   -- Right buffer (commit/after)
   local right_bufnr = vim.api.nvim_create_buf(false, true)
@@ -452,6 +453,7 @@ function show_commit_diff_sidebyside(commit_id)
   vim.api.nvim_buf_set_lines(right_bufnr, 0, -1, false, vim.split(commit_content, "\n"))
   vim.api.nvim_buf_set_option(right_bufnr, "modifiable", false)
   vim.api.nvim_buf_set_option(right_bufnr, "readonly", true)
+  vim.api.nvim_buf_set_option(right_bufnr, "modified", false)
 
   -- Set up side-by-side layout
   vim.cmd("vsplit")
@@ -536,6 +538,7 @@ local function expand_log_view(bufnr)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(bufnr, "modified", false)
 
   -- Apply highlights
   ansi.setup_diff_highlighting(bufnr, all_highlights, {

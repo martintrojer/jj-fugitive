@@ -260,6 +260,7 @@ function M.create_colored_buffer(content, buffer_name, header_lines, opts)
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
 
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(bufnr, "modified", false)
 
   return bufnr
 end
@@ -285,6 +286,7 @@ function M.update_colored_buffer(bufnr, content, header_lines, opts)
   M.setup_diff_highlighting(bufnr, highlights, opts)
 
   vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(bufnr, "modified", false)
 end
 
 return M

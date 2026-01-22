@@ -89,6 +89,7 @@ function M.show_help_popup(title, lines, opts)
   local help_buf = M.create_scratch_buffer({ filetype = "markdown", modifiable = true })
   vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, lines or {})
   vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
+  vim.api.nvim_buf_set_option(help_buf, "modified", false)
 
   -- Optionally mark this as a plugin buffer
   if opts.mark_plugin then

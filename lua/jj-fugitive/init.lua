@@ -614,11 +614,13 @@ function M.jhelp(args)
   local bufnr = ui.create_scratch_buffer({
     name = "jj-help",
     filetype = "help",
-    modifiable = false,
+    modifiable = true,
   })
 
   local lines = vim.split(out, "\n")
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(bufnr, "modified", false)
 
   vim.cmd("split")
   vim.api.nvim_set_current_buf(bufnr)

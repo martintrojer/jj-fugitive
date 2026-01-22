@@ -360,6 +360,7 @@ function M.show_file_diff_sidebyside(filename)
   local original_lines = vim.split(original_content, "\n")
   vim.api.nvim_buf_set_lines(original_buf, 0, -1, false, original_lines)
   vim.api.nvim_buf_set_option(original_buf, "modifiable", false)
+  vim.api.nvim_buf_set_option(original_buf, "modified", false)
 
   -- Set filetype based on file extension
   local ft = vim.filetype.match({ filename = filename })
@@ -379,6 +380,7 @@ function M.show_file_diff_sidebyside(filename)
   local current_lines = vim.split(current_content, "\n")
   vim.api.nvim_buf_set_lines(current_buf, 0, -1, false, current_lines)
   vim.api.nvim_buf_set_option(current_buf, "modifiable", false)
+  vim.api.nvim_buf_set_option(current_buf, "modified", false)
 
   if ft then
     vim.api.nvim_buf_set_option(current_buf, "filetype", ft)
