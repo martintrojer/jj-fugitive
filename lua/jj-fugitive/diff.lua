@@ -478,9 +478,9 @@ function M.toggle_diff_view(filename)
   local tab = vim.api.nvim_get_current_tabpage()
   local in_sbs = pcall(vim.api.nvim_tabpage_get_var, tab, "jj_sbs_diff")
   if in_sbs then
-    -- Close current sbs tab and show unified diff in previous tab
+    -- Close current sbs tab - this returns to the previous tab which should
+    -- already have the unified diff view, so we don't need to recreate it
     vim.cmd("tabclose")
-    M.show_file_diff(filename)
   else
     -- Switch to side-by-side in a dedicated tab
     M.show_file_diff_sidebyside(filename)

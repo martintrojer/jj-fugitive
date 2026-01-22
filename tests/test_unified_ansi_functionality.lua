@@ -61,22 +61,33 @@ local log_module = runner.load_module("jj-fugitive.log")
 local status_module = runner.load_module("jj-fugitive.status")
 
 runner.assert_test(
-  "Diff module integrates with ANSI",
+  "Diff module loads for ANSI integration",
   diff_module ~= nil,
   "Diff module should be available for ANSI integration"
 )
 
 runner.assert_test(
-  "Log module integrates with ANSI",
+  "Log module loads for ANSI integration",
   log_module ~= nil,
   "Log module should be available for ANSI integration"
 )
 
 runner.assert_test(
-  "Status module integrates with ANSI",
+  "Status module loads for ANSI integration",
   status_module ~= nil,
   "Status module should be available for ANSI integration"
 )
+
+-- Verify modules have ANSI-using functionality (behavioral check)
+if diff_module then
+  runner.check_function(diff_module, "show_file_diff", "Diff module")
+end
+if log_module then
+  runner.check_function(log_module, "show_log", "Log module")
+end
+if status_module then
+  runner.check_function(status_module, "show_status", "Status module")
+end
 
 -- Test 6: Test real jj command ANSI output
 local jj_output = vim.fn.system({ "jj", "log", "--color", "always", "--limit", "3" })

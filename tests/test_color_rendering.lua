@@ -83,9 +83,15 @@ runner.section("Buffer Creation and Processing")
 if diff_module then
   local initial_buf_count = #vim.api.nvim_list_bufs()
 
-  pcall(function()
+  local success, err = pcall(function()
     diff_module.show_file_diff(test_file)
   end)
+
+  runner.assert_test(
+    "show_file_diff executes without error",
+    success,
+    "show_file_diff crashed: " .. tostring(err)
+  )
 
   local final_buf_count = #vim.api.nvim_list_bufs()
   local diff_buffer_created = final_buf_count > initial_buf_count

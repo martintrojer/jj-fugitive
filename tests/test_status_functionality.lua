@@ -11,10 +11,20 @@ runner.check_function(status_module, "show_status", "Status module")
 
 -- Test 2: Basic status command functionality
 if status_module then
-  local success = pcall(function()
+  local initial_buf_count = #vim.api.nvim_list_bufs()
+  local success, err = pcall(function()
     status_module.show_status()
   end)
-  runner.assert_test("Status view creation", success, "show_status should work without errors")
+  runner.assert_test("Status view creation", success, "show_status crashed: " .. tostring(err))
+  -- Verify a buffer was actually created
+  if success then
+    local final_buf_count = #vim.api.nvim_list_bufs()
+    runner.assert_test(
+      "Status view creates a buffer",
+      final_buf_count > initial_buf_count,
+      "No new buffer was created by show_status"
+    )
+  end
 end
 
 -- Test 3: Status buffer verification

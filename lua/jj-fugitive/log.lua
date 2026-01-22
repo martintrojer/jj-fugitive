@@ -999,5 +999,6 @@ end
 M.show_commit_details = show_commit_details
 M.show_commit_diff = show_commit_diff
 M.extract_commit_id_from_line = extract_commit_id_from_line
+M.extract_commit_ids_from_log = extract_commit_ids_from_log
 
 return M

@@ -23,22 +23,29 @@ local test_file = "test_diff_file.txt"
 runner.create_test_file(test_file, "Original content\nLine 2\nLine 3\n")
 
 if diff_module then
-  local success = pcall(function()
+  local success, err = pcall(function()
     diff_module.toggle_diff_view(test_file)
   end)
   runner.assert_test(
     "Toggle diff function executes without error",
     success,
-    "toggle_diff_view should not crash"
+    "toggle_diff_view crashed: " .. tostring(err)
   )
 end
 
 runner.section("Test 5: Module integration verification")
-runner.assert_test(
-  "Diff module handles nonexistent files gracefully",
-  true,
-  "Should handle missing files without crashing"
-)
+-- Actually test that nonexistent files are handled gracefully
+if diff_module then
+  local nonexistent_file = "this_file_does_not_exist_12345.txt"
+  local success, err = pcall(function()
+    diff_module.show_file_diff(nonexistent_file)
+  end)
+  runner.assert_test(
+    "Diff module handles nonexistent files gracefully",
+    success, -- Should not crash, even if file doesn't exist
+    "show_file_diff crashed with nonexistent file: " .. tostring(err)
+  )
+end
 
 runner.section("Test 6: Keybinding consistency checks")
 runner.check_function(diff_module, "show_file_diff", "unified diff function")
@@ -49,14 +56,24 @@ runner.check_function(log_module, "show_log", "log view function")
 
 runner.section("Test 7: Basic buffer operations")
 if status_module then
-  local success = pcall(function()
+  local initial_buf_count = #vim.api.nvim_list_bufs()
+  local success, err = pcall(function()
     status_module.show_status()
   end)
   runner.assert_test(
     "Status view creation doesn't crash",
     success,
-    "Status view should create without errors"
+    "Status view creation crashed: " .. tostring(err)
   )
+  -- Verify a buffer was actually created
+  if success then
+    local final_buf_count = #vim.api.nvim_list_bufs()
+    runner.assert_test(
+      "Status view creates a buffer",
+      final_buf_count > initial_buf_count,
+      "No new buffer was created by show_status"
+    )
+  end
 end
 
 -- Clean up test file

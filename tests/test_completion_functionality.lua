@@ -80,24 +80,53 @@ runner.assert_test(
 -- Test 4: Test bookmark completion helper
 local bookmarks = completion_module.get_bookmarks()
 runner.assert_test(
-  "Bookmark listing",
+  "Bookmark listing returns table",
   type(bookmarks) == "table",
   "get_bookmarks should return a table"
+)
+-- Verify bookmarks is iterable (even if empty, should work with ipairs)
+local bookmark_count = 0
+for _ in ipairs(bookmarks) do
+  bookmark_count = bookmark_count + 1
+end
+runner.assert_test(
+  "Bookmark listing is iterable",
+  bookmark_count == #bookmarks,
+  "get_bookmarks result should be iterable"
 )
 
 -- Test 5: Test changed files helper
 local files = completion_module.get_changed_files()
 runner.assert_test(
-  "Changed files listing",
+  "Changed files listing returns table",
   type(files) == "table",
   "get_changed_files should return a table"
 )
+-- Verify files is iterable (even if empty, should work with ipairs)
+local file_count = 0
+for _ in ipairs(files) do
+  file_count = file_count + 1
+end
+runner.assert_test(
+  "Changed files listing is iterable",
+  file_count == #files,
+  "get_changed_files result should be iterable"
+)
 
 -- Test 6: Test cache clearing
-local success = pcall(function()
+local success, err = pcall(function()
   completion_module.clear_cache()
 end)
-runner.assert_test("Cache clearing", success, "clear_cache should not error")
+runner.assert_test("Cache clearing succeeds", success, "clear_cache crashed: " .. tostring(err))
+-- Verify cache was actually cleared by checking we can still get fresh data
+if success then
+  local fresh_bookmarks = completion_module.get_bookmarks()
+  runner.assert_test(
+    "Cache clearing allows fresh data retrieval",
+    type(fresh_bookmarks) == "table",
+    "get_bookmarks should work after cache clear"
+  )
+end
 
 -- Test 7: Test main plugin completion integration
 local main_module = runner.load_module("jj-fugitive")
