@@ -16,21 +16,12 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 - **[:J Command](j-command.md)** - Universal jj command with multi-level smart completion
 - **[Status Buffer](jstatus.md)** - Interactive status buffer with improved diff navigation
 - **[Diff Viewer](jdiff.md)** - Enhanced diff viewer with toggle functionality and side-by-side support
-- **[Log Viewer](jlog.md)** - Native jj log view with authentic formatting (coming soon)
 - **[Enhanced Diff](enhanced-diff.md)** - Detailed diff improvements documentation
 
 ### Guides
 
-- **[Getting Started](getting-started.md)** - Step-by-step setup and first use (coming soon)
-- **[Workflows](workflows.md)** - Common development workflows (coming soon)
-- **[Configuration](configuration.md)** - Customization options (coming soon)
-
-### Advanced
-
 - **[Development](development.md)** - Development and contribution guide
 - **[Interactive Commands](interactive_commands.md)** - Technical reference for editor interception
-- **[API Reference](api.md)** - Lua API for extending functionality (coming soon)
-- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions (coming soon)
 
 ## Currently Available
 
@@ -87,8 +78,11 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 :J log                  " Show native jj log view
 :J diff                 " Show diff for current buffer
 :J diff [file]          " Show diff for specific file
+:J browse               " Open current file on GitHub/GitLab
 :J commit -m "msg"      " Commit with message
 :J new -m "msg"         " Create new change
+:JBrowse                " Shorthand for :J browse
+:JHelp [command]        " Show help for jj commands
 ```
 
 ### Status Buffer Keybindings (Improved!)
@@ -124,6 +118,10 @@ n      - Create new commit after this one (jj new)
 r      - Rebase current commit onto this one (jj rebase)
 A      - Abandon commit (jj abandon)
 s      - Squash commit into its parent (jj squash)
+S      - Split commit into two (jj split)
+y      - Duplicate commit (jj duplicate)
+P      - Navigate to parent revision
+N      - Navigate to next/child revision
 =, +   - Expand log view (show more commits)
 R      - Refresh log view
 q      - Close log view

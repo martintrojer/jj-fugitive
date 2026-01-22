@@ -150,7 +150,6 @@ The completion system caches help output for 5 minutes to improve performance:
 ```vim
 " Interactive rebase-like operations
 :J squash -r @--       " Squash last two changes
-:J split               " Split current change
 :J rebase -d main      " Rebase onto main
 
 " Branch management
@@ -161,6 +160,10 @@ The completion system caches help output for 5 minutes to improve performance:
 " Complex queries
 :J log -r 'author("me") & description(glob:"feat*")'
 :J log -T 'commit_id ++ " " ++ description.first_line()' -r main..@
+
+" Open current file on remote
+:J browse              " Open file on GitHub/GitLab
+:JBrowse               " Shorthand for :J browse
 ```
 
 ### Integration with Neovim

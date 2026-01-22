@@ -173,14 +173,15 @@ jj-fugitive uses modern jj command syntax:
 
 ### Toggle Logic
 
-Intelligent toggle detection:
+Intelligent toggle detection using tab-scoped markers:
 
 ```lua
 -- Detects current view type and switches appropriately
-if vim.fn.tabpagenr("$") > 1 and current_bufname:match("jj%-diff.*%(") then
-  -- Currently in side-by-side (tab view), switch to unified
+local tab = vim.api.nvim_get_current_tabpage()
+local in_sbs = pcall(vim.api.nvim_tabpage_get_var, tab, "jj_sbs_diff")
+if in_sbs then
+  -- Currently in side-by-side (tab view), close tab to return
   vim.cmd("tabclose")
-  show_unified_diff(filename)
 else
   -- Currently in unified or elsewhere, switch to side-by-side
   show_sidebyside_diff(filename)
@@ -251,6 +252,6 @@ Comprehensive test coverage includes:
 ## See Also
 
 - [Status Buffer Documentation](jstatus.md) - Interactive status buffer
-- [Log View Documentation](jlog.md) - Native jj log integration
 - [J Command Documentation](j-command.md) - Universal command interface
+- [Diff Viewer Documentation](jdiff.md) - Enhanced diff viewer details
 - [Main Documentation](README.md) - Complete feature overview

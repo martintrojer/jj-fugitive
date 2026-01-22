@@ -23,7 +23,7 @@ The `:J diff` command provides an enhanced diff viewing experience with both uni
 
 ### From Status Buffer
 
-In the status buffer (`:J`), press `dd` on any file to open its diff in the enhanced viewer.
+In the status buffer (`:J`), press `d` on any file to open its diff in the enhanced viewer, or `D` for side-by-side view.
 
 ## Diff Formats
 
@@ -75,8 +75,14 @@ The side-by-side format shows original and current versions in separate panes:
 
 | Key | Action |
 |-----|--------|
-| `s` | Toggle between unified and side-by-side formats |
-| `q` | Close the diff buffer |
+| `Tab` | Toggle between unified and side-by-side formats |
+| `s` | Switch to side-by-side view |
+| `u` | Switch to unified view |
+| `f` | Select diff format (git, color-words, etc.) |
+| `r` | Refresh diff |
+| `o` | Open file in editor |
+| `b` / `q` | Close the diff buffer |
+| `g?` | Show help |
 
 ### In Side-by-Side Mode
 
@@ -213,12 +219,15 @@ If side-by-side mode doesn't work correctly:
 " Switch to side-by-side view
 s
 
-" Close and view specific file
-q
+" Toggle back to unified view
+Tab
+
+" View specific file
+:q
 :J diff src/main.rs
 
-" Return to unified view
-s
+" Switch to unified view
+u
 ```
 
 ### Integration with Status
@@ -230,11 +239,11 @@ s
 " Navigate to modified file (e.g., src/lib.rs)
 /src/lib.rs
 
-" View diff for that file
-dd
+" View diff for that file (Enter or 'd')
+d
 
 " Toggle to side-by-side
-s
+Tab
 
 " Close diff and return to status
 q
@@ -248,8 +257,8 @@ q
 
 " Review each file:
 " 1. Position cursor on file
-" 2. Press 'dd' to view diff
-" 3. Press 's' to toggle format if needed
+" 2. Press 'd' or Enter to view diff
+" 3. Press Tab to toggle view format if needed
 " 4. Press 'q' to return to status
 " 5. Repeat for next file
 ```
