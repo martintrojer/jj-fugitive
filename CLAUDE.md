@@ -42,6 +42,7 @@ lua/jj-fugitive/
 ├── diff.lua          # Enhanced diff view with ANSI color support
 ├── completion.lua    # Command completion and help system
 ├── browse.lua        # Remote URL construction for :JBrowse
+├── ui.lua            # Shared UI utilities, patterns, and buffer helpers
 └── ansi.lua          # Unified ANSI color processing and buffer creation
 ```
 

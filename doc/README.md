@@ -70,9 +70,9 @@ Welcome to the jj-fugitive documentation! This plugin brings vim-fugitive-style 
 
 ### 🔧 Architecture
 
-- **6 Core Modules**: ansi.lua, completion.lua, diff.lua, init.lua, log.lua, status.lua
+- **7 Core Modules**: ansi.lua, browse.lua, completion.lua, diff.lua, init.lua, log.lua, status.lua, ui.lua
 - **50+ Functions**: Comprehensive functionality across all modules
-- **29 Test Files**: Extensive test coverage with intelligent discovery
+- **36 Test Files**: Extensive test coverage with intelligent discovery
 - **Native jj Integration**: Preserves authentic jj output formatting and colors
 - **Repository Detection**: Works from any subdirectory within jj repo
 
@@ -223,9 +223,5 @@ nvim
 # - Press '[c' and ']c' to navigate changes
 # - Press 'f' to select different formats
 ```
-
-## Version History
-
----
 
 *This documentation reflects the current state of jj-fugitive with all recent improvements including enhanced diff navigation, multi-level completion, and native jj log integration.*
