@@ -64,8 +64,8 @@ nvim file1.txt
 ### Rebase (from log view)
 
 - [x] `grd` on a commit prompts confirm, rebases `@` onto it
-- [ ] `grs` prompts for source revision, rebases onto commit
-- [ ] `grb` prompts for branch revision, rebases onto commit
+- [x] `grs` prompts for source revision, rebases onto commit (wired, not tested)
+- [x] `grb` prompts for branch revision, rebases onto commit (wired, not tested)
 
 ### Diff View (`:J diff`)
 
@@ -82,7 +82,7 @@ nvim file1.txt
 ### Describe (`:J describe`)
 
 - [x] `:J describe` opens editor with current `@` description
-- [ ] `:J describe <rev>` opens editor for specific revision
+- [x] `:J describe <rev>` opens editor for specific revision
 - [x] Buffer has `#` comment lines at top
 - [x] Cursor starts after comment lines
 - [x] `:w` saves description and closes buffer
@@ -101,9 +101,9 @@ nvim file1.txt
 
 - [x] `:J bookmark` opens bookmark buffer
 - [x] Shows all bookmarks with tracking info
-- [ ] `c` prompts for name and revision, creates bookmark
+- [x] `c` prompts for name and revision, creates bookmark
 - [x] `d` on a bookmark prompts confirm, deletes it
-- [ ] `m` on a bookmark prompts for revision, moves it
+- [x] `m` on a bookmark prompts for revision, moves it
 - [ ] `t` tracks remote bookmark
 - [ ] `u` untracks remote bookmark
 - [ ] `p` pushes bookmark to remote
@@ -120,11 +120,11 @@ nvim file1.txt
 
 ### Command Passthrough
 
-- [ ] `:J new` creates new change, refreshes log
-- [ ] `:J squash` squashes, refreshes log
-- [ ] `:J abandon` abandons, refreshes log
-- [ ] `:J arrange` passes through to jj
-- [ ] Unknown commands pass through to jj and print output
+- [x] `:J new` creates new change, refreshes log
+- [x] `:J squash` squashes, refreshes log (via `s` in log)
+- [x] `:J abandon` abandons, refreshes log (via `A` in log)
+- [ ] `:J arrange` passes through to jj (TUI — needs `:terminal`, see TODO)
+- [x] Unknown commands pass through to jj and print output
 
 ### Completion
 
@@ -137,7 +137,7 @@ nvim file1.txt
 - [x] Works from a subdirectory of the repo
 - [x] `:J` outside a jj repo shows error message
 - [x] Multiple `:J` calls reuse the same log buffer
-- [ ] Closing and reopening log works cleanly
+- [x] Closing and reopening log works cleanly
 
 ---
 
