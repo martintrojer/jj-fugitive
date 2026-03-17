@@ -68,9 +68,9 @@ Bookmark:
   b         Create/move bookmark to commit under cursor
 
 Rebase:
-  rd        Rebase @ onto commit under cursor
-  rs        Rebase source onto commit (prompts for source)
-  rb        Rebase branch onto commit (prompts for branch)
+  grd       Rebase @ onto commit under cursor
+  grs       Rebase source onto commit (prompts for source)
+  grb       Rebase branch onto commit (prompts for branch)
 
 Navigation:
   +/=       Show more commits

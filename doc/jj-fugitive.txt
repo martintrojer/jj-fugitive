@@ -39,9 +39,9 @@ Keybindings:
   s             Squash into parent (jj squash)
   A             Abandon commit (jj abandon)
   b             Create/move bookmark to commit
-  rd            Rebase @ onto commit under cursor
-  rs            Rebase source onto commit (prompts)
-  rb            Rebase branch onto commit (prompts)
+  grd           Rebase @ onto commit under cursor
+  grs           Rebase source onto commit (prompts)
+  grb           Rebase branch onto commit (prompts)
   +  =          Show more commits
   R             Refresh
   q             Close

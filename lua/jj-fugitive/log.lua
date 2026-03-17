@@ -200,18 +200,15 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Block built-in r (replace char) which errors on read-only buffer
-  ui.map(bufnr, "n", "r", "<Nop>")
-
-  -- Rebase: rd = rebase @ onto commit, rs = rebase source onto dest
-  ui.map(bufnr, "n", "rd", function()
+  -- Rebase: grd = rebase @ onto commit, grs = rebase source, grb = rebase branch
+  ui.map(bufnr, "n", "grd", function()
     local id = get_change_id()
     if id and ui.confirm("Rebase @ onto " .. id .. "?") then
       run_and_refresh({ "rebase", "-d", id }, "Rebased onto " .. id)
     end
   end)
 
-  ui.map(bufnr, "n", "rs", function()
+  ui.map(bufnr, "n", "grs", function()
     local id = get_change_id()
     if not id then
       return
@@ -222,7 +219,7 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  ui.map(bufnr, "n", "rb", function()
+  ui.map(bufnr, "n", "grb", function()
     local id = get_change_id()
     if not id then
       return
@@ -285,9 +282,9 @@ local function setup_keymaps(bufnr)
       "  b         Create/move bookmark to commit",
       "",
       "Rebase:",
-      "  rd        Rebase @ onto commit under cursor",
-      "  rs        Rebase source onto commit (prompts for source)",
-      "  rb        Rebase branch onto commit (prompts for branch)",
+      "  grd       Rebase @ onto commit under cursor",
+      "  grs       Rebase source onto commit (prompts for source)",
+      "  grb       Rebase branch onto commit (prompts for branch)",
       "",
       "Other:",
       "  R         Refresh log",
