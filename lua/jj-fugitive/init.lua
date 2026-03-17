@@ -195,6 +195,8 @@ function M.jj(args)
     require("jj-fugitive.describe").describe(rev)
   elseif command == "commit" then
     require("jj-fugitive.describe").commit()
+  elseif command == "annotate" or command == "blame" then
+    require("jj-fugitive.annotate").show(rest ~= "" and rest or nil)
   elseif command == "browse" then
     require("jj-fugitive.browse").browse()
   else

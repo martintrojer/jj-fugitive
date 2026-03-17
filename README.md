@@ -57,6 +57,7 @@ require("jj-fugitive").setup({
 | `:J describe [rev]` | Edit commit description (default: `@`) |
 | `:J commit` | Describe current change and create new one |
 | `:J bookmark` | Open bookmark management buffer |
+| `:J annotate [file]` | Blame/annotate current file (also `:J blame`) |
 | `:J browse` / `:JBrowse` | Open current file on remote |
 | `:J <any>` | Pass through to jj (e.g. `:J new`, `:J squash`, `:J arrange`) |
 

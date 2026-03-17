@@ -16,6 +16,7 @@ COMMANDS                                        *jj-fugitive-commands*
                         Open log view with options.
 :J status               Show changed files with actions.
 :J diff [{file}]        Show diff for file or working copy.
+:J annotate [{file}]    Blame/annotate file (also `:J blame`).
 :J describe [{rev}]     Edit commit description (default: @).
 :J commit               Describe current change and create new one.
 :J bookmark             Open bookmark management buffer.
@@ -91,6 +92,16 @@ Keybindings:
   f             Fetch from remote
   R             Refresh
   q             Close
+  g?            Help
+
+ANNOTATE                                        *jj-fugitive-annotate*
+
+Opened by `:J annotate` or `:J blame`. Shows per-line change ID and
+author in a scroll-locked vertical split alongside the source file.
+
+Keybindings:
+
+  q             Close annotation
   g?            Help
 
 DESCRIBE AND COMMIT                             *jj-fugitive-describe*
