@@ -57,16 +57,18 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
       end
 
       local text = table.concat(filtered, "\n"):gsub("^%s+", ""):gsub("%s+$", "")
-      if text == "" then
-        ui.err("Empty message — not saved")
-        return
-      end
 
       if save_fn(text) then
         vim.api.nvim_buf_set_option(bufnr, "modified", false)
       end
     end,
   })
+
+  -- q to abort (close without saving)
+  ui.map(bufnr, "n", "q", function()
+    vim.api.nvim_buf_set_option(bufnr, "modified", false)
+    vim.cmd("close")
+  end)
 
   -- Open in a split
   vim.cmd("split")
@@ -94,7 +96,7 @@ function M.describe(rev)
   open_editor("jj-describe-" .. rev, description, {
     "# Describe revision " .. rev,
     "# Lines starting with # are ignored",
-    "# Save with :w to apply",
+    "# :w to save, q to abort (empty description clears message)",
   }, function(text)
     local result = init.run_jj({ "describe", rev, "-m", text })
     if result then
@@ -121,7 +123,7 @@ function M.commit()
   open_editor("jj-commit", description, {
     "# Commit message (describe @ then create new change)",
     "# Lines starting with # are ignored",
-    "# Save with :w to commit",
+    "# :w to save, q to abort",
   }, function(text)
     local result = init.run_jj({ "commit", "-m", text })
     if result then
