@@ -126,8 +126,8 @@ nvim file1.txt
 
 ### Browse (`:JBrowse`)
 
-- [ ] `:JBrowse` opens URL or copies to clipboard
-- [ ] Works with current file and line number
+- [x] `:JBrowse` opens URL or copies to clipboard
+- [x] Works with current file and line number
 - [x] Shows error when not in a repo or no remote
 
 ### Command Passthrough
