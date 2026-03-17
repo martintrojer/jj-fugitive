@@ -114,15 +114,15 @@ nvim file1.txt
 
 ### Status View (`:J status`)
 
-- [ ] `:J status` opens status buffer
-- [ ] Shows changed files with M/A/D indicators
-- [ ] `<CR>`/`o` opens file
-- [ ] `d` shows diff for file
-- [ ] `D` opens side-by-side diff
-- [ ] `x` restores file from parent (with confirm)
+- [x] `:J status` opens status buffer
+- [x] Shows changed files with M/A/D indicators
+- [x] `<CR>`/`o` opens file
+- [x] `d` shows diff for file
+- [x] `D` opens side-by-side diff
+- [x] `x` restores file from parent (with confirm)
 - [ ] `R` refreshes
-- [ ] `q` closes
-- [ ] `g?` shows help
+- [x] `q` closes
+- [x] `g?` shows help
 
 ### Browse (`:JBrowse`)
 
