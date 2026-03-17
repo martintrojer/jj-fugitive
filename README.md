@@ -136,6 +136,32 @@ Open with `:J diff` or `:J diff <file>`.
 
 `:J describe [rev]` opens an editor buffer for the commit message. `:J commit` does the same but also creates a new change after saving. Lines starting with `#` are ignored. Save with `:w`.
 
+## Changes from v1
+
+v2 is a complete rewrite focused on simplicity and core jj workflows.
+
+**New:**
+- Dedicated bookmark buffer with create, delete, move, track, push/fetch
+- Rebase keybindings from log view (`grd`, `grs`, `grb`)
+- TUI commands (`arrange`, `split`, `diffedit`, `resolve`) run in `:terminal`
+- Uses jj change IDs (stable across rewrites) instead of commit hashes
+- Configurable default command (`log` or `status`)
+- `setup()` function for user configuration
+
+**Changed:**
+- `:J` opens log by default (was status in v1)
+- Describe key in log is `cc` (was `D`)
+- Simpler completion (commands + subcommands, no deep flag parsing)
+- Single `run_jj()` API (no `run_jj_command_from_module` indirection)
+- Repo detection via `vim.fs.find` (no manual cache)
+
+**Removed:**
+- Interactive command stubs (split/diffedit/resolve editor interception)
+- Buffer-reuse state machine (`update_current`/`previous_view`)
+- Format selector in diff view
+- Emoji indicators in log (jj's native symbols are used)
+- Deep flag completion and caching
+
 ## License
 
 MIT
