@@ -166,7 +166,18 @@ local function setup_keymaps(bufnr)
   -- Squash into parent
   ui.map(bufnr, "n", "s", function()
     local id = get_change_id()
-    if id and ui.confirm("Squash " .. id .. " into its parent?") then
+    if not id then
+      return
+    end
+    local init = require("jj-fugitive.init")
+    local desc = init.run_jj({ "log", "-r", id, "--no-graph", "-T", "description" })
+    local summary = desc and desc:gsub("%s+$", ""):match("^[^\n]*") or ""
+    local msg = "Squash " .. id
+    if summary ~= "" then
+      msg = msg .. ' ("' .. summary .. '")'
+    end
+    msg = msg .. " into its parent?"
+    if ui.confirm(msg) then
       run_and_refresh({ "squash", "-r", id }, "Squashed " .. id)
     end
   end)
@@ -174,7 +185,18 @@ local function setup_keymaps(bufnr)
   -- Abandon commit
   ui.map(bufnr, "n", "A", function()
     local id = get_change_id()
-    if id and ui.confirm("Abandon " .. id .. "?") then
+    if not id then
+      return
+    end
+    local init = require("jj-fugitive.init")
+    local desc = init.run_jj({ "log", "-r", id, "--no-graph", "-T", "description" })
+    local summary = desc and desc:gsub("%s+$", ""):match("^[^\n]*") or ""
+    local msg = "Abandon " .. id
+    if summary ~= "" then
+      msg = msg .. ' ("' .. summary .. '")'
+    end
+    msg = msg .. "?"
+    if ui.confirm(msg) then
       run_and_refresh({ "abandon", id }, "Abandoned " .. id)
     end
   end)
