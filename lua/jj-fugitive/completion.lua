@@ -395,9 +395,8 @@ end
 
 -- Get list of bookmarks for completion
 function M.get_bookmarks()
-  -- Use repo-aware runner to ensure correct repository context
-  local main_module = require("jj-fugitive.init")
-  local result = main_module.run_jj_command_from_module({ "bookmark", "list" })
+  local init = require("jj-fugitive.init")
+  local result = init.run_jj({ "bookmark", "list" })
   if not result then
     return {}
   end
@@ -419,9 +418,8 @@ end
 
 -- Get list of changed files for completion
 function M.get_changed_files()
-  -- Use repo-aware runner to ensure correct repository context from any subdir
-  local main_module = require("jj-fugitive.init")
-  local result = main_module.run_jj_command_from_module({ "status" })
+  local init = require("jj-fugitive.init")
+  local result = init.run_jj({ "status" })
   if not result then
     return {}
   end
@@ -429,14 +427,13 @@ function M.get_changed_files()
   local files = {}
   local in_changes = false
 
-  local ui = require("jj-fugitive.ui")
   for line in result:gmatch("[^\r\n]+") do
-    if line:match(ui.PATTERNS.WORKING_COPY_CHANGES) then
+    if line:match("^Working copy changes:") then
       in_changes = true
-    elseif line:match(ui.PATTERNS.WORKING_COPY_HEADER) or line:match(ui.PATTERNS.PARENT_COMMIT) then
+    elseif line:match("^Working copy") or line:match("^Parent commit") then
       in_changes = false
-    elseif in_changes and line:match(ui.PATTERNS.STATUS_LINE) then
-      local filename = line:match(ui.PATTERNS.STATUS_FILENAME)
+    elseif in_changes and line:match("^[A-Z] ") then
+      local filename = line:match("^[A-Z] (.+)")
       if filename then
         table.insert(files, filename)
       end

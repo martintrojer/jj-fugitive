@@ -14,14 +14,6 @@ end, {
   end,
 })
 
--- Minimal contextual help command (matches documentation)
-vim.api.nvim_create_user_command("JHelp", function(opts)
-  jj_fugitive.jhelp(opts.args)
-end, {
-  nargs = "*",
-})
-
--- GBrowse-like command
 vim.api.nvim_create_user_command("JBrowse", function()
   require("jj-fugitive.browse").browse()
 end, { nargs = 0 })
