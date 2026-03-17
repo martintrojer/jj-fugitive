@@ -189,7 +189,7 @@ local function setup_keymaps(bufnr)
     if name and name ~= "" then
       -- Try set first (moves existing), fall back to create
       local init = require("jj-fugitive.init")
-      local result = init.run_jj({ "bookmark", "set", name, "-r", id })
+      local result = init.run_jj({ "bookmark", "set", name, "-r", id, "--allow-backwards" })
       if not result then
         result = init.run_jj({ "bookmark", "create", name, "-r", id })
       end

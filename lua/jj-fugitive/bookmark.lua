@@ -72,7 +72,10 @@ local function setup_keymaps(bufnr)
     end
     local rev = vim.fn.input("Move '" .. name .. "' to revision: ")
     if rev and rev ~= "" then
-      run_and_refresh({ "bookmark", "set", name, "-r", rev }, "Moved " .. name .. " -> " .. rev)
+      run_and_refresh(
+        { "bookmark", "set", name, "-r", rev, "--allow-backwards" },
+        "Moved " .. name .. " -> " .. rev
+      )
     end
   end)
 
