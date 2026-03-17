@@ -82,7 +82,7 @@ function M.repo_root()
 end
 
 -- Commands that open a TUI and need :terminal instead of vim.fn.system
-local TUI_COMMANDS = { "arrange", "split" }
+local TUI_COMMANDS = { "arrange", "split", "diffedit", "resolve" }
 
 --- Run a jj command in a terminal buffer (for TUI commands).
 --- Opens a split with the terminal, refreshes log on exit.
