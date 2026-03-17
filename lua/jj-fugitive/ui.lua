@@ -138,4 +138,42 @@ function M.help_popup(title, lines, opts)
   return help_buf, help_win
 end
 
+--- Open a side-by-side diff in a new tab using Neovim's diffthis.
+--- left_content, right_content: strings
+--- left_name, right_name: buffer names
+--- filename: used for filetype detection (optional)
+function M.open_sidebyside(left_content, left_name, right_content, right_name, filename)
+  vim.cmd("tabnew")
+
+  local left = M.create_scratch_buffer({ name = left_name, modifiable = true })
+  vim.api.nvim_buf_set_lines(left, 0, -1, false, vim.split(left_content, "\n"))
+  vim.api.nvim_buf_set_option(left, "modifiable", false)
+  vim.api.nvim_buf_set_option(left, "modified", false)
+
+  local right = M.create_scratch_buffer({ name = right_name, modifiable = true })
+  vim.api.nvim_buf_set_lines(right, 0, -1, false, vim.split(right_content, "\n"))
+  vim.api.nvim_buf_set_option(right, "modifiable", false)
+  vim.api.nvim_buf_set_option(right, "modified", false)
+
+  if filename then
+    local ft = vim.filetype.match({ filename = filename })
+    if ft then
+      vim.api.nvim_buf_set_option(left, "filetype", ft)
+      vim.api.nvim_buf_set_option(right, "filetype", ft)
+    end
+  end
+
+  vim.api.nvim_set_current_buf(left)
+  vim.cmd("vsplit")
+  vim.cmd("wincmd l")
+  vim.api.nvim_set_current_buf(right)
+  vim.cmd("windo diffthis")
+
+  for _, buf in ipairs({ left, right }) do
+    M.map(buf, "n", "q", "<cmd>tabclose<CR>")
+  end
+
+  return left, right
+end
+
 return M

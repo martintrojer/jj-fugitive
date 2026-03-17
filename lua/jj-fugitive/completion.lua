@@ -1,8 +1,8 @@
 local M = {}
 
---- Parse jj --help output to extract top-level command names.
-local function get_jj_commands()
-  local output = vim.fn.system({ "jj", "--help" })
+--- Parse the Commands: section from jj help output.
+local function parse_commands(args)
+  local output = vim.fn.system(args)
   if vim.v.shell_error ~= 0 then
     return {}
   end
@@ -15,7 +15,7 @@ local function get_jj_commands()
       in_commands = true
     elseif in_commands then
       if line:match("^%S") then
-        break -- hit next section
+        break
       end
       local cmd = line:match("^%s+([a-z][a-z0-9%-]*)")
       if cmd then
@@ -25,33 +25,6 @@ local function get_jj_commands()
   end
 
   return commands
-end
-
---- Parse subcommands from `jj <command> --help`.
-local function get_subcommands(command)
-  local output = vim.fn.system({ "jj", command, "--help" })
-  if vim.v.shell_error ~= 0 then
-    return {}
-  end
-
-  local subcommands = {}
-  local in_commands = false
-
-  for line in output:gmatch("[^\r\n]+") do
-    if line:match("^Commands:") or line:match("^COMMANDS:") then
-      in_commands = true
-    elseif in_commands then
-      if line:match("^%S") then
-        break
-      end
-      local cmd = line:match("^%s+([a-z][a-z0-9%-]*)")
-      if cmd then
-        table.insert(subcommands, cmd)
-      end
-    end
-  end
-
-  return subcommands
 end
 
 --- Commands known to have subcommands.
@@ -85,7 +58,7 @@ function M.complete(arglead, cmdline, _)
 
   -- Completing first argument (command name)
   if #parts == 0 or (#parts == 1 and not cmdline:match("%s$")) then
-    local commands = get_jj_commands()
+    local commands = parse_commands({ "jj", "--help" })
     -- Add our custom commands that might not be in jj help
     local custom = { "status", "diff", "log", "browse", "bookmark" }
     for _, c in ipairs(custom) do
@@ -107,7 +80,7 @@ function M.complete(arglead, cmdline, _)
       vim.tbl_contains(COMMANDS_WITH_SUBS, main_cmd)
       and (#parts == 1 and cmdline:match("%s$") or (#parts == 2 and not cmdline:match("%s$")))
     then
-      local subs = get_subcommands(main_cmd)
+      local subs = parse_commands({ "jj", main_cmd, "--help" })
       for _, sub in ipairs(subs) do
         if arglead == "" or sub:find("^" .. vim.pesc(arglead)) then
           table.insert(completions, sub)

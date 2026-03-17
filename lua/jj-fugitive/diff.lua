@@ -147,38 +147,16 @@ function M.show_sidebyside(filename)
   end
 
   -- Create side-by-side layout in a new tab
-  vim.cmd("tabnew")
+  local left, right = ui.open_sidebyside(
+    original,
+    filename .. " (parent @-)",
+    current,
+    filename .. " (working copy)",
+    filename
+  )
 
-  -- Left: original
-  local left = ui.create_scratch_buffer({ name = filename .. " (parent @-)", modifiable = true })
-  vim.api.nvim_buf_set_lines(left, 0, -1, false, vim.split(original, "\n"))
-  vim.api.nvim_buf_set_option(left, "modifiable", false)
-  vim.api.nvim_buf_set_option(left, "modified", false)
-
-  -- Right: current
-  local right =
-    ui.create_scratch_buffer({ name = filename .. " (working copy)", modifiable = true })
-  vim.api.nvim_buf_set_lines(right, 0, -1, false, vim.split(current, "\n"))
-  vim.api.nvim_buf_set_option(right, "modifiable", false)
-  vim.api.nvim_buf_set_option(right, "modified", false)
-
-  -- Set filetype for syntax highlighting
-  local ft = vim.filetype.match({ filename = filename })
-  if ft then
-    vim.api.nvim_buf_set_option(left, "filetype", ft)
-    vim.api.nvim_buf_set_option(right, "filetype", ft)
-  end
-
-  -- Layout: left | right with diff mode
-  vim.api.nvim_set_current_buf(left)
-  vim.cmd("vsplit")
-  vim.cmd("wincmd l")
-  vim.api.nvim_set_current_buf(right)
-  vim.cmd("windo diffthis")
-
-  -- Keymaps for both buffers
+  -- Additional keymaps for working copy diff
   for _, buf in ipairs({ left, right }) do
-    ui.map(buf, "n", "q", "<cmd>tabclose<CR>")
     ui.map(buf, "n", "o", function()
       vim.cmd("tabclose")
       vim.cmd("edit " .. vim.fn.fnameescape(filename))

@@ -101,6 +101,9 @@ end
 -- Commands that open a TUI and need :terminal instead of vim.fn.system
 local TUI_COMMANDS = { "arrange", "split", "diffedit", "resolve" }
 
+-- Commands that mutate the repo and should refresh the log
+local MUTATING_COMMANDS = { "new", "edit", "squash", "abandon", "rebase", "parallelize" }
+
 --- Run a jj command in a terminal buffer (for TUI commands).
 --- Opens a split with the terminal, refreshes log on exit.
 function M.run_jj_terminal(args)
@@ -206,8 +209,7 @@ function M.jj(args)
     if result then
       print(result)
       -- Refresh log if open after mutating commands
-      local mutating = { "new", "edit", "squash", "abandon", "rebase", "parallelize" }
-      if vim.tbl_contains(mutating, command) then
+      if vim.tbl_contains(MUTATING_COMMANDS, command) then
         M.refresh_log()
       end
     end
