@@ -93,8 +93,8 @@ function M.run_jj_terminal(args)
     return
   end
 
-  -- Open terminal in a split, cd to repo root first
-  vim.cmd("split")
+  -- Open terminal in a new tab so it gets full screen
+  vim.cmd("tabnew")
   vim.fn.termopen("cd " .. vim.fn.shellescape(repo_root) .. " && " .. cmd_str, {
     on_exit = function(_, exit_code)
       if exit_code == 0 then
