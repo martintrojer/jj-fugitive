@@ -1,10 +1,8 @@
 # TODO
 
 - [ ] Write tests for v2
-- [ ] No `jj status` awareness anywhere. After `jj edit`, modified files
-  remain in the worktree but there's no way to see them from the plugin.
-  Consider adding a status section to the log view, or a lightweight
-  `:J status` command that shows changed files with file-level actions.
+- [x] `:J status` view: shows changed files with open, diff, side-by-side,
+  and restore actions.
 - [x] Keybinding conflict resolved: describe in log is now `cc` (like
   fugitive's commit), freeing `D` for side-by-side diff.
 - [x] TUI commands (`arrange`, `split`, `diffedit`, `resolve`) now run

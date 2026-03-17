@@ -87,7 +87,7 @@ function M.complete(arglead, cmdline, _)
   if #parts == 0 or (#parts == 1 and not cmdline:match("%s$")) then
     local commands = get_jj_commands()
     -- Add our custom commands that might not be in jj help
-    local custom = { "diff", "log", "browse", "bookmark" }
+    local custom = { "status", "diff", "log", "browse", "bookmark" }
     for _, c in ipairs(custom) do
       if not vim.tbl_contains(commands, c) then
         table.insert(commands, c)

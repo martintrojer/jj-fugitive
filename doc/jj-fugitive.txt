@@ -14,6 +14,7 @@ COMMANDS                                        *jj-fugitive-commands*
 :J                      Open log view (primary hub).
 :J log [-r {rev}] [--limit {n}]
                         Open log view with options.
+:J status               Show changed files with actions.
 :J diff [{file}]        Show diff for file or working copy.
 :J describe [{rev}]     Edit commit description (default: @).
 :J commit               Describe current change and create new one.
@@ -43,6 +44,21 @@ Keybindings:
   grs           Rebase source onto commit (prompts)
   grb           Rebase branch onto commit (prompts)
   +  =          Show more commits
+  R             Refresh
+  q             Close
+  g?            Help
+
+STATUS VIEW                                     *jj-fugitive-status*
+
+Opened by `:J status` or `:J st`. Shows changed files in the
+working copy with syntax-highlighted status indicators.
+
+Keybindings:
+
+  <CR>  o       Open file
+  d             Show diff for file
+  D             Side-by-side diff
+  x             Restore file from parent (@-)
   R             Refresh
   q             Close
   g?            Help

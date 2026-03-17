@@ -43,6 +43,7 @@ git clone https://github.com/martintrojer/jj-fugitive ~/.local/share/nvim/site/p
 |---------|-------------|
 | `:J` | Open log view (primary hub) |
 | `:J log` | Open log view with options (e.g. `:J log -r .. --limit 50`) |
+| `:J status` | Show changed files with actions |
 | `:J diff [file]` | Show diff for file or working copy |
 | `:J describe [rev]` | Edit commit description (default: `@`) |
 | `:J commit` | Describe current change and create new one |
@@ -91,6 +92,20 @@ Open with `:J bookmark`.
   u         Untrack remote bookmark
   p         Push bookmark to remote
   f         Fetch from remote
+  R         Refresh
+  q         Close
+  g?        Help
+```
+
+## Status View
+
+Open with `:J status` or `:J st`. Shows changed files in the working copy.
+
+```
+  <CR>/o    Open file
+  d         Show diff for file
+  D         Side-by-side diff
+  x         Restore file from parent (@-)
   R         Refresh
   q         Close
   g?        Help

@@ -150,6 +150,8 @@ function M.jj(args)
       end
     end
     require("jj-fugitive.log").show(opts)
+  elseif command == "status" or command == "st" then
+    require("jj-fugitive.status").show()
   elseif command == "diff" then
     require("jj-fugitive.diff").show(rest ~= "" and rest or nil)
   elseif command == "bookmark" then
