@@ -10,22 +10,39 @@ function M.setup(opts)
   M.config = vim.tbl_extend("force", M.config, opts or {})
 end
 
+-- Cache the last known repo root so plugin buffers (jj-log, jj-diff, etc.)
+-- can still find the repo even though they have no real file path.
+local last_repo_root = nil
+
 --- Find the jj repository root from the current buffer or cwd.
 --- Uses vim.fs.find (Neovim 0.8+) to walk upward.
 local function find_jj_root()
-  -- Try from current buffer's directory first, then cwd
-  local start_path
+  -- Try from current buffer's directory first
   local buf_name = vim.api.nvim_buf_get_name(0)
   if buf_name ~= "" then
-    start_path = vim.fn.fnamemodify(buf_name, ":p:h")
-  else
-    start_path = vim.fn.getcwd()
+    local buf_dir = vim.fn.fnamemodify(buf_name, ":p:h")
+    -- Only search if it looks like a real filesystem path
+    if vim.fn.isdirectory(buf_dir) == 1 then
+      local found = vim.fs.find(".jj", { path = buf_dir, upward = true, type = "directory" })
+      if #found > 0 then
+        last_repo_root = vim.fn.fnamemodify(found[1], ":h")
+        return last_repo_root
+      end
+    end
   end
 
-  local found = vim.fs.find(".jj", { path = start_path, upward = true, type = "directory" })
+  -- Try from cwd
+  local found = vim.fs.find(".jj", { path = vim.fn.getcwd(), upward = true, type = "directory" })
   if #found > 0 then
-    return vim.fn.fnamemodify(found[1], ":h")
+    last_repo_root = vim.fn.fnamemodify(found[1], ":h")
+    return last_repo_root
   end
+
+  -- Fall back to cached root (for plugin buffers like jj-log)
+  if last_repo_root and vim.fn.isdirectory(last_repo_root .. "/.jj") == 1 then
+    return last_repo_root
+  end
+
   return nil
 end
 
