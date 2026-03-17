@@ -1,0 +1,98 @@
+*jj-fugitive.txt*  Jujutsu (jj) integration for Neovim
+
+Author:  Martin Trojer
+License: MIT
+
+INTRODUCTION                                    *jj-fugitive*
+
+A Neovim plugin for Jujutsu (jj) version control, inspired by vim-fugitive.
+Provides interactive log, diff, bookmark, and commit message editing views.
+
+COMMANDS                                        *jj-fugitive-commands*
+
+                                                *:J*
+:J                      Open log view (primary hub).
+:J log [-r {rev}] [--limit {n}]
+                        Open log view with options.
+:J diff [{file}]        Show diff for file or working copy.
+:J describe [{rev}]     Edit commit description (default: @).
+:J commit               Describe current change and create new one.
+:J bookmark             Open bookmark management buffer.
+:J browse               Open current file on remote.
+:J {any}                Pass through to jj CLI.
+
+                                                *:JBrowse*
+:JBrowse                Open current file/line on remote (GitHub/GitLab).
+
+LOG VIEW                                        *jj-fugitive-log*
+
+The log view is the primary hub. Opened by |:J| or `:J log`.
+Shows native jj log output with ANSI colors preserved.
+
+Keybindings:
+
+  <CR>          Show commit details (jj show)
+  d             Show diff for commit
+  D             Describe (edit commit message)
+  e             Edit at commit (jj edit)
+  n             New change after commit (jj new)
+  s             Squash into parent (jj squash)
+  A             Abandon commit (jj abandon)
+  b             Create/move bookmark to commit
+  rd            Rebase @ onto commit under cursor
+  rs            Rebase source onto commit (prompts)
+  rb            Rebase branch onto commit (prompts)
+  +  =          Show more commits
+  R             Refresh
+  q             Close
+  g?            Help
+
+DIFF VIEW                                       *jj-fugitive-diff*
+
+Opened by `:J diff` or `:J diff {file}`. Shows unified diff with
+ANSI color rendering from jj output.
+
+Keybindings:
+
+  D             Side-by-side diff (opens in new tab)
+  o             Open file in editor
+  [c  ]c        Navigate changes
+  q             Close
+  g?            Help
+
+BOOKMARK VIEW                                   *jj-fugitive-bookmark*
+
+Opened by `:J bookmark`. Shows all bookmarks with tracking status.
+
+Keybindings:
+
+  c             Create bookmark (prompts for name and revision)
+  d             Delete bookmark under cursor
+  m             Move bookmark to revision (prompts)
+  t             Track remote bookmark (origin)
+  u             Untrack remote bookmark
+  p             Push bookmark to remote
+  f             Fetch from remote
+  R             Refresh
+  q             Close
+  g?            Help
+
+DESCRIBE AND COMMIT                             *jj-fugitive-describe*
+
+`:J describe [{rev}]` opens an editor buffer for the commit message.
+`:J commit` does the same but also creates a new change after saving.
+
+Lines starting with # are ignored. Save with `:w` to apply.
+
+BROWSE                                          *jj-fugitive-browse*
+
+|:JBrowse| opens the current file (and line or visual selection) on
+the remote host. Supports GitHub and GitLab SSH/HTTPS remotes.
+Prefers the `main` bookmark for the revision.
+
+REQUIREMENTS                                    *jj-fugitive-requirements*
+
+- Neovim 0.8+
+- jj CLI (https://github.com/martinvonz/jj) in PATH
+
+ vim:tw=78:ts=8:ft=help:norl:
