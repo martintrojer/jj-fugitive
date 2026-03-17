@@ -233,6 +233,11 @@ local function setup_keymaps(bufnr)
     end
   end)
 
+  -- Block built-in c (change) and r (replace) which error on read-only buffer
+  -- Mapping to a function (not <Nop>) lets Neovim still wait for multi-key sequences
+  ui.map(bufnr, "n", "c", function() end)
+  ui.map(bufnr, "n", "r", function() end)
+
   -- Describe (cc like fugitive's commit)
   ui.map(bufnr, "n", "cc", function()
     local id = get_change_id()
