@@ -200,6 +200,9 @@ local function setup_keymaps(bufnr)
     end
   end)
 
+  -- Block built-in r (replace char) which errors on read-only buffer
+  ui.map(bufnr, "n", "r", "<Nop>")
+
   -- Rebase: rd = rebase @ onto commit, rs = rebase source onto dest
   ui.map(bufnr, "n", "rd", function()
     local id = get_change_id()
