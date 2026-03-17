@@ -95,11 +95,18 @@ function M.run_jj_terminal(args)
 
   -- Open terminal in a new tab so it gets full screen
   vim.cmd("tabnew")
+  local term_buf = vim.api.nvim_get_current_buf()
   vim.fn.termopen("cd " .. vim.fn.shellescape(repo_root) .. " && " .. cmd_str, {
     on_exit = function(_, exit_code)
-      if exit_code == 0 then
-        M.refresh_log()
-      end
+      -- Close the terminal tab
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(term_buf) then
+          vim.api.nvim_buf_delete(term_buf, { force = true })
+        end
+        if exit_code == 0 then
+          M.refresh_log()
+        end
+      end)
     end,
   })
   vim.cmd("startinsert")
