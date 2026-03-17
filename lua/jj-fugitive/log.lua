@@ -65,19 +65,100 @@ local function run_and_refresh(args, msg)
   end
 end
 
+--- Open side-by-side diff for a specific file at a revision.
+local function sidebyside_at_rev(filename, rev)
+  local init = require("jj-fugitive.init")
+  local ui = require("jj-fugitive.ui")
+
+  local current = init.run_jj({ "file", "show", filename, "-r", rev }) or ""
+  local parent = init.run_jj({ "file", "show", filename, "-r", rev .. "-" }) or ""
+
+  vim.cmd("tabnew")
+
+  local left = ui.create_scratch_buffer({
+    name = filename .. " (" .. rev .. "-)",
+    modifiable = true,
+  })
+  vim.api.nvim_buf_set_lines(left, 0, -1, false, vim.split(parent, "\n"))
+  vim.api.nvim_buf_set_option(left, "modifiable", false)
+  vim.api.nvim_buf_set_option(left, "modified", false)
+
+  local right = ui.create_scratch_buffer({
+    name = filename .. " (" .. rev .. ")",
+    modifiable = true,
+  })
+  vim.api.nvim_buf_set_lines(right, 0, -1, false, vim.split(current, "\n"))
+  vim.api.nvim_buf_set_option(right, "modifiable", false)
+  vim.api.nvim_buf_set_option(right, "modified", false)
+
+  local ft = vim.filetype.match({ filename = filename })
+  if ft then
+    vim.api.nvim_buf_set_option(left, "filetype", ft)
+    vim.api.nvim_buf_set_option(right, "filetype", ft)
+  end
+
+  vim.api.nvim_set_current_buf(left)
+  vim.cmd("vsplit")
+  vim.cmd("wincmd l")
+  vim.api.nvim_set_current_buf(right)
+  vim.cmd("windo diffthis")
+
+  for _, buf in ipairs({ left, right }) do
+    ui.map(buf, "n", "q", "<cmd>tabclose<CR>")
+  end
+end
+
 --- Setup keymaps for a detail buffer (show/diff opened from log).
 local function setup_detail_keymaps(bufnr, kind, id)
   local ui = require("jj-fugitive.ui")
 
   ui.map(bufnr, "n", "q", "<cmd>close<CR>")
 
+  -- Side-by-side diff (only for diff buffers)
+  if kind == "Diff" then
+    ui.map(bufnr, "n", "D", function()
+      local init = require("jj-fugitive.init")
+      local files_output = init.run_jj({ "diff", "--name-only", "-r", id })
+      if not files_output then
+        return
+      end
+
+      local files = {}
+      for _, f in ipairs(vim.split(files_output, "\n")) do
+        if f:match("%S") then
+          table.insert(files, f)
+        end
+      end
+
+      if #files == 0 then
+        vim.api.nvim_echo({ { "No files changed", "WarningMsg" } }, false, {})
+        return
+      end
+
+      if #files == 1 then
+        sidebyside_at_rev(files[1], id)
+        return
+      end
+
+      vim.ui.select(files, { prompt = "Side-by-side diff for:" }, function(choice)
+        if choice then
+          sidebyside_at_rev(choice, id)
+        end
+      end)
+    end)
+  end
+
   ui.map(bufnr, "n", "g?", function()
-    ui.help_popup("jj-fugitive " .. kind, {
+    local help = {
       "Viewing " .. kind:lower() .. " for commit " .. id,
       "",
-      "  q       Close",
-      "  g?      This help",
-    })
+    }
+    if kind == "Diff" then
+      table.insert(help, "  D       Side-by-side diff (pick file)")
+    end
+    table.insert(help, "  q       Close")
+    table.insert(help, "  g?      This help")
+    ui.help_popup("jj-fugitive " .. kind, help)
   end)
 end
 
