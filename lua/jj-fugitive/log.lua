@@ -213,8 +213,8 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Squash into parent
-  ui.map(bufnr, "n", "s", function()
+  -- Squash into parent (S not s — avoid fugitive muscle memory conflict)
+  ui.map(bufnr, "n", "S", function()
     local id = get_change_id()
     if id and ui.confirm("Squash " .. id .. " into its parent?") then
       run_and_refresh({ "squash", "-r", id }, "Squashed " .. id)
@@ -330,7 +330,7 @@ local function setup_keymaps(bufnr)
       "  cc        Describe (edit commit message)",
       "  e         Edit at commit (jj edit)",
       "  n         New change after commit (jj new)",
-      "  s         Squash into parent (jj squash)",
+      "  S         Squash into parent (jj squash)",
       "  A         Abandon commit (jj abandon)",
       "",
       "Bookmark:",

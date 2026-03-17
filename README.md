@@ -71,7 +71,7 @@ Commit actions:
   cc        Describe (edit commit message)
   e         Edit at commit (jj edit)
   n         New change after commit (jj new)
-  s         Squash into parent (jj squash)
+  S         Squash into parent (jj squash)
   A         Abandon commit (jj abandon)
 
 Bookmark:
