@@ -128,6 +128,13 @@ function M.help_popup(title, lines, opts)
     vim.keymap.set("n", key, close, { buffer = help_buf, noremap = true, silent = true })
   end
 
+  -- Close popup when it loses focus
+  vim.api.nvim_create_autocmd("WinLeave", {
+    buffer = help_buf,
+    once = true,
+    callback = close,
+  })
+
   return help_buf, help_win
 end
 
