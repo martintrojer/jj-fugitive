@@ -97,15 +97,7 @@ function M.show(filename)
     })
     vim.cmd("split")
     vim.api.nvim_set_current_buf(show_buf)
-    ui.map(show_buf, "n", "q", "<cmd>close<CR>")
-    ui.map(show_buf, "n", "g?", function()
-      ui.help_popup("jj-fugitive Show", {
-        "Viewing commit " .. change_id,
-        "",
-        "  q       Close",
-        "  g?      This help",
-      })
-    end)
+    require("jj-fugitive.log").setup_detail_keymaps(show_buf, "Show", change_id)
     ui.set_statusline(show_buf, "jj-show: " .. change_id)
   end)
 

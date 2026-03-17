@@ -83,7 +83,7 @@ local function sidebyside_at_rev(filename, rev)
 end
 
 --- Setup keymaps for a detail buffer (show/diff opened from log).
-local function setup_detail_keymaps(bufnr, kind, id)
+function M.setup_detail_keymaps(bufnr, kind, id)
   local ui = require("jj-fugitive.ui")
 
   ui.map(bufnr, "n", "q", "<cmd>close<CR>")
@@ -169,7 +169,7 @@ local function setup_keymaps(bufnr)
 
     vim.cmd("split")
     vim.api.nvim_set_current_buf(show_buf)
-    setup_detail_keymaps(show_buf, "Show", id)
+    M.setup_detail_keymaps(show_buf, "Show", id)
     ui.set_statusline(show_buf, "jj-show: " .. id)
   end)
 
@@ -193,7 +193,7 @@ local function setup_keymaps(bufnr)
 
     vim.cmd("split")
     vim.api.nvim_set_current_buf(diff_buf)
-    setup_detail_keymaps(diff_buf, "Diff", id)
+    M.setup_detail_keymaps(diff_buf, "Diff", id)
     ui.set_statusline(diff_buf, "jj-diff: " .. id)
   end)
 
