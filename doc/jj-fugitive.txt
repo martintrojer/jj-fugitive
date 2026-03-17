@@ -57,6 +57,7 @@ working copy with syntax-highlighted status indicators.
 Keybindings:
 
   <CR>  o       Open file
+  =             Toggle inline diff (fugitive-style)
   d             Show diff for file
   D             Side-by-side diff
   x             Restore file from parent (@-)

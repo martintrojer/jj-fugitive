@@ -24,6 +24,73 @@ local function file_from_line(line)
   return nil
 end
 
+--- Toggle inline diff for the file on the current line.
+--- Inserts/removes diff lines below the status line.
+local function toggle_inline_diff(bufnr)
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line_nr = cursor[1]
+  local line = vim.api.nvim_buf_get_lines(bufnr, line_nr - 1, line_nr, false)[1]
+  local file = file_from_line(line)
+  if not file then
+    return
+  end
+
+  -- Check if next line is already an inline diff (starts with spaces + diff marker)
+  local next_lines = vim.api.nvim_buf_get_lines(bufnr, line_nr, line_nr + 1, false)
+  if #next_lines > 0 and next_lines[1]:match("^    [+-@d ]") then
+    -- Collapse: remove diff lines until we hit a non-diff line
+    local end_line = line_nr
+    local all_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+    for i = line_nr + 1, #all_lines do
+      if all_lines[i]:match("^    [+-@d ]") then
+        end_line = i
+      else
+        break
+      end
+    end
+    vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+    vim.api.nvim_buf_set_lines(bufnr, line_nr, end_line, false, {})
+    vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+    vim.api.nvim_buf_set_option(bufnr, "modified", false)
+    return
+  end
+
+  -- Expand: get diff and insert below
+  local init = require("jj-fugitive.init")
+  local diff_output = init.run_jj({ "diff", "--git", file })
+  if not diff_output or diff_output:match("^%s*$") then
+    return
+  end
+
+  local diff_lines = {}
+  for _, dl in ipairs(vim.split(diff_output, "\n")) do
+    if dl ~= "" then
+      table.insert(diff_lines, "    " .. dl)
+    end
+  end
+
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.api.nvim_buf_set_lines(bufnr, line_nr, line_nr, false, diff_lines)
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(bufnr, "modified", false)
+
+  -- Add inline diff highlighting
+  for i = line_nr, line_nr + #diff_lines - 1 do
+    local dl = diff_lines[i - line_nr + 1]
+    local hl
+    if dl:match("^    %+") then
+      hl = "DiffAdd"
+    elseif dl:match("^    %-") then
+      hl = "DiffDelete"
+    elseif dl:match("^    @@") then
+      hl = "DiffChange"
+    end
+    if hl then
+      vim.api.nvim_buf_add_highlight(bufnr, -1, hl, i, 0, -1)
+    end
+  end
+end
+
 --- Setup keymaps for the status buffer.
 local function setup_keymaps(bufnr)
   local ui = require("jj-fugitive.ui")
@@ -43,6 +110,11 @@ local function setup_keymaps(bufnr)
       vim.cmd("close")
       vim.cmd("edit " .. vim.fn.fnameescape(file))
     end
+  end)
+
+  -- Toggle inline diff (fugitive's = key)
+  ui.map(bufnr, "n", "=", function()
+    toggle_inline_diff(bufnr)
   end)
 
   -- Diff file
@@ -87,6 +159,7 @@ local function setup_keymaps(bufnr)
     ui.help_popup("jj-fugitive Status", {
       "Actions:",
       "  <CR>/o   Open file",
+      "  =        Toggle inline diff (fugitive-style)",
       "  d        Show diff for file",
       "  D        Side-by-side diff",
       "  x        Restore file from parent (@-)",

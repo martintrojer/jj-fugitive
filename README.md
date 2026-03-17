@@ -113,6 +113,7 @@ Open with `:J status` or `:J st`. Shows changed files in the working copy.
 
 ```
   <CR>/o    Open file
+  =         Toggle inline diff (fugitive-style)
   d         Show diff for file
   D         Side-by-side diff
   x         Restore file from parent (@-)
