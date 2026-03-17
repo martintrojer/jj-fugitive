@@ -83,6 +83,35 @@ function M.show(filename)
   vim.cmd("wincmd h")
 
   -- Keymaps
+  ui.map(ann_buf, "n", "<CR>", function()
+    local ann_line = vim.api.nvim_get_current_line()
+    local change_id = ann_line:match("^(%S+)")
+    if not change_id or #change_id < 8 then
+      return
+    end
+    local ansi = require("jj-fugitive.ansi")
+    local result = init.run_jj({ "show", "--color", "always", "--git", change_id })
+    if not result then
+      return
+    end
+    local header = { "", "# Commit: " .. change_id, "# Press g? for help, q to close", "" }
+    local show_buf = ansi.create_colored_buffer(result, "jj-show: " .. change_id, header, {
+      prefix = "JjShow",
+    })
+    vim.cmd("split")
+    vim.api.nvim_set_current_buf(show_buf)
+    ui.map(show_buf, "n", "q", "<cmd>close<CR>")
+    ui.map(show_buf, "n", "g?", function()
+      ui.help_popup("jj-fugitive Show", {
+        "Viewing commit " .. change_id,
+        "",
+        "  q       Close",
+        "  g?      This help",
+      })
+    end)
+    ui.set_statusline(show_buf, "jj-show: " .. change_id)
+  end)
+
   ui.map(ann_buf, "n", "q", function()
     vim.cmd("close")
     vim.cmd("setlocal noscrollbind")
@@ -92,6 +121,7 @@ function M.show(filename)
     ui.help_popup("jj-fugitive Annotate", {
       "Blame/annotate for " .. filename,
       "",
+      "  <CR>    Show commit for this line",
       "  q       Close annotation",
       "  g?      This help",
     })
