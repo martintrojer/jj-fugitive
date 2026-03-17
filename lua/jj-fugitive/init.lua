@@ -3,6 +3,7 @@ local M = {}
 -- Configuration with defaults
 M.config = {
   default_command = "log", -- "log" or "status"
+  open_mode = "split", -- "split" or "tab"
 }
 
 --- Setup function for user configuration.

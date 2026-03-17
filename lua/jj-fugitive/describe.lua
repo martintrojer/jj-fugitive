@@ -47,7 +47,7 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
 
       if save_fn(text) then
         vim.api.nvim_buf_set_option(bufnr, "modified", false)
-        vim.cmd("close")
+        vim.cmd(ui.close_cmd())
       end
     end,
   })
@@ -55,11 +55,11 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
   -- q to abort (close without saving)
   ui.map(bufnr, "n", "q", function()
     vim.api.nvim_buf_set_option(bufnr, "modified", false)
-    vim.cmd("close")
+    vim.cmd(ui.close_cmd())
   end)
 
-  -- Open in a split
-  vim.cmd("split")
+  -- Open in a new pane
+  ui.open_pane()
   vim.api.nvim_win_set_buf(0, bufnr)
 
   -- Position cursor after help comments

@@ -25,7 +25,9 @@ end
 local function setup_diff_keymaps(bufnr, filename)
   local ui = require("jj-fugitive.ui")
 
-  ui.map(bufnr, "n", "q", "<cmd>close<CR>")
+  ui.map(bufnr, "n", "q", function()
+    vim.cmd(require("jj-fugitive.ui").close_cmd())
+  end)
 
   if filename then
     ui.map(bufnr, "n", "o", function()
@@ -96,7 +98,7 @@ function M.show(file_or_args)
   local bufname = "jj-diff: " .. file_desc
   local bufnr = ansi.create_colored_buffer(output, bufname, header, { prefix = "JjDiff" })
 
-  vim.cmd("split")
+  require("jj-fugitive.ui").open_pane()
   vim.api.nvim_set_current_buf(bufnr)
 
   setup_diff_keymaps(bufnr, filename)

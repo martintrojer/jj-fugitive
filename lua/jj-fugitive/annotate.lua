@@ -95,7 +95,7 @@ function M.show(filename)
     local show_buf = ansi.create_colored_buffer(result, "jj-show: " .. change_id, header, {
       prefix = "JjShow",
     })
-    vim.cmd("split")
+    ui.open_pane()
     vim.api.nvim_set_current_buf(show_buf)
     require("jj-fugitive.log").setup_detail_keymaps(show_buf, "Show", change_id)
     ui.set_statusline(show_buf, "jj-show: " .. change_id)

@@ -153,7 +153,9 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Close
-  ui.map(bufnr, "n", "q", "<cmd>close<CR>")
+  ui.map(bufnr, "n", "q", function()
+    vim.cmd(ui.close_cmd())
+  end)
 
   -- Help
   ui.map(bufnr, "n", "g?", function()

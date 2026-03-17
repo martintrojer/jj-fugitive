@@ -56,8 +56,24 @@ function M.set_statusline(bufnr, text)
   end)
 end
 
+--- Open a new pane (split or tab) based on user config.
+function M.open_pane()
+  local config = require("jj-fugitive.init").config
+  if config.open_mode == "tab" then
+    vim.cmd("tabnew")
+  else
+    vim.cmd("split")
+  end
+end
+
+--- Close command appropriate for open_mode (close split or tab).
+function M.close_cmd()
+  local config = require("jj-fugitive.init").config
+  return config.open_mode == "tab" and "tabclose" or "close"
+end
+
 --- Ensure a buffer is visible. Jump to its window if already displayed,
---- otherwise open a horizontal split.
+--- otherwise open in a new pane.
 function M.ensure_visible(bufnr)
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == bufnr then
@@ -65,7 +81,7 @@ function M.ensure_visible(bufnr)
       return
     end
   end
-  vim.cmd("split")
+  M.open_pane()
   vim.api.nvim_set_current_buf(bufnr)
 end
 

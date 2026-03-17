@@ -86,7 +86,9 @@ end
 function M.setup_detail_keymaps(bufnr, kind, id)
   local ui = require("jj-fugitive.ui")
 
-  ui.map(bufnr, "n", "q", "<cmd>close<CR>")
+  ui.map(bufnr, "n", "q", function()
+    vim.cmd(ui.close_cmd())
+  end)
 
   -- Side-by-side diff (available in both show and diff views)
   ui.map(bufnr, "n", "D", function()
@@ -167,7 +169,7 @@ local function setup_keymaps(bufnr)
       prefix = "JjShow",
     })
 
-    vim.cmd("split")
+    ui.open_pane()
     vim.api.nvim_set_current_buf(show_buf)
     M.setup_detail_keymaps(show_buf, "Show", id)
     ui.set_statusline(show_buf, "jj-show: " .. id)
@@ -191,7 +193,7 @@ local function setup_keymaps(bufnr)
       prefix = "JjDiff",
     })
 
-    vim.cmd("split")
+    ui.open_pane()
     vim.api.nvim_set_current_buf(diff_buf)
     M.setup_detail_keymaps(diff_buf, "Diff", id)
     ui.set_statusline(diff_buf, "jj-diff: " .. id)
@@ -315,7 +317,9 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Close
-  ui.map(bufnr, "n", "q", "<cmd>close<CR>")
+  ui.map(bufnr, "n", "q", function()
+    vim.cmd(ui.close_cmd())
+  end)
 
   -- Help
   ui.map(bufnr, "n", "g?", function()
