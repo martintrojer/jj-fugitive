@@ -135,6 +135,21 @@ local function setup_keymaps(bufnr)
   end)
 end
 
+--- Format bookmark output into display lines.
+local function format_lines(output)
+  local lines = {
+    "# jj Bookmarks",
+    "# Press g? for help",
+    "",
+  }
+  for _, line in ipairs(vim.split(output, "\n")) do
+    if line ~= "" then
+      table.insert(lines, line)
+    end
+  end
+  return lines
+end
+
 --- Refresh the bookmark buffer if open.
 function M.refresh()
   local ui = require("jj-fugitive.ui")
@@ -148,18 +163,7 @@ function M.refresh()
     return
   end
 
-  local lines = {
-    "# jj Bookmarks",
-    "# Press g? for help",
-    "",
-  }
-  for _, line in ipairs(vim.split(output, "\n")) do
-    if line ~= "" then
-      table.insert(lines, line)
-    end
-  end
-
-  ui.set_buf_lines(bufnr, lines)
+  ui.set_buf_lines(bufnr, format_lines(output))
   setup_keymaps(bufnr)
 end
 
@@ -170,16 +174,7 @@ function M.show()
     return
   end
 
-  local lines = {
-    "# jj Bookmarks",
-    "# Press g? for help",
-    "",
-  }
-  for _, line in ipairs(vim.split(output, "\n")) do
-    if line ~= "" then
-      table.insert(lines, line)
-    end
-  end
+  local lines = format_lines(output)
 
   local ui = require("jj-fugitive.ui")
   local existing = ui.find_buf(BUF_PATTERN)

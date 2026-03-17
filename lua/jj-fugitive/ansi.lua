@@ -156,8 +156,7 @@ function M.parse_ansi_colors(text)
 end
 
 -- Process diff content and parse ANSI colors
-function M.process_diff_content(diff_content, header_lines, _)
-  -- options parameter not used but kept for API compatibility
+function M.process_diff_content(diff_content, header_lines)
   local lines = vim.split(diff_content, "\n")
   local processed_lines = {}
   local all_highlights = {}
@@ -250,7 +249,7 @@ function M.create_colored_buffer(content, buffer_name, header_lines, opts)
   })
 
   -- Process content and extract ANSI colors
-  local processed_lines, highlights = M.process_diff_content(content, header_lines, opts)
+  local processed_lines, highlights = M.process_diff_content(content, header_lines)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
 
   -- Setup highlighting with parsed ANSI colors
@@ -279,7 +278,7 @@ function M.update_colored_buffer(bufnr, content, header_lines, opts)
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
   -- Process content and extract ANSI colors
-  local processed_lines, highlights = M.process_diff_content(content, header_lines, opts)
+  local processed_lines, highlights = M.process_diff_content(content, header_lines)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, processed_lines)
 
   -- Setup highlighting with parsed ANSI colors

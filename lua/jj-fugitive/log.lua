@@ -5,43 +5,27 @@ local ansi = require("jj-fugitive.ansi")
 local BUF_PATTERN = "jj%-log"
 local BUF_NAME = "jj-log"
 
---- Extract commit IDs from native jj log output (with ANSI codes).
---- Returns a list of { line_number, commit_id, clean_line }.
-local function extract_commits(output)
-  local lines = vim.split(output, "\n")
-  local commits = {}
+-- Pattern for 8+ hex chars at end of line
+local HEX8_PATTERN = "(" .. string.rep("[a-f0-9]", 8) .. "+)$"
 
-  for i, line in ipairs(lines) do
-    if line ~= "" then
-      local clean, _ = ansi.parse_ansi_colors(line)
-      -- Look for 8+ hex chars at end of line (jj's short commit hash)
-      local id = clean:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)$")
-      if id then
-        table.insert(commits, { line_number = i, commit_id = id, clean_line = clean })
-      end
-    end
-  end
-
-  return commits
-end
-
---- Get commit ID from current line text, using commit_data for lookup
---- and falling back to pattern matching.
-local function commit_from_line(line, commit_data)
+--- Extract commit ID from a displayed line by stripping ANSI and matching hex.
+local function commit_from_line(line)
   if not line or line == "" or line:match("^%s*#") then
     return nil
   end
+  local clean = ansi.parse_ansi_colors(line)
+  return clean:match(HEX8_PATTERN)
+end
 
-  -- Try commit_data first (matches original ANSI lines)
-  for _, data in ipairs(commit_data or {}) do
-    if data.original_line == line or data.clean_line == line then
-      return data.commit_id
+--- Check if log output contains any commits.
+local function has_commits(output)
+  for line in output:gmatch("[^\n]+") do
+    local clean = ansi.parse_ansi_colors(line)
+    if clean:match(HEX8_PATTERN) then
+      return true
     end
   end
-
-  -- Fallback: strip ANSI and look for hex at end
-  local clean = ansi.parse_ansi_colors(line)
-  return clean:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)$")
+  return false
 end
 
 --- Get jj log output with ANSI colors.
@@ -77,12 +61,22 @@ local function run_and_refresh(args, msg)
   end
 end
 
---- Setup keymaps for the log buffer.
-local function setup_keymaps(bufnr, commit_data)
+--- Setup keymaps for the log buffer (idempotent — safe to call on refresh).
+local function setup_keymaps(bufnr)
+  -- Guard: only set keymaps once per buffer
+  local already = false
+  pcall(function()
+    already = vim.api.nvim_buf_get_var(bufnr, "jj_log_keymaps_set") == true
+  end)
+  if already then
+    return
+  end
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_log_keymaps_set", true)
+
   local ui = require("jj-fugitive.ui")
 
   local function get_commit()
-    return commit_from_line(vim.api.nvim_get_current_line(), commit_data)
+    return commit_from_line(vim.api.nvim_get_current_line())
   end
 
   -- Show commit details
@@ -311,7 +305,6 @@ function M.refresh()
     return
   end
 
-  local commit_data = extract_commits(output)
   local limit_text = opts.limit and string.format(" (limit: %d)", opts.limit) or ""
   local header = {
     "",
@@ -324,7 +317,7 @@ function M.refresh()
     prefix = "JjLog",
   })
 
-  setup_keymaps(bufnr, commit_data)
+  setup_keymaps(bufnr)
 end
 
 --- Show the log view.
@@ -336,8 +329,7 @@ function M.show(opts)
     return
   end
 
-  local commit_data = extract_commits(output)
-  if #commit_data == 0 then
+  if not has_commits(output) then
     vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
     return
   end
@@ -364,7 +356,7 @@ function M.show(opts)
 
   vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
 
-  setup_keymaps(bufnr, commit_data)
+  setup_keymaps(bufnr)
 
   if not existing then
     ui.ensure_visible(bufnr)
@@ -373,7 +365,7 @@ function M.show(opts)
   -- Position cursor on first commit line
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for i, line in ipairs(lines) do
-    if not line:match("^%s*#") and line ~= "" and commit_from_line(line, commit_data) then
+    if not line:match("^%s*#") and line ~= "" and commit_from_line(line) then
       pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
       break
     end
@@ -383,8 +375,6 @@ function M.show(opts)
 end
 
 --- Export for other modules.
-M.extract_commit_id_from_line = function(line)
-  return commit_from_line(line, nil)
-end
+M.extract_commit_id_from_line = commit_from_line
 
 return M
