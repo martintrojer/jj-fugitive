@@ -93,6 +93,12 @@ function M.run_jj_terminal(args)
     return
   end
 
+  -- Show hint for builtin TUI keybindings
+  vim.api.nvim_echo({
+    { "jj builtin: ", "MoreMsg" },
+    { "f=toggle file, h=toggle hunk, Enter=confirm, q=cancel", "Comment" },
+  }, false, {})
+
   -- Open terminal in a new tab so it gets full screen
   -- Use jj's builtin TUI editors to avoid nested $EDITOR
   vim.cmd("tabnew")
