@@ -115,43 +115,16 @@ function M.show_sidebyside(filename)
   local init = require("jj-fugitive.init")
   local ui = require("jj-fugitive.ui")
 
-  -- Get original content from parent revision
-  local original = init.run_jj({ "file", "show", filename, "-r", "@-" })
-  if not original then
-    original = "" -- new file
-  end
-
-  -- Get current content (prefer in-memory buffer if modified)
-  local current = ""
-  local abs = vim.fn.fnamemodify(filename, ":p")
-  local found_buf = nil
-  for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.api.nvim_buf_is_valid(b) then
-      local name = vim.api.nvim_buf_get_name(b)
-      if name ~= "" and vim.fn.fnamemodify(name, ":p") == abs then
-        found_buf = b
-        break
-      end
-    end
-  end
-
-  if found_buf and vim.api.nvim_buf_get_option(found_buf, "modified") then
-    local lines = vim.api.nvim_buf_get_lines(found_buf, 0, -1, false)
-    current = table.concat(lines, "\n")
-  elseif vim.fn.filereadable(filename) == 1 then
-    local file = io.open(filename, "r")
-    if file then
-      current = file:read("*all")
-      file:close()
-    end
-  end
+  -- Use jj to get both sides — reliable regardless of cwd
+  local original = init.run_jj({ "file", "show", filename, "-r", "@-" }) or ""
+  local current = init.run_jj({ "file", "show", filename, "-r", "@" }) or ""
 
   -- Create side-by-side layout in a new tab
   local left, right = ui.open_sidebyside(
     original,
     filename .. " (parent @-)",
     current,
-    filename .. " (working copy)",
+    filename .. " (working copy @)",
     filename
   )
 
