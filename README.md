@@ -58,7 +58,7 @@ The log view is the primary hub. Open with `:J` or `:J log`.
 Commit actions:
   <CR>      Show commit details (jj show)
   d         Show diff for commit
-  D         Describe (edit commit message)
+  cc        Describe (edit commit message)
   e         Edit at commit (jj edit)
   n         New change after commit (jj new)
   s         Squash into parent (jj squash)

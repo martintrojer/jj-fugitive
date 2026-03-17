@@ -53,7 +53,7 @@ nvim file1.txt
 - [x] `n` on a commit runs `jj new` and refreshes log
 - [x] `s` on a commit prompts confirm, runs `jj squash`
 - [x] `A` on a commit prompts confirm, runs `jj abandon`
-- [x] `D` on a commit opens describe buffer
+- [x] `cc` on a commit opens describe buffer
 - [x] `b` on a commit prompts for bookmark name, creates/moves it
 - [x] `+` / `=` expands log (shows more commits with `--limit`)
 - [x] `R` refreshes the log

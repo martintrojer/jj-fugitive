@@ -233,8 +233,8 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Describe
-  ui.map(bufnr, "n", "D", function()
+  -- Describe (cc like fugitive's commit)
+  ui.map(bufnr, "n", "cc", function()
     local id = get_change_id()
     if id then
       require("jj-fugitive.describe").describe(id)
@@ -272,7 +272,7 @@ local function setup_keymaps(bufnr)
       "Commit actions:",
       "  <CR>      Show commit details",
       "  d         Show diff for commit",
-      "  D         Describe (edit commit message)",
+      "  cc        Describe (edit commit message)",
       "  e         Edit at commit (jj edit)",
       "  n         New change after commit (jj new)",
       "  s         Squash into parent (jj squash)",
