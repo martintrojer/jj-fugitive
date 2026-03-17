@@ -61,6 +61,22 @@ local function run_and_refresh(args, msg)
   end
 end
 
+--- Setup keymaps for a detail buffer (show/diff opened from log).
+local function setup_detail_keymaps(bufnr, kind, id)
+  local ui = require("jj-fugitive.ui")
+
+  ui.map(bufnr, "n", "q", "<cmd>close<CR>")
+
+  ui.map(bufnr, "n", "g?", function()
+    ui.help_popup("jj-fugitive " .. kind, {
+      "Viewing " .. kind:lower() .. " for commit " .. id,
+      "",
+      "  q       Close",
+      "  g?      This help",
+    })
+  end)
+end
+
 --- Setup keymaps for the log buffer (idempotent — safe to call on refresh).
 local function setup_keymaps(bufnr)
   -- Guard: only set keymaps once per buffer
@@ -91,7 +107,7 @@ local function setup_keymaps(bufnr)
       return
     end
 
-    local header = { "", "# Commit: " .. id, "# Press q to close", "" }
+    local header = { "", "# Commit: " .. id, "# Press g? for help, q to close", "" }
     local bufname = "jj-show: " .. id
     local show_buf = ansi.create_colored_buffer(result, bufname, header, {
       prefix = "JjShow",
@@ -99,7 +115,7 @@ local function setup_keymaps(bufnr)
 
     vim.cmd("split")
     vim.api.nvim_set_current_buf(show_buf)
-    ui.map(show_buf, "n", "q", "<cmd>close<CR>")
+    setup_detail_keymaps(show_buf, "Show", id)
     ui.set_statusline(show_buf, "jj-show: " .. id)
   end)
 
@@ -115,7 +131,7 @@ local function setup_keymaps(bufnr)
       return
     end
 
-    local header = { "", "# Diff: " .. id, "# Press q to close", "" }
+    local header = { "", "# Diff: " .. id, "# Press g? for help, q to close", "" }
     local bufname = "jj-diff: " .. id
     local diff_buf = ansi.create_colored_buffer(result, bufname, header, {
       prefix = "JjDiff",
@@ -123,7 +139,7 @@ local function setup_keymaps(bufnr)
 
     vim.cmd("split")
     vim.api.nvim_set_current_buf(diff_buf)
-    ui.map(diff_buf, "n", "q", "<cmd>close<CR>")
+    setup_detail_keymaps(diff_buf, "Diff", id)
     ui.set_statusline(diff_buf, "jj-diff: " .. id)
   end)
 
