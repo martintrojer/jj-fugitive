@@ -81,6 +81,11 @@ function M.show(filename)
     if not change_id or #change_id < 8 then
       return
     end
+
+    -- Close annotate and restore scrollbind before opening commit view
+    vim.cmd("close")
+    vim.cmd("setlocal noscrollbind")
+
     local ansi = require("jj-fugitive.ansi")
     local result = init.run_jj({ "show", "--color", "always", "--git", change_id })
     if not result then
