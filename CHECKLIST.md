@@ -25,7 +25,19 @@ jj describe -m "add file3 and modify file1"
 # Set up bookmark
 jj bookmark create main -r @-
 
-# Verify
+# Create a conflict: two branches from main modifying the same file
+jj new main                       # branch A
+echo "version A" > file1.txt
+jj commit -m "branch A change"
+jj bookmark create branchA -r @-
+jj new main                       # branch B
+echo "version B" > file1.txt
+jj commit -m "branch B change"
+jj bookmark create branchB -r @-
+# Merge the two branches — creates conflict in file1.txt
+jj new branchA branchB
+
+# Verify — should show conflict markers in log
 jj log
 jj status
 ```
