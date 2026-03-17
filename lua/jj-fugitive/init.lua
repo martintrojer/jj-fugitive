@@ -48,8 +48,13 @@ function M.run_jj(args)
     return nil
   end
 
+  -- Suppress jj's editor to prevent hangs when running via vim.fn.system.
+  -- Commands like squash, split, etc. would otherwise try to open $EDITOR.
+  local saved_editor = vim.env.JJ_EDITOR
+  vim.env.JJ_EDITOR = "true"
   local result = vim.fn.system(cmd)
   local exit_code = vim.v.shell_error
+  vim.env.JJ_EDITOR = saved_editor
 
   pcall(vim.cmd, "lcd " .. vim.fn.fnameescape(old_cwd))
 
