@@ -114,51 +114,46 @@ local function setup_detail_keymaps(bufnr, kind, id)
 
   ui.map(bufnr, "n", "q", "<cmd>close<CR>")
 
-  -- Side-by-side diff (only for diff buffers)
-  if kind == "Diff" then
-    ui.map(bufnr, "n", "D", function()
-      local init = require("jj-fugitive.init")
-      local files_output = init.run_jj({ "diff", "--name-only", "-r", id })
-      if not files_output then
-        return
-      end
+  -- Side-by-side diff (available in both show and diff views)
+  ui.map(bufnr, "n", "D", function()
+    local init = require("jj-fugitive.init")
+    local files_output = init.run_jj({ "diff", "--name-only", "-r", id })
+    if not files_output then
+      return
+    end
 
-      local files = {}
-      for _, f in ipairs(vim.split(files_output, "\n")) do
-        if f:match("%S") then
-          table.insert(files, f)
-        end
+    local files = {}
+    for _, f in ipairs(vim.split(files_output, "\n")) do
+      if f:match("%S") then
+        table.insert(files, f)
       end
+    end
 
-      if #files == 0 then
-        vim.api.nvim_echo({ { "No files changed", "WarningMsg" } }, false, {})
-        return
+    if #files == 0 then
+      vim.api.nvim_echo({ { "No files changed", "WarningMsg" } }, false, {})
+      return
+    end
+
+    if #files == 1 then
+      sidebyside_at_rev(files[1], id)
+      return
+    end
+
+    vim.ui.select(files, { prompt = "Side-by-side diff for:" }, function(choice)
+      if choice then
+        sidebyside_at_rev(choice, id)
       end
-
-      if #files == 1 then
-        sidebyside_at_rev(files[1], id)
-        return
-      end
-
-      vim.ui.select(files, { prompt = "Side-by-side diff for:" }, function(choice)
-        if choice then
-          sidebyside_at_rev(choice, id)
-        end
-      end)
     end)
-  end
+  end)
 
   ui.map(bufnr, "n", "g?", function()
-    local help = {
+    ui.help_popup("jj-fugitive " .. kind, {
       "Viewing " .. kind:lower() .. " for commit " .. id,
       "",
-    }
-    if kind == "Diff" then
-      table.insert(help, "  D       Side-by-side diff (pick file)")
-    end
-    table.insert(help, "  q       Close")
-    table.insert(help, "  g?      This help")
-    ui.help_popup("jj-fugitive " .. kind, help)
+      "  D       Side-by-side diff (pick file)",
+      "  q       Close",
+      "  g?      This help",
+    })
   end)
 end
 
