@@ -36,20 +36,21 @@ local function toggle_inline_diff(bufnr)
   end
 
   -- Check if next line is already an inline diff (indented with 4 spaces)
-  local next_lines = vim.api.nvim_buf_get_lines(bufnr, line_nr, line_nr + 1, false)
-  if #next_lines > 0 and next_lines[1]:match("^    ") then
-    -- Collapse: remove all indented lines below
-    local end_line = line_nr
-    local all_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-    for i = line_nr + 1, #all_lines do
+  local all_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  if line_nr < #all_lines and (all_lines[line_nr + 1] or ""):match("^    ") then
+    -- Collapse: find the end of the indented block
+    local first = line_nr + 1 -- 1-indexed first diff line
+    local last = first
+    for i = first + 1, #all_lines do
       if all_lines[i]:match("^    ") then
-        end_line = i
+        last = i
       else
         break
       end
     end
+    -- Delete 1-indexed range [first, last] using 0-indexed API
     vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-    vim.api.nvim_buf_set_lines(bufnr, line_nr, end_line, false, {})
+    vim.api.nvim_buf_set_lines(bufnr, first - 1, last, false, {})
     vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
     vim.api.nvim_buf_set_option(bufnr, "modified", false)
     return
