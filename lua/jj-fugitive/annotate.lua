@@ -28,19 +28,11 @@ function M.show(filename)
 
   -- Parse annotations: separate the annotation prefix from the file content
   local annotations = {}
-  local line_contents = {}
-  for line in output:gmatch("[^\n]*") do
+  for line in output:gmatch("[^\n]+") do
     -- Format: "changeid author date    N: content"
-    local annotation, content = line:match("^(.-):%s?(.*)")
-    if annotation then
-      -- Strip the line number from the annotation
-      local prefix = annotation:match("^(.-)%s+%d+$")
-      table.insert(annotations, prefix or annotation)
-      table.insert(line_contents, content)
-    else
-      table.insert(annotations, "")
-      table.insert(line_contents, line)
-    end
+    -- Strip the line number and content, keep the annotation prefix
+    local prefix = line:match("^(.-)%s+%d+:")
+    table.insert(annotations, prefix or line)
   end
 
   -- Create the annotation buffer
