@@ -75,6 +75,14 @@ nvim file1.txt
 - [x] `g?` shows help popup
 - [x] Opening `:J` again reuses existing log buffer
 
+### Conflict handling (from log view)
+
+- [ ] Log shows `(conflict)` marker on merge commit
+- [ ] `A` on the conflict merge commit abandons it, log refreshes cleanly
+- [ ] `n` on a branch commit (branchA/branchB) creates new change, log refreshes
+- [ ] `<CR>` on the conflict commit shows details with conflict info
+- [ ] `d` on the conflict commit shows diff with conflict markers
+
 ### Rebase (from log view)
 
 - [x] `grd` on a commit prompts confirm, rebases `@` onto it
