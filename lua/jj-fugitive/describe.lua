@@ -60,6 +60,7 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
 
       if save_fn(text) then
         vim.api.nvim_buf_set_option(bufnr, "modified", false)
+        vim.cmd("close")
       end
     end,
   })
