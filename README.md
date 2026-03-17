@@ -37,6 +37,15 @@ use "martintrojer/jj-fugitive"
 git clone https://github.com/martintrojer/jj-fugitive ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive
 ```
 
+## Configuration
+
+```lua
+-- Default settings (no setup call needed)
+require("jj-fugitive").setup({
+  default_command = "log",  -- "log" or "status": what :J opens
+})
+```
+
 ## Commands
 
 | Command | Description |

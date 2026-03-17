@@ -1,5 +1,15 @@
 local M = {}
 
+-- Configuration with defaults
+M.config = {
+  default_command = "log", -- "log" or "status"
+}
+
+--- Setup function for user configuration.
+function M.setup(opts)
+  M.config = vim.tbl_extend("force", M.config, opts or {})
+end
+
 --- Find the jj repository root from the current buffer or cwd.
 --- Uses vim.fs.find (Neovim 0.8+) to walk upward.
 local function find_jj_root()
@@ -126,7 +136,11 @@ end
 --- Main :J command dispatcher.
 function M.jj(args)
   if not args or args == "" then
-    require("jj-fugitive.log").show()
+    if M.config.default_command == "status" then
+      require("jj-fugitive.status").show()
+    else
+      require("jj-fugitive.log").show()
+    end
     return
   end
 
