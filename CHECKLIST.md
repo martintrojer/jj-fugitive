@@ -122,9 +122,19 @@ nvim file1.txt
 - [x] `d` shows diff for file
 - [x] `D` opens side-by-side diff
 - [x] `x` restores file from parent (with confirm)
+- [ ] `=` toggles inline diff for file (fugitive-style)
 - [ ] `R` refreshes
 - [x] `q` closes
 - [x] `g?` shows help
+
+### Annotate / Blame (`:J annotate`)
+
+- [ ] `:J annotate` shows annotations for current file
+- [ ] `:J blame` works as alias
+- [ ] `:J annotate <file>` annotates specific file
+- [ ] Scroll-locked with source buffer
+- [ ] `q` closes annotation
+- [ ] `g?` shows help
 
 ### Browse (`:JBrowse`)
 

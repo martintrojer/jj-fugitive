@@ -9,6 +9,7 @@ A Neovim plugin for Jujutsu (jj) version control, inspired by vim-fugitive.
 :J log                  " Show log view with options
 :J status               " Show changed files with actions
 :J diff [file]          " Show diff for file or working copy
+:J annotate [file]      " Blame/annotate (also :J blame)
 :J describe [rev]       " Edit commit description
 :J commit               " Commit (describe + new)
 :J bookmark             " Bookmark management
@@ -23,6 +24,7 @@ lua/jj-fugitive/
 ├── log.lua           # Log view: display, keybindings, commit actions
 ├── status.lua        # Status view: changed files with file actions
 ├── diff.lua          # Diff view: unified + side-by-side
+├── annotate.lua      # Blame/annotate with scroll-locked split
 ├── describe.lua      # Describe/commit editor buffers
 ├── bookmark.lua      # Bookmark management buffer
 ├── completion.lua    # Command completion from jj --help
