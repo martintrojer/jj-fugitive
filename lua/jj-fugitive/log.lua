@@ -1,28 +1,390 @@
 local M = {}
 
--- Placeholder buffer name pattern
-local BUF_PATTERN = "jj%-log"
+local ansi = require("jj-fugitive.ansi")
 
---- Check if a log buffer is currently open.
+local BUF_PATTERN = "jj%-log"
+local BUF_NAME = "jj-log"
+
+--- Extract commit IDs from native jj log output (with ANSI codes).
+--- Returns a list of { line_number, commit_id, clean_line }.
+local function extract_commits(output)
+  local lines = vim.split(output, "\n")
+  local commits = {}
+
+  for i, line in ipairs(lines) do
+    if line ~= "" then
+      local clean, _ = ansi.parse_ansi_colors(line)
+      -- Look for 8+ hex chars at end of line (jj's short commit hash)
+      local id = clean:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)$")
+      if id then
+        table.insert(commits, { line_number = i, commit_id = id, clean_line = clean })
+      end
+    end
+  end
+
+  return commits
+end
+
+--- Get commit ID from current line text, using commit_data for lookup
+--- and falling back to pattern matching.
+local function commit_from_line(line, commit_data)
+  if not line or line == "" or line:match("^%s*#") then
+    return nil
+  end
+
+  -- Try commit_data first (matches original ANSI lines)
+  for _, data in ipairs(commit_data or {}) do
+    if data.original_line == line or data.clean_line == line then
+      return data.commit_id
+    end
+  end
+
+  -- Fallback: strip ANSI and look for hex at end
+  local clean = ansi.parse_ansi_colors(line)
+  return clean:match("([a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]+)$")
+end
+
+--- Get jj log output with ANSI colors.
+local function get_log(opts)
+  opts = opts or {}
+  local init = require("jj-fugitive.init")
+  local args = { "log", "--color", "always" }
+
+  if opts.limit then
+    table.insert(args, "--limit")
+    table.insert(args, tostring(opts.limit))
+  end
+
+  if opts.revisions then
+    for _, rev in ipairs(opts.revisions) do
+      table.insert(args, "-r")
+      table.insert(args, rev)
+    end
+  end
+
+  return init.run_jj(args)
+end
+
+--- Run a jj command and refresh log on success.
+local function run_and_refresh(args, msg)
+  local init = require("jj-fugitive.init")
+  local result = init.run_jj(args)
+  if result then
+    if msg then
+      vim.api.nvim_echo({ { msg, "MoreMsg" } }, false, {})
+    end
+    M.refresh()
+  end
+end
+
+--- Setup keymaps for the log buffer.
+local function setup_keymaps(bufnr, commit_data)
+  local ui = require("jj-fugitive.ui")
+
+  local function get_commit()
+    return commit_from_line(vim.api.nvim_get_current_line(), commit_data)
+  end
+
+  -- Show commit details
+  ui.map(bufnr, "n", "<CR>", function()
+    local id = get_commit()
+    if not id then
+      return
+    end
+    local init = require("jj-fugitive.init")
+    local result = init.run_jj({ "show", "--color", "always", "--git", id })
+    if not result then
+      return
+    end
+
+    local header = { "", "# Commit: " .. id, "# Press q to close", "" }
+    local bufname = "jj-show: " .. id
+    local show_buf = ansi.create_colored_buffer(result, bufname, header, {
+      prefix = "JjShow",
+    })
+
+    vim.cmd("split")
+    vim.api.nvim_set_current_buf(show_buf)
+    ui.map(show_buf, "n", "q", "<cmd>close<CR>")
+    ui.set_statusline(show_buf, "jj-show: " .. id)
+  end)
+
+  -- Show diff for commit
+  ui.map(bufnr, "n", "d", function()
+    local id = get_commit()
+    if not id then
+      return
+    end
+    local init = require("jj-fugitive.init")
+    local result = init.run_jj({ "diff", "--color", "always", "--git", "-r", id })
+    if not result then
+      return
+    end
+
+    local header = { "", "# Diff: " .. id, "# Press q to close", "" }
+    local bufname = "jj-diff: " .. id
+    local diff_buf = ansi.create_colored_buffer(result, bufname, header, {
+      prefix = "JjDiff",
+    })
+
+    vim.cmd("split")
+    vim.api.nvim_set_current_buf(diff_buf)
+    ui.map(diff_buf, "n", "q", "<cmd>close<CR>")
+    ui.set_statusline(diff_buf, "jj-diff: " .. id)
+  end)
+
+  -- Edit at commit
+  ui.map(bufnr, "n", "e", function()
+    local id = get_commit()
+    if id then
+      run_and_refresh({ "edit", id }, "Editing at " .. id)
+    end
+  end)
+
+  -- New commit after this one
+  ui.map(bufnr, "n", "n", function()
+    local id = get_commit()
+    if id then
+      run_and_refresh({ "new", id }, "New change after " .. id)
+    end
+  end)
+
+  -- Squash into parent
+  ui.map(bufnr, "n", "s", function()
+    local id = get_commit()
+    if id and ui.confirm("Squash " .. id .. " into its parent?") then
+      run_and_refresh({ "squash", "-r", id }, "Squashed " .. id)
+    end
+  end)
+
+  -- Abandon commit
+  ui.map(bufnr, "n", "A", function()
+    local id = get_commit()
+    if id and ui.confirm("Abandon " .. id .. "?") then
+      run_and_refresh({ "abandon", id }, "Abandoned " .. id)
+    end
+  end)
+
+  -- Bookmark mode
+  ui.map(bufnr, "n", "b", function()
+    local id = get_commit()
+    if not id then
+      return
+    end
+    local name = vim.fn.input("Bookmark name (create/move to " .. id .. "): ")
+    if name and name ~= "" then
+      -- Try set first (moves existing), fall back to create
+      local init = require("jj-fugitive.init")
+      local result = init.run_jj({ "bookmark", "set", name, "-r", id })
+      if not result then
+        result = init.run_jj({ "bookmark", "create", name, "-r", id })
+      end
+      if result then
+        vim.api.nvim_echo({ { "Bookmark '" .. name .. "' -> " .. id, "MoreMsg" } }, false, {})
+        M.refresh()
+      end
+    end
+  end)
+
+  -- Rebase: rd = rebase @ onto commit, rs = rebase source onto dest
+  ui.map(bufnr, "n", "rd", function()
+    local id = get_commit()
+    if id and ui.confirm("Rebase @ onto " .. id .. "?") then
+      run_and_refresh({ "rebase", "-d", id }, "Rebased onto " .. id)
+    end
+  end)
+
+  ui.map(bufnr, "n", "rs", function()
+    local id = get_commit()
+    if not id then
+      return
+    end
+    local source = vim.fn.input("Rebase source revision (onto " .. id .. "): ")
+    if source and source ~= "" then
+      run_and_refresh({ "rebase", "-s", source, "-d", id }, "Rebased " .. source .. " onto " .. id)
+    end
+  end)
+
+  ui.map(bufnr, "n", "rb", function()
+    local id = get_commit()
+    if not id then
+      return
+    end
+    local branch = vim.fn.input("Rebase branch revision (onto " .. id .. "): ")
+    if branch and branch ~= "" then
+      run_and_refresh(
+        { "rebase", "-b", branch, "-d", id },
+        "Rebased branch " .. branch .. " onto " .. id
+      )
+    end
+  end)
+
+  -- Describe
+  ui.map(bufnr, "n", "D", function()
+    local id = get_commit()
+    if id then
+      require("jj-fugitive.describe").describe(id)
+    end
+  end)
+
+  -- Expand (show more commits)
+  local function expand()
+    local current_limit = 0
+    pcall(function()
+      current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
+    end)
+    local new_limit = current_limit == 0 and 50 or current_limit + 50
+    M.show({ revisions = { ".." }, limit = new_limit })
+  end
+
+  ui.map(bufnr, "n", "+", expand)
+  ui.map(bufnr, "n", "=", expand)
+
+  -- Refresh
+  ui.map(bufnr, "n", "R", function()
+    M.refresh()
+  end)
+
+  -- Close
+  ui.map(bufnr, "n", "q", "<cmd>close<CR>")
+
+  -- Help
+  ui.map(bufnr, "n", "g?", function()
+    ui.help_popup("jj-fugitive Log", {
+      "Navigation:",
+      "  j/k       Move through commits",
+      "  +/=       Show more commits",
+      "",
+      "Commit actions:",
+      "  <CR>      Show commit details",
+      "  d         Show diff for commit",
+      "  D         Describe (edit commit message)",
+      "  e         Edit at commit (jj edit)",
+      "  n         New change after commit (jj new)",
+      "  s         Squash into parent (jj squash)",
+      "  A         Abandon commit (jj abandon)",
+      "",
+      "Bookmark:",
+      "  b         Create/move bookmark to commit",
+      "",
+      "Rebase:",
+      "  rd        Rebase @ onto commit under cursor",
+      "  rs        Rebase source onto commit (prompts for source)",
+      "  rb        Rebase branch onto commit (prompts for branch)",
+      "",
+      "Other:",
+      "  R         Refresh log",
+      "  q         Close",
+      "  g?        This help",
+    }, { width = 60 })
+  end)
+end
+
+--- Check if a log buffer exists.
 function M.is_open()
   local ui = require("jj-fugitive.ui")
   return ui.find_buf(BUF_PATTERN) ~= nil
 end
 
---- Refresh the log buffer if open.
+--- Refresh the current log view.
 function M.refresh()
   local ui = require("jj-fugitive.ui")
   local bufnr = ui.find_buf(BUF_PATTERN)
-  if bufnr then
-    -- Will be implemented in Phase 2
-    M.show()
+  if not bufnr then
+    return
   end
+
+  -- Preserve limit
+  local limit = 0
+  pcall(function()
+    limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
+  end)
+
+  local opts = {}
+  if limit > 0 then
+    opts.limit = limit
+    opts.revisions = { ".." }
+  end
+
+  local output = get_log(opts)
+  if not output then
+    return
+  end
+
+  local commit_data = extract_commits(output)
+  local limit_text = opts.limit and string.format(" (limit: %d)", opts.limit) or ""
+  local header = {
+    "",
+    "# jj Log" .. limit_text,
+    "# Press g? for help",
+    "",
+  }
+
+  ansi.update_colored_buffer(bufnr, output, header, {
+    prefix = "JjLog",
+  })
+
+  setup_keymaps(bufnr, commit_data)
 end
 
 --- Show the log view.
-function M.show(opts) -- luacheck: ignore opts
-  -- Phase 2 implementation
-  vim.api.nvim_echo({ { "jj-fugitive: log view (Phase 2)", "MoreMsg" } }, false, {})
+function M.show(opts)
+  opts = opts or {}
+
+  local output = get_log(opts)
+  if not output then
+    return
+  end
+
+  local commit_data = extract_commits(output)
+  if #commit_data == 0 then
+    vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
+    return
+  end
+
+  local limit_text = opts.limit and string.format(" (limit: %d)", opts.limit) or ""
+  local header = {
+    "",
+    "# jj Log" .. limit_text,
+    "# Press g? for help",
+    "",
+  }
+
+  -- Reuse existing log buffer if open
+  local ui = require("jj-fugitive.ui")
+  local existing = ui.find_buf(BUF_PATTERN)
+  local bufnr
+
+  if existing then
+    bufnr = existing
+    ansi.update_colored_buffer(bufnr, output, header, { prefix = "JjLog" })
+  else
+    bufnr = ansi.create_colored_buffer(output, BUF_NAME, header, { prefix = "JjLog" })
+  end
+
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
+
+  setup_keymaps(bufnr, commit_data)
+
+  if not existing then
+    ui.ensure_visible(bufnr)
+  end
+
+  -- Position cursor on first commit line
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  for i, line in ipairs(lines) do
+    if not line:match("^%s*#") and line ~= "" and commit_from_line(line, commit_data) then
+      pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
+      break
+    end
+  end
+
+  ui.set_statusline(bufnr, "jj-log")
+end
+
+--- Export for other modules.
+M.extract_commit_id_from_line = function(line)
+  return commit_from_line(line, nil)
 end
 
 return M
