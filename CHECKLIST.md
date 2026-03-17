@@ -49,6 +49,8 @@ nvim file1.txt
 - [x] `<CR>` on a commit opens show buffer with details
 - [x] `d` on a commit opens diff buffer
 - [x] Show/diff buffers have `g?` help and `q` to close
+- [ ] `D` in commit diff buffer opens file picker for side-by-side
+- [ ] Side-by-side shows correct file content at revision vs parent
 - [x] `e` on a commit runs `jj edit` and refreshes log
 - [x] `n` on a commit runs `jj new` and refreshes log
 - [x] `s` on a commit prompts confirm, runs `jj squash`
