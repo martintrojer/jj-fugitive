@@ -1,495 +1,179 @@
 local M = {}
 
--- Buffer name pattern for status buffer
-local STATUS_BUFFER_PATTERN = "jj%-status$"
+local BUF_PATTERN = "jj%-status"
+local BUF_NAME = "jj-status"
 
-local function get_or_create_status_buffer()
-  -- First, check if a jj-status buffer already exists
-  local ui = require("jj-fugitive.ui")
-  local existing_buf = ui.find_buffer_by_pattern(STATUS_BUFFER_PATTERN)
-  if existing_buf then
-    return existing_buf
-  end
-
-  -- Create new buffer if none exists
-  return ui.create_scratch_buffer({
-    name = "jj-status",
-    modifiable = false,
-    mark_plugin = true,
-  })
+--- Get jj status output.
+local function get_status()
+  local init = require("jj-fugitive.init")
+  return init.run_jj({ "status" })
 end
 
-local function get_jj_status()
-  -- Use the main module's repository-aware command runner
-  local main_module = require("jj-fugitive.init")
-  local result = main_module.run_jj_command_from_module({ "status" })
-  if not result then
-    return nil, "Failed to get jj status"
-  end
-  return result, nil
-end
-
-local function parse_status_output(output)
-  local lines = vim.split(output, "\n")
-  local status_info = {
-    working_copy = "",
-    parent = "",
-    changes = {},
-  }
-
-  local ui = require("jj-fugitive.ui")
-  local in_changes = false
-
-  for _, line in ipairs(lines) do
-    if line:match(ui.PATTERNS.WORKING_COPY_CHANGES) then
-      in_changes = true
-    elseif line:match(ui.PATTERNS.WORKING_COPY_HEADER) then
-      status_info.working_copy = line
-      in_changes = false
-    elseif line:match(ui.PATTERNS.PARENT_COMMIT) then
-      status_info.parent = line
-      in_changes = false
-    elseif in_changes and line:match(ui.PATTERNS.STATUS_LINE) then
-      local status_char = line:sub(1, 1)
-      local filename = line:sub(3)
-      table.insert(status_info.changes, {
-        status = status_char,
-        file = filename,
-        line = line,
-      })
-    end
-  end
-
-  return status_info
-end
-
--- Extract the current filename from a status line.
--- Handles rename lines of the form: "R old/path -> new/path" by returning new/path.
-local function status_filename_from_line(line)
-  local ui = require("jj-fugitive.ui")
-  local s = line:match(ui.PATTERNS.STATUS_FILENAME)
-  if not s then
+--- Extract filename from a status line like "M file1.txt" or "A file2.txt".
+local function file_from_line(line)
+  if not line or line == "" or line:match("^%s*#") or line:match("^%s*$") then
     return nil
   end
-  local new = s:match(" -> (.+)$")
-  if new then
-    return new
+  -- Match status lines: "M file.txt", "A file.txt", "D file.txt", "R old -> new"
+  local filename = line:match("^%s*[MADR]%s+(.+)")
+  if filename then
+    -- Handle renames: "old -> new"
+    local new_name = filename:match("^.+%s+->%s+(.+)")
+    return new_name or filename
   end
-  return s
+  return nil
 end
 
-local function format_status_buffer(status_info)
-  local lines = {}
+--- Setup keymaps for the status buffer.
+local function setup_keymaps(bufnr)
+  local ui = require("jj-fugitive.ui")
 
-  -- Header
-  table.insert(lines, "# jj-fugitive Status")
-  table.insert(lines, "")
-
-  -- Working copy info
-  if status_info.working_copy ~= "" then
-    table.insert(lines, status_info.working_copy)
-  end
-  if status_info.parent ~= "" then
-    table.insert(lines, status_info.parent)
-  end
-  table.insert(lines, "")
-
-  -- Changes section
-  if #status_info.changes > 0 then
-    table.insert(lines, "Working copy changes:")
-    for _, change in ipairs(status_info.changes) do
-      table.insert(lines, change.line)
+  -- Open file
+  ui.map(bufnr, "n", "<CR>", function()
+    local file = file_from_line(vim.api.nvim_get_current_line())
+    if file then
+      vim.cmd("close")
+      vim.cmd("edit " .. vim.fn.fnameescape(file))
     end
-  else
-    table.insert(lines, "The working copy has no changes.")
+  end)
+
+  ui.map(bufnr, "n", "o", function()
+    local file = file_from_line(vim.api.nvim_get_current_line())
+    if file then
+      vim.cmd("close")
+      vim.cmd("edit " .. vim.fn.fnameescape(file))
+    end
+  end)
+
+  -- Diff file
+  ui.map(bufnr, "n", "d", function()
+    local file = file_from_line(vim.api.nvim_get_current_line())
+    if file then
+      require("jj-fugitive.diff").show(file)
+    end
+  end)
+
+  -- Side-by-side diff
+  ui.map(bufnr, "n", "D", function()
+    local file = file_from_line(vim.api.nvim_get_current_line())
+    if file then
+      require("jj-fugitive.diff").show_sidebyside(file)
+    end
+  end)
+
+  -- Restore file from parent
+  ui.map(bufnr, "n", "x", function()
+    local file = file_from_line(vim.api.nvim_get_current_line())
+    if file and ui.confirm("Restore " .. file .. " from parent?") then
+      local init = require("jj-fugitive.init")
+      local result = init.run_jj({ "restore", "--from", "@-", file })
+      if result then
+        vim.api.nvim_echo({ { "Restored: " .. file, "MoreMsg" } }, false, {})
+        M.refresh()
+      end
+    end
+  end)
+
+  -- Refresh
+  ui.map(bufnr, "n", "R", function()
+    M.refresh()
+  end)
+
+  -- Close
+  ui.map(bufnr, "n", "q", "<cmd>close<CR>")
+
+  -- Help
+  ui.map(bufnr, "n", "g?", function()
+    ui.help_popup("jj-fugitive Status", {
+      "Actions:",
+      "  <CR>/o   Open file",
+      "  d        Show diff for file",
+      "  D        Side-by-side diff",
+      "  x        Restore file from parent (@-)",
+      "",
+      "Other:",
+      "  R        Refresh",
+      "  q        Close",
+      "  g?       This help",
+    })
+  end)
+end
+
+--- Format status output into display lines.
+local function format_lines(output)
+  local lines = {
+    "# jj Status",
+    "# Press g? for help",
+    "",
+  }
+  for _, line in ipairs(vim.split(output, "\n")) do
+    if line ~= "" then
+      table.insert(lines, line)
+    end
   end
-
-  table.insert(lines, "")
-  table.insert(lines, "# Commands:")
-  table.insert(lines, "# <CR> = show diff, o = open file, s = split, v = vsplit, t = tab")
-  table.insert(
-    lines,
-    "# Tab = toggle diff view (inline/split), d = unified diff, D = side-by-side diff"
-  )
-  table.insert(lines, "# r = restore, a = absorb, cc = commit, ca = amend, l = log view")
-  table.insert(lines, "# R = reload status, b/q = close, g? = help")
-
   return lines
 end
 
-local function reload_status_content(bufnr)
-  local output, err = get_jj_status()
-  if not output then
-    local ui = require("jj-fugitive.ui")
-    ui.err_write(err)
-    return false
-  end
-
-  local status_info = parse_status_output(output)
-  local lines = format_status_buffer(status_info)
-
-  -- Update buffer content
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  vim.api.nvim_buf_set_option(bufnr, "modified", false)
-
-  return true
-end
-local function setup_buffer_keymaps(bufnr, status_info) -- luacheck: ignore status_info
+--- Refresh the status buffer if open.
+function M.refresh()
   local ui = require("jj-fugitive.ui")
-
-  -- Reload status (vim-fugitive uses R)
-  ui.map(bufnr, "n", "R", function()
-    -- Get current buffer for reload
-    local current_buf = vim.api.nvim_get_current_buf()
-
-    -- Only reload if we're in the status buffer
-    local buf_name = vim.api.nvim_buf_get_name(current_buf)
-    if buf_name:match(STATUS_BUFFER_PATTERN) then
-      reload_status_content(current_buf)
-    end
-  end)
-
-  -- Commit current changes
-  ui.map(bufnr, "n", "cc", function()
-    local commit_msg = vim.fn.input("Commit message: ")
-    if commit_msg and commit_msg ~= "" then
-      local main_module = require("jj-fugitive.init")
-      main_module.run_jj_command_from_module({ "commit", "-m", commit_msg })
-      M.show_status()
-    end
-  end)
-
-  -- Commit amend (vim-fugitive ca)
-  ui.map(bufnr, "n", "ca", function()
-    local main_module = require("jj-fugitive.init")
-    -- Get current commit description
-    local current_desc = main_module.run_jj_command_from_module({
-      "log",
-      "-r",
-      "@",
-      "--no-graph",
-      "-T",
-      "description",
-    })
-    if current_desc then
-      current_desc = current_desc:gsub("^%s*", ""):gsub("%s*$", "") -- trim whitespace
-    end
-
-    local commit_msg = vim.fn.input("Amend commit message: ", current_desc or "")
-    if commit_msg and commit_msg ~= "" then
-      main_module.run_jj_command_from_module({ "describe", "-m", commit_msg })
-      vim.api.nvim_echo({ { "Amended commit description", "MoreMsg" } }, false, {})
-      M.show_status()
-    end
-  end)
-
-  -- Commit extend (vim-fugitive ce) - add changes to current commit
-  ui.map(bufnr, "n", "ce", function()
-    local main_module = require("jj-fugitive.init")
-    -- In jj, this is like doing a describe + commit in one step
-    local commit_msg = vim.fn.input("Extend commit message: ")
-    if commit_msg and commit_msg ~= "" then
-      main_module.run_jj_command_from_module({ "commit", "-m", commit_msg })
-      vim.api.nvim_echo({ { "Extended commit with changes", "MoreMsg" } }, false, {})
-      M.show_status()
-    end
-  end)
-
-  -- Commit new (vim-fugitive cn) - create new commit after current
-  ui.map(bufnr, "n", "cn", function()
-    local main_module = require("jj-fugitive.init")
-    main_module.run_jj_command_from_module({ "new" })
-    vim.api.nvim_echo({ { "Created new commit", "MoreMsg" } }, false, {})
-    M.show_status()
-  end)
-
-  -- Create new change
-  ui.map(bufnr, "n", "new", function()
-    local main_module = require("jj-fugitive.init")
-    main_module.run_jj_command_from_module({ "new" })
-    M.show_status()
-  end)
-
-  -- jj-idiomatic file operations (no staging area in jj)
-  -- Note: jj automatically tracks all files, no manual tracking needed
-
-  -- Restore file from parent revision (jj restore)
-  ui.map(bufnr, "n", "r", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = status_filename_from_line(line)
-    if filename then
-      -- Ask for confirmation since this will discard changes
-      if
-        ui.confirm_action(
-          string.format(
-            "Restore '%s' from parent revision? This will discard current changes.",
-            filename
-          ),
-          true
-        )
-      then
-        local main_module = require("jj-fugitive.init")
-        local result = main_module.run_jj_command_from_module({ "restore", filename })
-        if result then
-          vim.api.nvim_echo({ { "Restored: " .. filename, "MoreMsg" } }, false, {})
-          M.show_status()
-        end
-      end
-    end
-  end)
-
-  -- Absorb changes into mutable ancestors (jj absorb)
-  ui.map(bufnr, "n", "a", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = status_filename_from_line(line)
-    if filename then
-      -- Ask for confirmation since this will modify commits
-      if
-        ui.confirm_action(
-          string.format(
-            "Absorb changes in '%s' into mutable ancestors? This will move changes to appropriate commits.",
-            filename
-          ),
-          true
-        )
-      then
-        local main_module = require("jj-fugitive.init")
-        local result = main_module.run_jj_command_from_module({ "absorb", filename })
-        if result then
-          vim.api.nvim_echo({ { "Absorbed changes: " .. filename, "MoreMsg" } }, false, {})
-          M.show_status()
-        end
-      end
-    else
-      -- If no specific file, absorb all changes
-      if
-        ui.confirm_action(
-          "Absorb all working copy changes into mutable ancestors? This will move changes to appropriate commits.",
-          true
-        )
-      then
-        local main_module = require("jj-fugitive.init")
-        local result = main_module.run_jj_command_from_module({ "absorb" })
-        if result then
-          vim.api.nvim_echo({ { "Absorbed all changes", "MoreMsg" } }, false, {})
-          M.show_status()
-        end
-      end
-    end
-  end)
-
-  -- Show diff for file or commit on current line
-  local function show_diff_for_line(line, sidebyside)
-    -- Check if it's a file change line (e.g., "M filename")
-    local filename = status_filename_from_line(line)
-    if filename then
-      if sidebyside then
-        require("jj-fugitive.diff").show_file_diff_sidebyside(filename)
-      else
-        require("jj-fugitive.diff").show_file_diff(
-          filename,
-          { update_current = true, previous_view = "status" }
-        )
-      end
-      return
-    end
-
-    -- Check if it's a commit line and extract commit ID
-    local log_module = require("jj-fugitive.log")
-    -- Use the log module's extraction function (exported for this purpose)
-    local commit_id = log_module.extract_commit_id_from_line(line)
-
-    if commit_id then
-      -- Show commit diff using the log module
-      log_module.show_commit_diff(commit_id, {
-        update_current = true,
-        previous_view = "status",
-        sidebyside = sidebyside,
-      })
-    end
-  end
-
-  -- Unified diff view
-  ui.map(bufnr, "n", "d", function()
-    show_diff_for_line(vim.api.nvim_get_current_line(), false)
-  end)
-
-  -- Side-by-side diff view
-  ui.map(bufnr, "n", "D", function()
-    show_diff_for_line(vim.api.nvim_get_current_line(), true)
-  end)
-
-  -- Toggle between inline and split diff view
-  ui.map(bufnr, "n", "<Tab>", function()
-    local line = vim.api.nvim_get_current_line()
-    local filename = status_filename_from_line(line)
-    if filename then
-      require("jj-fugitive.diff").toggle_diff_view(filename)
-    end
-  end)
-
-  -- File opening commands (table-driven approach)
-  local file_open_commands = {
-    o = "edit",
-    s = "split",
-    v = "vsplit",
-    t = "tabedit",
-  }
-
-  for key, cmd in pairs(file_open_commands) do
-    ui.map(bufnr, "n", key, function()
-      local line = vim.api.nvim_get_current_line()
-      local filename = status_filename_from_line(line)
-      if filename then
-        vim.cmd(cmd .. " " .. vim.fn.fnameescape(filename))
-      end
-    end)
-  end
-
-  -- Back/close (common abstraction)
-  ui.setup_exit_keymaps(bufnr, { close_cmd = "close", include_gq = true })
-
-  -- Show diff for file under cursor or commit details for commit lines (vim-fugitive standard)
-  ui.map(bufnr, "n", "<CR>", function()
-    local line = vim.api.nvim_get_current_line()
-
-    -- Check if it's a file change line (e.g., "M filename")
-    local filename = status_filename_from_line(line)
-    if filename then
-      require("jj-fugitive.diff").show_file_diff(
-        filename,
-        { update_current = true, previous_view = "status" }
-      )
-      return
-    end
-
-    -- Check if it's a commit line and extract commit ID
-    local log_module = require("jj-fugitive.log")
-    local commit_id = log_module.extract_commit_id_from_line(line)
-
-    if commit_id then
-      -- Show commit details using the log module
-      -- Pass information that we came from status view
-      log_module.show_commit_details(commit_id, {
-        update_current = true,
-        previous_view = "status",
-      })
-    end
-  end)
-
-  -- Launch log view (use 'l' for log)
-  ui.map(bufnr, "n", "l", function()
-    require("jj-fugitive.log").show_log()
-  end)
-
-  -- Show help (vim-fugitive standard)
-  ui.map(bufnr, "n", "g?", function()
-    local help_lines = {
-      "# jj-fugitive Status Window Help",
-      "",
-      "NOTE: jj automatically tracks all files (no staging area)",
-      "Files are tracked immediately when created/modified.",
-      "",
-      "File operations:",
-      "  <CR>    - Show diff for file",
-      "  o       - Open file in editor",
-      "  s       - Open file in horizontal split",
-      "  v       - Open file in vertical split",
-      "  t       - Open file in new tab",
-      "  d       - Show unified diff for file",
-      "  D       - Show side-by-side diff for file",
-      "  Tab     - Toggle between unified/side-by-side diff",
-      "",
-      "jj file operations:",
-      "  r       - Restore file from parent revision (jj restore)",
-      "  a       - Absorb changes into mutable ancestors (jj absorb)",
-      "            (moves changes to appropriate ancestor commits)",
-      "",
-      "jj workflow commands:",
-      "  cc      - Commit working copy changes with message",
-      "  ca      - Amend current commit description",
-      "  ce      - Extend commit with current changes",
-      "  cn      - Create new commit after current",
-      "  new     - Create new working copy change",
-      "",
-      "Navigation & misc:",
-      "  l       - Show log view (jj log)",
-      "  R       - Reload status (refresh working copy state)",
-      "  b/q     - Close status window",
-      "  g?      - Show this help",
-      "",
-      "Press any key to close help...",
-    }
-
-    ui.show_help_popup(
-      "jj-fugitive Status Help",
-      help_lines,
-      { close_keys = { "q", "g", "?", "o", "D", "l", "R" }, mark_plugin = true }
-    )
-  end)
-end
-
-local function setup_buffer_highlighting(bufnr)
-  vim.api.nvim_buf_call(bufnr, function()
-    vim.cmd("syntax match JjStatusHeader '^#.*'")
-    vim.cmd("syntax match JjStatusAdded '^A .*'")
-    vim.cmd("syntax match JjStatusModified '^M .*'")
-    vim.cmd("syntax match JjStatusDeleted '^D .*'")
-    vim.cmd("syntax match JjStatusRenamed '^R .*'")
-
-    vim.cmd("highlight default link JjStatusHeader Comment")
-    vim.cmd("highlight default link JjStatusAdded DiffAdd")
-    vim.cmd("highlight default link JjStatusModified DiffChange")
-    vim.cmd("highlight default link JjStatusDeleted DiffDelete")
-    vim.cmd("highlight default link JjStatusRenamed DiffChange")
-  end)
-end
-
-function M.show_status()
-  local output, err = get_jj_status()
-  if not output then
-    local ui = require("jj-fugitive.ui")
-    ui.err_write(err)
+  local bufnr = ui.find_buf(BUF_PATTERN)
+  if not bufnr then
     return
   end
 
-  local status_info = parse_status_output(output)
-  local lines = format_status_buffer(status_info)
+  local output = get_status()
+  if not output then
+    return
+  end
 
-  local bufnr = get_or_create_status_buffer()
+  ui.set_buf_lines(bufnr, format_lines(output))
+end
 
-  -- Check/set one-time initialization for this buffer
+--- Show the status view.
+function M.show()
+  local output = get_status()
+  if not output then
+    return
+  end
+
+  local lines = format_lines(output)
+
   local ui = require("jj-fugitive.ui")
-  local first_time = ui.set_once(bufnr, "status_keymaps")
+  local existing = ui.find_buf(BUF_PATTERN)
+  local bufnr
 
-  -- Set buffer content
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  vim.api.nvim_buf_set_option(bufnr, "modified", false)
-
-  -- Setup keymaps and highlighting only once per status buffer
-  if first_time then
-    setup_buffer_keymaps(bufnr, status_info)
-    setup_buffer_highlighting(bufnr)
+  if existing then
+    bufnr = existing
+    ui.set_buf_lines(bufnr, lines)
+  else
+    bufnr = ui.create_scratch_buffer({ name = BUF_NAME })
+    ui.set_buf_lines(bufnr, lines)
   end
 
-  -- Open in current window or split
-  require("jj-fugitive.ui").ensure_buffer_visible(bufnr)
+  -- Highlighting
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.cmd("syntax match JjStatusHeader '^#.*'")
+    vim.cmd("syntax match JjStatusModified '^M .*'")
+    vim.cmd("syntax match JjStatusAdded '^A .*'")
+    vim.cmd("syntax match JjStatusDeleted '^D .*'")
+    vim.cmd("syntax match JjStatusRenamed '^R .*'")
+    vim.cmd("syntax match JjStatusSection '^Working copy.*\\|^Parent commit.*'")
+    vim.cmd("highlight default link JjStatusHeader Comment")
+    vim.cmd("highlight default link JjStatusModified DiffChange")
+    vim.cmd("highlight default link JjStatusAdded DiffAdd")
+    vim.cmd("highlight default link JjStatusDeleted DiffDelete")
+    vim.cmd("highlight default link JjStatusRenamed DiffText")
+    vim.cmd("highlight default link JjStatusSection Title")
+  end)
 
-  -- Position cursor on the first file if there are changes
-  if #status_info.changes > 0 then
-    -- Find the line with the first file (lines start at 1)
-    -- The format is: header, empty, working copy info, empty, "Working copy changes:", then files
-    for i, line in ipairs(lines) do
-      if line:match(ui.PATTERNS.STATUS_LINE) then -- First line that starts with a status character and space
-        vim.api.nvim_win_set_cursor(0, { i, 0 })
-        break
-      end
-    end
+  setup_keymaps(bufnr)
+
+  if not existing then
+    ui.ensure_visible(bufnr)
   end
+
+  ui.set_statusline(bufnr, "jj-status")
 end
 
 return M

@@ -1,6 +1,8 @@
 local M = {}
 
-local init = require("jj-fugitive.init")
+local function get_init()
+  return require("jj-fugitive")
+end
 
 -- Parse a git remote URL into a web base and repo info
 -- Supports: git@github.com:user/repo.git, https://github.com/user/repo(.git), ssh://git@github.com/user/repo.git
@@ -39,14 +41,6 @@ function M.parse_remote_url(url)
   if host and owner and repo then
     repo = repo:gsub("%.git$", "")
     repo = repo:gsub("/$", "")
-    return {
-      host = host,
-      owner = owner,
-      repo = repo,
-      web_base = string.format("%s://%s/%s/%s", scheme, host, owner, repo),
-    }
-  end
-  if host and owner and repo then
     return {
       host = host,
       owner = owner,
@@ -96,7 +90,7 @@ function M.build_file_url(web_base, host, path, rev, line_start, line_end)
 end
 
 local function get_origin_url()
-  local out = init.run_jj_command_from_module({ "git", "remote", "list" })
+  local out = get_init().run_jj({ "git", "remote", "list" })
   if not out then
     return nil, "Failed to list git remotes"
   end
@@ -113,13 +107,13 @@ end
 
 local function get_default_rev()
   -- Prefer 'main' bookmark if it exists
-  local bl = init.run_jj_command_from_module({ "bookmark", "list" })
+  local bl = get_init().run_jj({ "bookmark", "list" })
   if bl and bl:match("^main:") or (bl and bl:match("\nmain:")) then
     return "main"
   end
 
   -- Fallback to current git commit id (short) of @
-  local log = init.run_jj_command_from_module({ "log", "-r", "@", "--no-graph", "--limit", "1" })
+  local log = get_init().run_jj({ "log", "-r", "@", "--no-graph", "--limit", "1" })
   if log then
     local hash = log:match("([a-f0-9]+)%s*$")
     if hash then
@@ -134,7 +128,7 @@ local function get_relative_path()
   if file == "" then
     return nil
   end
-  local root = init.get_repo_root()
+  local root = get_init().repo_root()
   if not root then
     return nil
   end
@@ -198,31 +192,31 @@ function M.browse()
   local ui = require("jj-fugitive.ui")
   local remote_url, err = get_origin_url()
   if not remote_url then
-    ui.err_write(err or "No git remote found")
+    ui.err(err or "No git remote found")
     return
   end
   local remote, perr = M.parse_remote_url(remote_url)
   if not remote then
-    ui.err_write(perr)
+    ui.err(perr)
     return
   end
 
   local rel = get_relative_path()
   if not rel then
-    ui.err_write("No file in current buffer or not inside repository")
+    ui.err("No file in current buffer or not inside repository")
     return
   end
 
   local rev = get_default_rev()
   if not rev then
-    ui.err_write("Unable to determine revision (no 'main' and no current commit)")
+    ui.err("Unable to determine revision (no 'main' and no current commit)")
     return
   end
 
   local s, e = get_line_range()
   local url = M.build_file_url(remote.web_base, remote.host, rel, rev, s, e)
   if not url then
-    ui.err_write("Failed to build browse URL")
+    ui.err("Failed to build browse URL")
     return
   end
 
