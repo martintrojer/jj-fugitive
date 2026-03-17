@@ -8,10 +8,8 @@
 - [ ] Keybinding conflict: `D` means side-by-side diff in diff view but
   describe in log view. Consider a different key for describe in log
   (e.g. `cc` like fugitive's commit, or `dd` to match `d` for diff).
-- [ ] TUI commands need special handling. `jj arrange` opens a TUI that
-  needs to render correctly inside Neovim (likely needs `:terminal` instead
-  of `vim.fn.system`). Other TUI commands to handle: `jj split -i`,
-  `jj diffedit`, `jj resolve`. Currently these hang via `run_jj`.
+- [x] TUI commands (`arrange`, `split`, `diffedit`, `resolve`) now run
+  in `:terminal` split instead of `vim.fn.system`. Log refreshes on exit.
 - [ ] Side-by-side diff from log commit diff view (`d` in log) — hard because
   commit diffs span multiple files, and `diffthis` requires a single file.
   Would need a file picker or per-file navigation within the commit diff.

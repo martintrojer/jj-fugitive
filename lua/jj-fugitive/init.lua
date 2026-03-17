@@ -71,6 +71,40 @@ function M.repo_root()
   return find_jj_root()
 end
 
+-- Commands that open a TUI and need :terminal instead of vim.fn.system
+local TUI_COMMANDS = { "arrange", "split", "diffedit", "resolve" }
+
+--- Run a jj command in a terminal buffer (for TUI commands).
+--- Opens a split with the terminal, refreshes log on exit.
+function M.run_jj_terminal(args)
+  local ui = require("jj-fugitive.ui")
+  local repo_root = find_jj_root()
+  if not repo_root then
+    ui.err("Not in a jj repository")
+    return
+  end
+
+  local cmd_str
+  if type(args) == "string" then
+    cmd_str = "jj " .. args
+  elseif type(args) == "table" then
+    cmd_str = "jj " .. table.concat(args, " ")
+  else
+    return
+  end
+
+  -- Open terminal in a split, cd to repo root first
+  vim.cmd("split")
+  vim.fn.termopen("cd " .. vim.fn.shellescape(repo_root) .. " && " .. cmd_str, {
+    on_exit = function(_, exit_code)
+      if exit_code == 0 then
+        M.refresh_log()
+      end
+    end,
+  })
+  vim.cmd("startinsert")
+end
+
 --- Main :J command dispatcher.
 function M.jj(args)
   if not args or args == "" then
@@ -110,12 +144,18 @@ function M.jj(args)
   elseif command == "browse" then
     require("jj-fugitive.browse").browse()
   else
+    -- TUI commands need a terminal, not vim.fn.system
+    if vim.tbl_contains(TUI_COMMANDS, command) then
+      M.run_jj_terminal(args)
+      return
+    end
+
     -- Pass through to jj
     local result = M.run_jj(args)
     if result then
       print(result)
       -- Refresh log if open after mutating commands
-      local mutating = { "new", "edit", "squash", "abandon", "rebase", "arrange", "parallelize" }
+      local mutating = { "new", "edit", "squash", "abandon", "rebase", "parallelize" }
       if vim.tbl_contains(mutating, command) then
         M.refresh_log()
       end

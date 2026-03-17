@@ -123,7 +123,11 @@ nvim file1.txt
 - [x] `:J new` creates new change, refreshes log
 - [x] `:J squash` squashes, refreshes log (via `s` in log)
 - [x] `:J abandon` abandons, refreshes log (via `A` in log)
-- [ ] `:J arrange` passes through to jj (TUI — needs `:terminal`, see TODO)
+- [ ] `:J arrange` opens in terminal split (TUI command)
+- [ ] `:J split` opens in terminal split (TUI command)
+- [ ] `:J diffedit` opens in terminal split (TUI command)
+- [ ] `:J resolve` opens in terminal split (TUI command)
+- [ ] TUI terminal closes cleanly and refreshes log
 - [x] Unknown commands pass through to jj and print output
 
 ### Completion
