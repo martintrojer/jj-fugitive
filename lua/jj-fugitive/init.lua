@@ -72,7 +72,7 @@ function M.repo_root()
 end
 
 -- Commands that open a TUI and need :terminal instead of vim.fn.system
-local TUI_COMMANDS = { "arrange" }
+local TUI_COMMANDS = { "arrange", "split" }
 
 --- Run a jj command in a terminal buffer (for TUI commands).
 --- Opens a split with the terminal, refreshes log on exit.
@@ -94,21 +94,26 @@ function M.run_jj_terminal(args)
   end
 
   -- Open terminal in a new tab so it gets full screen
+  -- Use jj's builtin TUI editors to avoid nested $EDITOR
   vim.cmd("tabnew")
   local term_buf = vim.api.nvim_get_current_buf()
-  vim.fn.termopen("cd " .. vim.fn.shellescape(repo_root) .. " && " .. cmd_str, {
-    on_exit = function(_, exit_code)
-      -- Close the terminal tab
-      vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(term_buf) then
-          vim.api.nvim_buf_delete(term_buf, { force = true })
-        end
-        if exit_code == 0 then
-          M.refresh_log()
-        end
-      end)
-    end,
-  })
+  local env_prefix = "JJ_EDITOR=:builtin JJ_DIFF_EDITOR=:builtin"
+  vim.fn.termopen(
+    "cd " .. vim.fn.shellescape(repo_root) .. " && " .. env_prefix .. " " .. cmd_str,
+    {
+      on_exit = function(_, exit_code)
+        -- Close the terminal tab
+        vim.schedule(function()
+          if vim.api.nvim_buf_is_valid(term_buf) then
+            vim.api.nvim_buf_delete(term_buf, { force = true })
+          end
+          if exit_code == 0 then
+            M.refresh_log()
+          end
+        end)
+      end,
+    }
+  )
   vim.cmd("startinsert")
 end
 
