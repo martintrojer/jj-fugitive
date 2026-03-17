@@ -65,6 +65,15 @@ local function run_and_refresh(args, msg)
   end
 end
 
+--- Get the description summary for a change ID (silent, no error on failure).
+local function get_description_summary(id)
+  local out = vim.fn.system({ "jj", "log", "-r", id, "--no-graph", "-T", "description" })
+  if vim.v.shell_error ~= 0 then
+    return ""
+  end
+  return (out or ""):gsub("%s+$", ""):match("^[^\n]*") or ""
+end
+
 --- Setup keymaps for a detail buffer (show/diff opened from log).
 local function setup_detail_keymaps(bufnr, kind, id)
   local ui = require("jj-fugitive.ui")
@@ -169,9 +178,7 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local init = require("jj-fugitive.init")
-    local desc = init.run_jj({ "log", "-r", id, "--no-graph", "-T", "description" })
-    local summary = desc and desc:gsub("%s+$", ""):match("^[^\n]*") or ""
+    local summary = get_description_summary(id)
     local msg = "Squash " .. id
     if summary ~= "" then
       msg = msg .. ' ("' .. summary .. '")'
@@ -188,9 +195,7 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local init = require("jj-fugitive.init")
-    local desc = init.run_jj({ "log", "-r", id, "--no-graph", "-T", "description" })
-    local summary = desc and desc:gsub("%s+$", ""):match("^[^\n]*") or ""
+    local summary = get_description_summary(id)
     local msg = "Abandon " .. id
     if summary ~= "" then
       msg = msg .. ' ("' .. summary .. '")'
