@@ -5,23 +5,27 @@ local ansi = require("jj-fugitive.ansi")
 local BUF_PATTERN = "jj%-log"
 local BUF_NAME = "jj-log"
 
--- Pattern for 8+ hex chars at end of line
-local HEX8_PATTERN = "(" .. string.rep("[a-f0-9]", 8) .. "+)$"
-
---- Extract commit ID from a displayed line by stripping ANSI and matching hex.
-local function commit_from_line(line)
+--- Extract change ID from a displayed log line.
+--- jj log lines look like: "@ tztvmqtt user@email 2026-03-17 3259cd17"
+--- The change ID is the first alphanumeric word after graph symbols (@, ◆, ○, │, etc.)
+local function change_id_from_line(line)
   if not line or line == "" or line:match("^%s*#") then
     return nil
   end
   local clean = ansi.parse_ansi_colors(line)
-  return clean:match(HEX8_PATTERN)
+  -- Match the change ID: first word of 8+ lowercase alpha chars after graph symbols
+  -- Graph symbols are: @, ◆, ○, │, ╮, ╯, ~, spaces, etc.
+  local id = clean:match("^[│╮╯╭╰◆○@~%s]*([a-z][a-z]+)%s")
+  if id and #id >= 8 then
+    return id
+  end
+  return nil
 end
 
 --- Check if log output contains any commits.
 local function has_commits(output)
   for line in output:gmatch("[^\n]+") do
-    local clean = ansi.parse_ansi_colors(line)
-    if clean:match(HEX8_PATTERN) then
+    if change_id_from_line(line) then
       return true
     end
   end
@@ -91,13 +95,13 @@ local function setup_keymaps(bufnr)
 
   local ui = require("jj-fugitive.ui")
 
-  local function get_commit()
-    return commit_from_line(vim.api.nvim_get_current_line())
+  local function get_change_id()
+    return change_id_from_line(vim.api.nvim_get_current_line())
   end
 
   -- Show commit details
   ui.map(bufnr, "n", "<CR>", function()
-    local id = get_commit()
+    local id = get_change_id()
     if not id then
       return
     end
@@ -121,7 +125,7 @@ local function setup_keymaps(bufnr)
 
   -- Show diff for commit
   ui.map(bufnr, "n", "d", function()
-    local id = get_commit()
+    local id = get_change_id()
     if not id then
       return
     end
@@ -145,7 +149,7 @@ local function setup_keymaps(bufnr)
 
   -- Edit at commit
   ui.map(bufnr, "n", "e", function()
-    local id = get_commit()
+    local id = get_change_id()
     if id then
       run_and_refresh({ "edit", id }, "Editing at " .. id)
     end
@@ -153,7 +157,7 @@ local function setup_keymaps(bufnr)
 
   -- New commit after this one
   ui.map(bufnr, "n", "n", function()
-    local id = get_commit()
+    local id = get_change_id()
     if id then
       run_and_refresh({ "new", id }, "New change after " .. id)
     end
@@ -161,7 +165,7 @@ local function setup_keymaps(bufnr)
 
   -- Squash into parent
   ui.map(bufnr, "n", "s", function()
-    local id = get_commit()
+    local id = get_change_id()
     if id and ui.confirm("Squash " .. id .. " into its parent?") then
       run_and_refresh({ "squash", "-r", id }, "Squashed " .. id)
     end
@@ -169,7 +173,7 @@ local function setup_keymaps(bufnr)
 
   -- Abandon commit
   ui.map(bufnr, "n", "A", function()
-    local id = get_commit()
+    local id = get_change_id()
     if id and ui.confirm("Abandon " .. id .. "?") then
       run_and_refresh({ "abandon", id }, "Abandoned " .. id)
     end
@@ -177,7 +181,7 @@ local function setup_keymaps(bufnr)
 
   -- Bookmark mode
   ui.map(bufnr, "n", "b", function()
-    local id = get_commit()
+    local id = get_change_id()
     if not id then
       return
     end
@@ -198,14 +202,14 @@ local function setup_keymaps(bufnr)
 
   -- Rebase: rd = rebase @ onto commit, rs = rebase source onto dest
   ui.map(bufnr, "n", "rd", function()
-    local id = get_commit()
+    local id = get_change_id()
     if id and ui.confirm("Rebase @ onto " .. id .. "?") then
       run_and_refresh({ "rebase", "-d", id }, "Rebased onto " .. id)
     end
   end)
 
   ui.map(bufnr, "n", "rs", function()
-    local id = get_commit()
+    local id = get_change_id()
     if not id then
       return
     end
@@ -216,7 +220,7 @@ local function setup_keymaps(bufnr)
   end)
 
   ui.map(bufnr, "n", "rb", function()
-    local id = get_commit()
+    local id = get_change_id()
     if not id then
       return
     end
@@ -231,7 +235,7 @@ local function setup_keymaps(bufnr)
 
   -- Describe
   ui.map(bufnr, "n", "D", function()
-    local id = get_commit()
+    local id = get_change_id()
     if id then
       require("jj-fugitive.describe").describe(id)
     end
@@ -381,7 +385,7 @@ function M.show(opts)
   -- Position cursor on first commit line
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for i, line in ipairs(lines) do
-    if not line:match("^%s*#") and line ~= "" and commit_from_line(line) then
+    if not line:match("^%s*#") and line ~= "" and change_id_from_line(line) then
       pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
       break
     end
@@ -389,8 +393,5 @@ function M.show(opts)
 
   ui.set_statusline(bufnr, "jj-log")
 end
-
---- Export for other modules.
-M.extract_commit_id_from_line = commit_from_line
 
 return M
