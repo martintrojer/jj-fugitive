@@ -59,9 +59,9 @@ function M.show(file_or_args)
   if file_or_args and file_or_args ~= "" then
     filename = vim.fn.expand(file_or_args:match("^%s*(.-)%s*$"))
   else
-    -- If in a file buffer, diff that file
+    -- If in a real file buffer, diff that file
     local buf_name = vim.api.nvim_buf_get_name(0)
-    if buf_name ~= "" then
+    if buf_name ~= "" and vim.bo.buftype == "" then
       local cwd = vim.fn.getcwd()
       if buf_name:find(cwd, 1, true) == 1 then
         filename = buf_name:sub(#cwd + 2)
