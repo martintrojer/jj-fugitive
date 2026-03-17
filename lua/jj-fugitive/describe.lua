@@ -1,22 +1,9 @@
 local M = {}
 
---- Extract the description text from `jj show -s` output.
-local function extract_description(show_output)
-  local description = ""
-  local in_desc = false
-  for line in show_output:gmatch("[^\n]*") do
-    if line:match("^%s*$") and in_desc then
-      break
-    elseif in_desc then
-      if description ~= "" then
-        description = description .. "\n"
-      end
-      description = description .. line:gsub("^    ", "")
-    elseif line:match("^Committer:") then
-      in_desc = true
-    end
-  end
-  return description
+--- Get the description text for a revision using jj's template engine.
+local function get_description(init, rev)
+  local result = init.run_jj({ "log", "-r", rev, "--no-graph", "-T", "description" })
+  return result and result:gsub("%s+$", "") or ""
 end
 
 --- Open a scratch buffer for editing a commit message.
@@ -86,13 +73,7 @@ function M.describe(rev)
   rev = rev or "@"
   local init = require("jj-fugitive.init")
 
-  -- Get current description
-  local show_result = init.run_jj({ "show", "-s", rev })
-  if not show_result then
-    return
-  end
-
-  local description = extract_description(show_result)
+  local description = get_description(init, rev)
 
   open_editor("jj-describe-" .. rev, description, {
     "# Describe revision " .. rev,
@@ -113,13 +94,7 @@ end
 function M.commit()
   local init = require("jj-fugitive.init")
 
-  -- Get current description of @
-  local show_result = init.run_jj({ "show", "-s", "@" })
-  if not show_result then
-    return
-  end
-
-  local description = extract_description(show_result)
+  local description = get_description(init, "@")
 
   open_editor("jj-commit", description, {
     "# Commit message (describe @ then create new change)",
