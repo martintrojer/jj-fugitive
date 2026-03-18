@@ -152,6 +152,12 @@ local function setup_keymaps(bufnr)
     M.refresh()
   end)
 
+  -- Switch to log view
+  ui.map(bufnr, "n", "gl", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.log").show()
+  end)
+
   -- Close
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
@@ -168,6 +174,7 @@ local function setup_keymaps(bufnr)
       "  x        Restore file from parent (@-)",
       "",
       "Other:",
+      "  gl       Switch to log view",
       "  R        Refresh",
       "  q        Close",
       "  g?       This help",

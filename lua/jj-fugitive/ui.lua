@@ -84,13 +84,17 @@ function M.close_cmd()
   return M.get_config().open_mode == "tab" and "tabclose" or "close"
 end
 
---- Ensure a buffer is visible. Jump to its window if already displayed,
---- otherwise open in a new pane.
+--- Ensure a buffer is visible. Jump to its window if already displayed
+--- (searching across all tabs), otherwise open in a new pane.
 function M.ensure_visible(bufnr)
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == bufnr then
-      vim.api.nvim_set_current_win(win)
-      return
+  -- Search all tabpages for the buffer
+  for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+      if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == bufnr then
+        vim.api.nvim_set_current_tabpage(tabpage)
+        vim.api.nvim_set_current_win(win)
+        return
+      end
     end
   end
   M.open_pane()

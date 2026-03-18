@@ -330,6 +330,12 @@ local function setup_keymaps(bufnr)
     M.refresh()
   end)
 
+  -- Switch to status view
+  ui.map(bufnr, "n", "gs", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.status").show()
+  end)
+
   -- Close
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
@@ -360,6 +366,7 @@ local function setup_keymaps(bufnr)
       "  grb       Rebase branch onto commit (prompts for branch)",
       "",
       "Other:",
+      "  gs        Switch to status view",
       "  R         Refresh log",
       "  q         Close",
       "  g?        This help",
