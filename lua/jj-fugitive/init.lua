@@ -223,13 +223,14 @@ function M.jj(args)
   end
 end
 
---- Refresh the log buffer if one is currently open.
+--- Refresh open plugin views (log, status) after state changes.
 function M.refresh_log()
   vim.schedule(function()
     local log = require("jj-fugitive.log")
     if log.is_open() then
       log.refresh()
     end
+    require("jj-fugitive.status").refresh()
   end)
 end
 
