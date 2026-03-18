@@ -127,9 +127,12 @@ function M.run_jj_terminal(args)
 
   -- Show hint for builtin TUI keybindings
   vim.api.nvim_echo({
-    { "jj builtin TUI: ", "MoreMsg" },
-    { "Space/Enter=toggle, c=confirm, q=cancel, ?=help", "Comment" },
-  }, false, {})
+    { "jj builtin TUI keybindings:\n", "MoreMsg" },
+    { "  Space/Enter  toggle selection\n", "Comment" },
+    { "  c            confirm\n", "Comment" },
+    { "  q            cancel\n", "Comment" },
+    { "  ?            help", "Comment" },
+  }, true, {})
 
   -- Open terminal in a new tab so it gets full screen
   -- Use jj's builtin TUI editors to avoid nested $EDITOR
