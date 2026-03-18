@@ -119,13 +119,23 @@ function M.parse_ansi_colors(text)
             local color = COLOR_256_MAP[color_index]
             if color then
               current_style.color = color
-              current_style.group = color
+              current_style.group = current_style.bold and ("Bold" .. color) or color
             end
             i = i + 3
+          elseif code == "1" then
+            -- Bold within a compound sequence
+            current_style.bold = true
+            if current_style.color then
+              current_style.group = "Bold" .. current_style.color
+            else
+              current_style.group = "Bold"
+            end
+            i = i + 1
           elseif ANSI_COLORS[code] then
             -- Basic color
             current_style.color = ANSI_COLORS[code]
-            current_style.group = ANSI_COLORS[code]
+            current_style.group = current_style.bold and ("Bold" .. ANSI_COLORS[code])
+              or ANSI_COLORS[code]
             i = i + 1
           else
             i = i + 1
@@ -213,6 +223,9 @@ function M.setup_diff_highlighting(bufnr, highlights, opts)
     end
   end)
 
+  -- Track which bold+color groups we've already defined
+  local defined_groups = {}
+
   -- Apply highlights from parsed ANSI codes
   if highlights then
     for _, hl in ipairs(highlights) do
@@ -226,6 +239,19 @@ function M.setup_diff_highlighting(bufnr, highlights, opts)
         group = prefix .. "Change"
       elseif group == "Bold" then
         group = prefix .. "Bold"
+      elseif group:match("^Bold") then
+        -- Bold+color combo: create a highlight group with bold + the color
+        local color_name = group:sub(5) -- strip "Bold" prefix
+        if not defined_groups[group] then
+          local base_hl = vim.api.nvim_get_hl_by_name(color_name, true)
+          local fg = base_hl.foreground
+          if fg then
+            pcall(vim.api.nvim_set_hl, 0, group, { fg = fg, bold = true })
+          else
+            pcall(vim.api.nvim_set_hl, 0, group, { link = color_name, bold = true })
+          end
+          defined_groups[group] = true
+        end
       end
 
       -- Apply the highlight to the buffer
