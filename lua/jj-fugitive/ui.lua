@@ -56,10 +56,14 @@ function M.set_statusline(bufnr, text)
   end)
 end
 
+--- Get the plugin config table.
+function M.get_config()
+  return require("jj-fugitive").config
+end
+
 --- Open a new pane (split or tab) based on user config.
 function M.open_pane()
-  local config = require("jj-fugitive").config
-  if config.open_mode == "tab" then
+  if M.get_config().open_mode == "tab" then
     vim.cmd("tabnew")
   else
     vim.cmd("split")
@@ -68,8 +72,7 @@ end
 
 --- Close command appropriate for open_mode (close split or tab).
 function M.close_cmd()
-  local config = require("jj-fugitive").config
-  return config.open_mode == "tab" and "tabclose" or "close"
+  return M.get_config().open_mode == "tab" and "tabclose" or "close"
 end
 
 --- Ensure a buffer is visible. Jump to its window if already displayed,
