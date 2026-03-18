@@ -71,7 +71,7 @@ end
 --- Open a describe buffer for the given revision.
 function M.describe(rev)
   rev = rev or "@"
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
 
   local description = get_description(init, rev)
 
@@ -92,7 +92,7 @@ end
 
 --- Open a commit buffer (describe + new).
 function M.commit()
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
 
   local description = get_description(init, "@")
 

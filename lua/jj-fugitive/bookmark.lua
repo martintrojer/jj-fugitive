@@ -5,7 +5,7 @@ local BUF_NAME = "jj-bookmarks"
 
 --- Get bookmark list output.
 local function get_bookmarks()
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   return init.run_jj({ "bookmark", "list", "--all" })
 end
 
@@ -29,7 +29,7 @@ end
 
 --- Run a bookmark command and refresh.
 local function run_and_refresh(args, msg)
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local result = init.run_jj(args)
   if result then
     if msg then

@@ -5,7 +5,7 @@ local BUF_NAME = "jj-status"
 
 --- Get jj status output.
 local function get_status()
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   return init.run_jj({ "status" })
 end
 
@@ -57,7 +57,7 @@ local function toggle_inline_diff(bufnr)
   end
 
   -- Expand: get diff and insert below
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local diff_output = init.run_jj({ "diff", "--git", file })
   if not diff_output or diff_output:match("^%s*$") then
     return
@@ -138,7 +138,7 @@ local function setup_keymaps(bufnr)
   ui.map(bufnr, "n", "x", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file and ui.confirm("Restore " .. file .. " from parent?") then
-      local init = require("jj-fugitive.init")
+      local init = require("jj-fugitive")
       local result = init.run_jj({ "restore", "--from", "@-", file })
       if result then
         vim.api.nvim_echo({ { "Restored: " .. file, "MoreMsg" } }, false, {})

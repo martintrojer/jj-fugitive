@@ -35,7 +35,7 @@ end
 --- Get jj log output with ANSI colors.
 local function get_log(opts)
   opts = opts or {}
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local args = { "log", "--color", "always" }
 
   if opts.limit then
@@ -55,7 +55,7 @@ end
 
 --- Run a jj command and refresh log on success.
 local function run_and_refresh(args, msg)
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local result = init.run_jj(args)
   if result then
     if msg then
@@ -67,7 +67,7 @@ end
 
 --- Open side-by-side diff for a specific file at a revision.
 local function sidebyside_at_rev(filename, rev)
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
 
   local current = init.run_jj({ "file", "show", filename, "-r", rev }) or ""
@@ -92,7 +92,7 @@ function M.setup_detail_keymaps(bufnr, kind, id)
 
   -- Side-by-side diff (available in both show and diff views)
   ui.map(bufnr, "n", "D", function()
-    local init = require("jj-fugitive.init")
+    local init = require("jj-fugitive")
     local files_output = init.run_jj({ "diff", "--name-only", "-r", id })
     if not files_output then
       return
@@ -157,7 +157,7 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local init = require("jj-fugitive.init")
+    local init = require("jj-fugitive")
     local result = init.run_jj({ "show", "--color", "always", "--git", id })
     if not result then
       return
@@ -181,7 +181,7 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local init = require("jj-fugitive.init")
+    local init = require("jj-fugitive")
     local result = init.run_jj({ "diff", "--color", "always", "--git", "-r", id })
     if not result then
       return
@@ -240,7 +240,7 @@ local function setup_keymaps(bufnr)
     local name = vim.fn.input("Bookmark name (create/move to " .. id .. "): ")
     if name and name ~= "" then
       -- Try set first (moves existing), fall back to create
-      local init = require("jj-fugitive.init")
+      local init = require("jj-fugitive")
       local result = init.run_jj({ "bookmark", "set", name, "-r", id, "--allow-backwards" })
       if not result then
         result = init.run_jj({ "bookmark", "create", name, "-r", id })

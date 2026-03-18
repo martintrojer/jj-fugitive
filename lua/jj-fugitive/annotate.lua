@@ -3,7 +3,7 @@ local M = {}
 --- Show blame/annotate for the current file.
 --- Opens a vertical split with annotations aligned to the source buffer.
 function M.show(filename)
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
 
   -- Use current buffer's file if none specified

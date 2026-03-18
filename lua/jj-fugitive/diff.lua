@@ -6,7 +6,7 @@ local ansi = require("jj-fugitive.ansi")
 --- file: optional filename to restrict diff
 --- rev: optional revision (defaults to working copy)
 local function get_diff(file, rev)
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local args = { "diff", "--color", "always", "--git" }
 
   if rev then
@@ -114,7 +114,7 @@ function M.show_sidebyside(filename)
     return
   end
 
-  local init = require("jj-fugitive.init")
+  local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
 
   -- Use jj to get both sides — reliable regardless of cwd

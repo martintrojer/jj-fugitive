@@ -58,7 +58,7 @@ end
 
 --- Open a new pane (split or tab) based on user config.
 function M.open_pane()
-  local config = require("jj-fugitive.init").config
+  local config = require("jj-fugitive").config
   if config.open_mode == "tab" then
     vim.cmd("tabnew")
   else
@@ -68,7 +68,7 @@ end
 
 --- Close command appropriate for open_mode (close split or tab).
 function M.close_cmd()
-  local config = require("jj-fugitive.init").config
+  local config = require("jj-fugitive").config
   return config.open_mode == "tab" and "tabclose" or "close"
 end
 
