@@ -240,29 +240,35 @@ function M.setup_diff_highlighting(bufnr, highlights, opts)
       elseif group == "Bold" then
         group = prefix .. "Bold"
       elseif group:match("^Bold") then
-        -- Bold+color combo: create a highlight group with bold + the color
+        -- Bold+color combo: link to a standard highlight group + bold
         if not defined_groups[group] then
           local color_name = group:sub(5) -- strip "Bold" prefix
-          -- Map our color names to GUI color values
-          local color_map = {
-            Red = "#ff0000",
-            Green = "#00ff00",
-            Yellow = "#ffff00",
-            Blue = "#5f87ff",
-            Magenta = "#ff00ff",
-            Cyan = "#00ffff",
-            White = "#ffffff",
-            Gray = "#808080",
-            LightRed = "#ff5f5f",
-            LightGreen = "#5fff5f",
-            LightYellow = "#ffff5f",
-            LightBlue = "#87afff",
-            LightMagenta = "#ff87ff",
-            LightCyan = "#5fffff",
+          -- Map our color names to standard Neovim highlight groups
+          local hl_link_map = {
+            Red = "DiagnosticError",
+            Green = "DiagnosticOk",
+            Yellow = "DiagnosticWarn",
+            Blue = "Function",
+            Magenta = "Keyword",
+            Cyan = "Type",
+            White = "Normal",
+            Gray = "Comment",
+            LightRed = "DiagnosticError",
+            LightGreen = "DiagnosticOk",
+            LightYellow = "DiagnosticWarn",
+            LightBlue = "Function",
+            LightMagenta = "Keyword",
+            LightCyan = "Type",
           }
-          local fg = color_map[color_name]
-          if fg then
-            pcall(vim.api.nvim_set_hl, 0, group, { fg = fg, bold = true })
+          local link = hl_link_map[color_name]
+          if link then
+            -- Get the fg color from the theme's highlight group and add bold
+            local theme_hl = vim.api.nvim_get_hl(0, { name = link, link = false })
+            if theme_hl.fg then
+              pcall(vim.api.nvim_set_hl, 0, group, { fg = theme_hl.fg, bold = true })
+            else
+              pcall(vim.api.nvim_set_hl, 0, group, { link = link, bold = true })
+            end
           end
           defined_groups[group] = true
         end
