@@ -77,11 +77,11 @@ nvim file1.txt
 
 ### Conflict handling (from log view)
 
-- [ ] Log shows `(conflict)` marker on merge commit
-- [ ] `A` on the conflict merge commit abandons it, log refreshes cleanly
-- [ ] `n` on a branch commit (branchA/branchB) creates new change, log refreshes
-- [ ] `<CR>` on the conflict commit shows details with conflict info
-- [ ] `d` on the conflict commit shows diff with conflict markers
+- [x] Log shows `(conflict)` marker on merge commit
+- [x] `A` on the conflict merge commit abandons it, log refreshes cleanly
+- [x] `n` on a branch commit (branchA/branchB) creates new change, log refreshes
+- [x] `<CR>` on the conflict commit shows details
+- [x] `d` on the conflict commit shows diff (empty for empty merge)
 
 ### Rebase (from log view)
 
@@ -126,11 +126,11 @@ nvim file1.txt
 - [x] `c` prompts for name and revision, creates bookmark
 - [x] `d` on a bookmark prompts confirm, deletes it
 - [x] `m` on a bookmark prompts for revision, moves it
-- [ ] `t` tracks remote bookmark
-- [ ] `u` untracks remote bookmark
-- [ ] `p` pushes bookmark to remote
-- [ ] `f` fetches from remote
-- [ ] `R` refreshes bookmark list
+- [ ] `t` tracks remote bookmark (needs remote)
+- [ ] `u` untracks remote bookmark (needs remote)
+- [ ] `p` pushes bookmark to remote (needs remote)
+- [ ] `f` fetches from remote (needs remote)
+- [x] `R` refreshes bookmark list
 - [x] `q` closes bookmark buffer
 - [x] `g?` shows help popup
 
@@ -142,20 +142,20 @@ nvim file1.txt
 - [x] `d` shows diff for file
 - [x] `D` opens side-by-side diff
 - [x] `x` restores file from parent (with confirm)
-- [ ] `=` toggles inline diff for file (fugitive-style)
-- [ ] `R` refreshes
+- [x] `=` toggles inline diff for file (fugitive-style)
+- [x] `R` refreshes
 - [x] `q` closes
 - [x] `g?` shows help
 
 ### Annotate / Blame (`:J annotate`)
 
-- [ ] `:J annotate` shows annotations for current file
-- [ ] `:J blame` works as alias
-- [ ] `:J annotate <file>` annotates specific file
-- [ ] Scroll-locked with source buffer
-- [ ] `<CR>` opens commit view (tab or botright split depending on config)
-- [ ] `q` closes annotation
-- [ ] `g?` shows help
+- [x] `:J annotate` shows annotations for current file
+- [x] `:J blame` works as alias
+- [x] `:J annotate <file>` annotates specific file
+- [x] Scroll-locked with source buffer
+- [x] `<CR>` opens commit view (tab or botright split depending on config)
+- [x] `q` closes annotation
+- [x] `g?` shows help
 
 ### Browse (`:JBrowse`)
 
@@ -166,13 +166,13 @@ nvim file1.txt
 ### Command Passthrough
 
 - [x] `:J new` creates new change, refreshes log
-- [x] `:J squash` squashes, refreshes log (via `s` in log)
+- [x] `:J squash` squashes, refreshes log (via `S` in log)
 - [x] `:J abandon` abandons, refreshes log (via `A` in log)
-- [ ] `:J arrange` opens in terminal split (TUI command)
-- [ ] `:J split` opens in terminal split (TUI command)
-- [ ] `:J diffedit` opens in terminal split (TUI command)
-- [ ] `:J resolve` opens in terminal split (TUI command)
-- [ ] TUI terminal closes cleanly and refreshes log
+- [x] `:J arrange` opens in terminal tab (TUI command)
+- [x] `:J split` opens in terminal tab (TUI command)
+- [ ] `:J diffedit` opens in terminal tab (TUI command, not tested)
+- [ ] `:J resolve` opens in terminal tab (TUI command, not tested)
+- [x] TUI terminal closes cleanly and refreshes log
 - [x] Unknown commands pass through to jj and print output
 
 ### Completion
@@ -197,3 +197,4 @@ nvim file1.txt
 | 2026-03-17 | mtrojer | First pass, core functionality verified. Found and fixed: popup focus, change ID vs commit hash, editor hang (JJ_EDITOR), describe abort/close, rebase keybindings (r->gr prefix) |
 | 2026-03-17 | mtrojer | Second pass: status view, bookmark CRUD, describe, commit, completion, edge cases. Added annotate, inline diff, TUI support, side-by-side from commit diff |
 | 2026-03-18 | mtrojer | Config fixes (require path bug), tab/split mode, annotate CR behavior, silent file show for side-by-side, stray buffer cleanup |
+| 2026-03-18 | mtrojer | Third pass: conflict handling, annotate/blame, TUI commands (arrange, split), inline diff toggle, bookmark refresh. Only remote bookmark ops and diffedit/resolve untested (need remote/conflicts) |
