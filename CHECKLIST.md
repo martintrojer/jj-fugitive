@@ -85,7 +85,7 @@ nvim file1.txt
 
 ### Rebase (from log view)
 
-- [x] `grd` on a commit prompts confirm, rebases `@` onto it
+- [x] `grd` on a commit rebases `@` (or `@-` if `@` is empty) onto it
 - [x] `grs` prompts for source revision, rebases onto commit (wired, not tested)
 - [x] `grb` prompts for branch revision, rebases onto commit (wired, not tested)
 

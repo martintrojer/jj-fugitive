@@ -83,7 +83,7 @@ Bookmark:
   b         Create/move bookmark to commit under cursor
 
 Rebase:
-  grd       Rebase @ onto commit under cursor
+  grd       Rebase @/@- onto commit under cursor (auto-detects empty @)
   grs       Rebase source onto commit (prompts for source)
   grb       Rebase branch onto commit (prompts for branch)
 
