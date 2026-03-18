@@ -65,17 +65,17 @@ end
 --- opts: { split_cmd = "botright split" } to override the split command
 function M.open_pane(opts)
   opts = opts or {}
-  if M.get_config().open_mode == "tab" then
-    vim.cmd("tabnew")
-    -- Delete the [No Name] buffer that tabnew creates — we'll set our own
+  local cmd = M.get_config().open_mode == "tab" and "tabnew" or (opts.split_cmd or "split")
+  vim.cmd(cmd)
+
+  -- Clean up the [No Name] buffer that tabnew creates
+  if cmd == "tabnew" then
     local stray = vim.api.nvim_get_current_buf()
     vim.schedule(function()
       if vim.api.nvim_buf_is_valid(stray) and vim.api.nvim_buf_get_name(stray) == "" then
         pcall(vim.api.nvim_buf_delete, stray, { force = true })
       end
     end)
-  else
-    vim.cmd(opts.split_cmd or "split")
   end
 end
 
@@ -175,7 +175,8 @@ end
 --- left_name, right_name: buffer names
 --- filename: used for filetype detection (optional)
 function M.open_sidebyside(left_content, left_name, right_content, right_name, filename)
-  vim.cmd("tabnew")
+  -- Always use a tab for side-by-side (needs full width)
+  M.open_pane({ split_cmd = "tabnew" })
 
   local left = M.create_scratch_buffer({ name = left_name, modifiable = true })
   vim.api.nvim_buf_set_lines(left, 0, -1, false, vim.split(left_content, "\n"))
