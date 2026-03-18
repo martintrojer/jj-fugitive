@@ -65,6 +65,13 @@ end
 function M.open_pane()
   if M.get_config().open_mode == "tab" then
     vim.cmd("tabnew")
+    -- Delete the [No Name] buffer that tabnew creates — we'll set our own
+    local stray = vim.api.nvim_get_current_buf()
+    vim.schedule(function()
+      if vim.api.nvim_buf_is_valid(stray) and vim.api.nvim_buf_get_name(stray) == "" then
+        pcall(vim.api.nvim_buf_delete, stray, { force = true })
+      end
+    end)
   else
     vim.cmd("split")
   end
