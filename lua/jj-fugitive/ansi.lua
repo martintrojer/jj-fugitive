@@ -241,14 +241,28 @@ function M.setup_diff_highlighting(bufnr, highlights, opts)
         group = prefix .. "Bold"
       elseif group:match("^Bold") then
         -- Bold+color combo: create a highlight group with bold + the color
-        local color_name = group:sub(5) -- strip "Bold" prefix
         if not defined_groups[group] then
-          local base_hl = vim.api.nvim_get_hl_by_name(color_name, true)
-          local fg = base_hl.foreground
+          local color_name = group:sub(5) -- strip "Bold" prefix
+          -- Map our color names to GUI color values
+          local color_map = {
+            Red = "#ff0000",
+            Green = "#00ff00",
+            Yellow = "#ffff00",
+            Blue = "#5f87ff",
+            Magenta = "#ff00ff",
+            Cyan = "#00ffff",
+            White = "#ffffff",
+            Gray = "#808080",
+            LightRed = "#ff5f5f",
+            LightGreen = "#5fff5f",
+            LightYellow = "#ffff5f",
+            LightBlue = "#87afff",
+            LightMagenta = "#ff87ff",
+            LightCyan = "#5fffff",
+          }
+          local fg = color_map[color_name]
           if fg then
             pcall(vim.api.nvim_set_hl, 0, group, { fg = fg, bold = true })
-          else
-            pcall(vim.api.nvim_set_hl, 0, group, { link = color_name, bold = true })
           end
           defined_groups[group] = true
         end
