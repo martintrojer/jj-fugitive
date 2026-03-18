@@ -62,7 +62,9 @@ function M.get_config()
 end
 
 --- Open a new pane (split or tab) based on user config.
-function M.open_pane()
+--- opts: { split_cmd = "botright split" } to override the split command
+function M.open_pane(opts)
+  opts = opts or {}
   if M.get_config().open_mode == "tab" then
     vim.cmd("tabnew")
     -- Delete the [No Name] buffer that tabnew creates — we'll set our own
@@ -73,7 +75,7 @@ function M.open_pane()
       end
     end)
   else
-    vim.cmd("split")
+    vim.cmd(opts.split_cmd or "split")
   end
 end
 
