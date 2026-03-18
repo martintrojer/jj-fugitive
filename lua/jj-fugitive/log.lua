@@ -266,11 +266,18 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Rebase: grd = rebase @ onto commit, grs = rebase source, grb = rebase branch
+  -- Rebase: grd = rebase @/@- onto commit, grs = rebase source, grb = rebase branch
   ui.map(bufnr, "n", "grd", function()
     local id = get_change_id()
-    if id and ui.confirm("Rebase @ onto " .. id .. "?") then
-      run_and_refresh({ "rebase", "-d", id }, "Rebased onto " .. id)
+    if not id then
+      return
+    end
+    -- If @ is empty, rebase @- instead (common case: empty working copy)
+    local init = require("jj-fugitive")
+    local is_empty = init.run_jj({ "log", "-r", "@", "--no-graph", "-T", "empty" })
+    local source = (is_empty and is_empty:match("true")) and "@-" or "@"
+    if ui.confirm("Rebase " .. source .. " onto " .. id .. "?") then
+      run_and_refresh({ "rebase", "-s", source, "-d", id }, "Rebased " .. source .. " onto " .. id)
     end
   end)
 
