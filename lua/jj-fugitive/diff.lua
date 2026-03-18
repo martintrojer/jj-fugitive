@@ -123,7 +123,9 @@ function M.show_sidebyside(filename)
     if not repo_root then
       return ""
     end
-    local result = vim.fn.system({ "jj", "file", "show", filename, "-r", rev, "-R", repo_root })
+    -- Use root: prefix so jj resolves the path relative to repo root, not cwd
+    local result =
+      vim.fn.system({ "jj", "file", "show", "root:" .. filename, "-r", rev, "-R", repo_root })
     return vim.v.shell_error == 0 and result or ""
   end
 

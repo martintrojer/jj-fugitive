@@ -71,7 +71,9 @@ local function file_at_rev(filename, rev)
   if not repo_root then
     return ""
   end
-  local result = vim.fn.system({ "jj", "file", "show", filename, "-r", rev, "-R", repo_root })
+  -- Use root: prefix so jj resolves the path relative to repo root, not cwd
+  local result =
+    vim.fn.system({ "jj", "file", "show", "root:" .. filename, "-r", rev, "-R", repo_root })
   if vim.v.shell_error ~= 0 then
     return ""
   end
