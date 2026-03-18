@@ -82,10 +82,6 @@ function M.show(filename)
       return
     end
 
-    -- Close annotate and restore scrollbind before opening commit view
-    vim.cmd("close")
-    vim.cmd("setlocal noscrollbind")
-
     local ansi = require("jj-fugitive.ansi")
     local result = init.run_jj({ "show", "--color", "always", "--git", change_id })
     if not result then
@@ -95,9 +91,12 @@ function M.show(filename)
     local show_buf = ansi.create_colored_buffer(result, "jj-show: " .. change_id, header, {
       prefix = "JjShow",
     })
-    ui.open_pane()
+
+    -- Open in a new tab to keep annotate view intact
+    vim.cmd("tabnew")
     vim.api.nvim_set_current_buf(show_buf)
     require("jj-fugitive.log").setup_detail_keymaps(show_buf, "Show", change_id)
+    ui.map(show_buf, "n", "q", "<cmd>tabclose<CR>")
     ui.set_statusline(show_buf, "jj-show: " .. change_id)
   end)
 
