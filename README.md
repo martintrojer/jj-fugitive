@@ -8,7 +8,10 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 - **Bookmark management** — create, delete, move, track, push/fetch in a dedicated buffer
 - **Rebase & stack management** — rebase from log view, passthrough for `jj arrange` and `jj parallelize`
 - **Diff viewer** — unified diff with ANSI colors, side-by-side with Neovim's built-in diff mode
+- **Status view** — changed files with inline diff toggle (`=`), open, diff, restore
 - **Describe & commit** — editor buffers for commit messages with `:w` to save
+- **Annotate/blame** — scroll-locked per-line attribution with `<CR>` to show commit
+- **TUI integration** — `arrange`, `split`, `diffedit`, `resolve` run in `:terminal`
 - **Smart completion** — tab completion for jj commands and subcommands
 - **Browse** — open current file on GitHub/GitLab from Neovim
 
@@ -135,6 +138,17 @@ Open with `:J diff` or `:J diff <file>`.
   g?        Help
 ```
 
+## Annotate / Blame
+
+Open with `:J annotate` or `:J blame`. Shows per-line attribution in a
+scroll-locked split alongside the source file.
+
+```
+  <CR>      Show commit for this line
+  q         Close annotation
+  g?        Help
+```
+
 ## Describe & Commit
 
 `:J describe [rev]` opens an editor buffer for the commit message. `:J commit` does the same but also creates a new change after saving. Lines starting with `#` are ignored. Save with `:w`.
@@ -147,8 +161,10 @@ v2 is a complete rewrite focused on simplicity and core jj workflows.
 - Dedicated bookmark buffer with create, delete, move, track, push/fetch
 - Rebase keybindings from log view (`grd`, `grs`, `grb`)
 - TUI commands (`arrange`, `split`, `diffedit`, `resolve`) run in `:terminal`
+- Annotate/blame view with scroll-locked split
+- Status view with inline diff toggle (`=`)
 - Uses jj change IDs (stable across rewrites) instead of commit hashes
-- Configurable default command (`log` or `status`)
+- Configurable default command and open mode (`split` or `tab`)
 - `setup()` function for user configuration
 
 **Changed:**

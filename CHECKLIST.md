@@ -65,7 +65,7 @@ nvim file1.txt
 - [x] Side-by-side shows correct file content at revision vs parent
 - [x] `e` on a commit runs `jj edit` and refreshes log
 - [x] `n` on a commit runs `jj new` and refreshes log
-- [x] `s` on a commit prompts confirm, runs `jj squash`
+- [x] `S` on a commit prompts confirm, runs `jj squash`
 - [x] `A` on a commit prompts confirm, runs `jj abandon`
 - [x] `cc` on a commit opens describe buffer
 - [x] `b` on a commit prompts for bookmark name, creates/moves it
@@ -153,6 +153,7 @@ nvim file1.txt
 - [ ] `:J blame` works as alias
 - [ ] `:J annotate <file>` annotates specific file
 - [ ] Scroll-locked with source buffer
+- [ ] `<CR>` opens commit view (tab or botright split depending on config)
 - [ ] `q` closes annotation
 - [ ] `g?` shows help
 
@@ -194,3 +195,5 @@ nvim file1.txt
 | Date | Tester | Notes |
 |------|--------|-------|
 | 2026-03-17 | mtrojer | First pass, core functionality verified. Found and fixed: popup focus, change ID vs commit hash, editor hang (JJ_EDITOR), describe abort/close, rebase keybindings (r->gr prefix) |
+| 2026-03-17 | mtrojer | Second pass: status view, bookmark CRUD, describe, commit, completion, edge cases. Added annotate, inline diff, TUI support, side-by-side from commit diff |
+| 2026-03-18 | mtrojer | Config fixes (require path bug), tab/split mode, annotate CR behavior, silent file show for side-by-side, stray buffer cleanup |
