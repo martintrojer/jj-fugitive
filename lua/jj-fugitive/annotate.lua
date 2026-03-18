@@ -92,11 +92,15 @@ function M.show(filename)
       prefix = "JjShow",
     })
 
-    -- Open in a new tab to keep annotate view intact
-    vim.cmd("tabnew")
+    local config = ui.get_config()
+    if config.open_mode == "tab" then
+      vim.cmd("tabnew")
+    else
+      -- botright split spans the full width across both annotate + source panes
+      vim.cmd("botright split")
+    end
     vim.api.nvim_set_current_buf(show_buf)
     require("jj-fugitive.log").setup_detail_keymaps(show_buf, "Show", change_id)
-    ui.map(show_buf, "n", "q", "<cmd>tabclose<CR>")
     ui.set_statusline(show_buf, "jj-show: " .. change_id)
   end)
 
