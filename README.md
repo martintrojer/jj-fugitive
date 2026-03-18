@@ -88,6 +88,7 @@ Rebase:
   grb       Rebase branch onto commit (prompts for branch)
 
 Navigation:
+  gs        Switch to status view
   +/=       Show more commits
   R         Refresh
   q         Close
@@ -121,6 +122,7 @@ Open with `:J status` or `:J st`. Shows changed files in the working copy.
   d         Show diff for file
   D         Side-by-side diff
   x         Restore file from parent (@-)
+  gl        Switch to log view
   R         Refresh
   q         Close
   g?        Help
