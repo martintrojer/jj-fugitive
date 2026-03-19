@@ -170,6 +170,28 @@ function M.help_popup(title, lines, opts)
   return help_buf, help_win
 end
 
+--- Show jj aliases in a help popup.
+function M.show_aliases()
+  local output = vim.fn.system({ "jj", "config", "list", "aliases" })
+  if vim.v.shell_error ~= 0 or not output or output == "" then
+    vim.api.nvim_echo({ { "No jj aliases configured", "WarningMsg" } }, false, {})
+    return
+  end
+
+  local lines = { "Run with :J <alias>", "" }
+  for line in output:gmatch("[^\n]+") do
+    -- Format: aliases.name = ["cmd", "args"]
+    local name, definition = line:match("^aliases%.([%w_-]+)%s*=%s*(.+)")
+    if name then
+      -- Clean up the array syntax for readability
+      local args = definition:gsub("%[", ""):gsub("%]", ""):gsub('"', ""):gsub(", ", " ")
+      table.insert(lines, "  " .. name .. "  →  jj " .. args)
+    end
+  end
+
+  M.help_popup("jj Aliases", lines, { width = 70 })
+end
+
 --- Open a side-by-side diff in a new tab using Neovim's diffthis.
 --- left_content, right_content: strings
 --- left_name, right_name: buffer names

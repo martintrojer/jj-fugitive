@@ -152,6 +152,11 @@ local function setup_keymaps(bufnr)
     M.refresh()
   end)
 
+  -- Show aliases
+  ui.map(bufnr, "n", "ga", function()
+    ui.show_aliases()
+  end)
+
   -- Switch to log view
   ui.map(bufnr, "n", "gl", function()
     vim.cmd(ui.close_cmd())
@@ -174,6 +179,7 @@ local function setup_keymaps(bufnr)
       "  x        Restore file from parent (@-)",
       "",
       "Other:",
+      "  ga       Show jj aliases",
       "  gl       Switch to log view",
       "  R        Refresh",
       "  q        Close",

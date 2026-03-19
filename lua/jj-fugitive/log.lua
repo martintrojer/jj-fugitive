@@ -361,6 +361,11 @@ local function setup_keymaps(bufnr)
     M.refresh()
   end)
 
+  -- Show aliases
+  ui.map(bufnr, "n", "ga", function()
+    ui.show_aliases()
+  end)
+
   -- Switch to status view
   ui.map(bufnr, "n", "gs", function()
     vim.cmd(ui.close_cmd())
@@ -399,6 +404,7 @@ local function setup_keymaps(bufnr)
       "  gra       Insert revision after commit in stack",
       "",
       "Other:",
+      "  ga        Show jj aliases",
       "  gs        Switch to status view",
       "  R         Refresh log",
       "  q         Close",

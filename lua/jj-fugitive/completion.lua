@@ -67,6 +67,16 @@ function M.complete(arglead, cmdline, _)
       end
     end
 
+    -- Add user aliases from jj config
+    local alias_output = vim.fn.system({ "jj", "config", "list", "aliases" })
+    if vim.v.shell_error == 0 and alias_output then
+      for alias in alias_output:gmatch("aliases%.([%w_-]+)") do
+        if not vim.tbl_contains(commands, alias) then
+          table.insert(commands, alias)
+        end
+      end
+    end
+
     for _, cmd in ipairs(commands) do
       if arglead == "" or cmd:find("^" .. vim.pesc(arglead)) then
         table.insert(completions, cmd)
