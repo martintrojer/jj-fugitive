@@ -133,6 +133,10 @@ local function setup_keymaps(bufnr)
     require("jj-fugitive.status").show()
   end)
 
+  ui.map(bufnr, "n", "ga", function()
+    ui.show_aliases()
+  end)
+
   -- Close
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
@@ -153,6 +157,7 @@ local function setup_keymaps(bufnr)
       "  f       Fetch from remote",
       "",
       "Other:",
+      "  ga      Show jj aliases",
       "  gl      Switch to log view",
       "  gs      Switch to status view",
       "  R       Refresh",

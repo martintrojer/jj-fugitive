@@ -46,6 +46,7 @@ Keybindings:
   grr           Rebase single revision onto commit (children stay)
   grb           Rebase branch onto commit
   gra           Insert revision after commit in stack
+  gb            Switch to bookmark view
   gs            Switch to status view
   +  =          Show more commits
   R             Refresh
@@ -64,6 +65,7 @@ Keybindings:
   d             Show diff for file
   D             Side-by-side diff
   x             Restore file from parent (@-)
+  gb            Switch to bookmark view
   gl            Switch to log view
   R             Refresh
   q             Close
@@ -95,6 +97,8 @@ Keybindings:
   u             Untrack remote bookmark
   p             Push bookmark to remote
   f             Fetch from remote
+  gl            Switch to log view
+  gs            Switch to status view
   R             Refresh
   q             Close
   g?            Help

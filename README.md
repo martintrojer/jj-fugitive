@@ -91,6 +91,7 @@ Rebase:
   gra       Insert revision after commit in stack
 
 Navigation:
+  gb        Switch to bookmark view
   gs        Switch to status view
   +/=       Show more commits
   R         Refresh
@@ -110,6 +111,8 @@ Open with `:J bookmark`.
   u         Untrack remote bookmark
   p         Push bookmark to remote
   f         Fetch from remote
+  gl        Switch to log view
+  gs        Switch to status view
   R         Refresh
   q         Close
   g?        Help
@@ -125,6 +128,7 @@ Open with `:J status` or `:J st`. Shows changed files in the working copy.
   d         Show diff for file
   D         Side-by-side diff
   x         Restore file from parent (@-)
+  gb        Switch to bookmark view
   gl        Switch to log view
   R         Refresh
   q         Close
