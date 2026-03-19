@@ -306,6 +306,30 @@ local function setup_keymaps(bufnr)
     end
   end)
 
+  -- Rebase single revision (children stay) onto cursor
+  ui.map(bufnr, "n", "grr", function()
+    local id = get_change_id()
+    if not id then
+      return
+    end
+    local rev = vim.fn.input("Rebase single revision (onto " .. id .. "): ")
+    if rev and rev ~= "" then
+      run_and_refresh({ "rebase", "-r", rev, "-d", id }, "Rebased " .. rev .. " onto " .. id)
+    end
+  end)
+
+  -- Insert revision after cursor in stack
+  ui.map(bufnr, "n", "gra", function()
+    local id = get_change_id()
+    if not id then
+      return
+    end
+    local rev = vim.fn.input("Insert revision after " .. id .. ": ")
+    if rev and rev ~= "" then
+      run_and_refresh({ "rebase", "-r", rev, "--after", id }, "Inserted " .. rev .. " after " .. id)
+    end
+  end)
+
   -- Block built-in c (change) and r (replace) which error on read-only buffer
   -- Mapping to a function (not <Nop>) lets Neovim still wait for multi-key sequences
   ui.map(bufnr, "n", "c", function() end)
@@ -369,8 +393,10 @@ local function setup_keymaps(bufnr)
       "",
       "Rebase:",
       "  grd       Rebase @/@- onto commit (auto-detects empty @)",
-      "  grs       Rebase source onto commit (prompts for source)",
-      "  grb       Rebase branch onto commit (prompts for branch)",
+      "  grs       Rebase source + descendants onto commit",
+      "  grr       Rebase single revision onto commit (children stay)",
+      "  grb       Rebase branch onto commit",
+      "  gra       Insert revision after commit in stack",
       "",
       "Other:",
       "  gs        Switch to status view",

@@ -84,9 +84,11 @@ Bookmark:
   b         Create/move bookmark to commit under cursor
 
 Rebase:
-  grd       Rebase @/@- onto commit under cursor (auto-detects empty @)
-  grs       Rebase source onto commit (prompts for source)
-  grb       Rebase branch onto commit (prompts for branch)
+  grd       Rebase @/@- onto commit (auto-detects empty @)
+  grs       Rebase source + descendants onto commit
+  grr       Rebase single revision onto commit (children stay)
+  grb       Rebase branch onto commit
+  gra       Insert revision after commit in stack
 
 Navigation:
   gs        Switch to status view
