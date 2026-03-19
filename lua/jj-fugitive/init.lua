@@ -50,7 +50,6 @@ end
 
 --- Run a jj command from the repository root.
 --- args: string or table of arguments
---- opts: { silent = true } to suppress error messages
 --- Returns: output string, repo_root string (or nil on error)
 function M.run_jj(args)
   local ui = require("jj-fugitive.ui")

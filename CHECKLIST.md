@@ -87,7 +87,9 @@ nvim file1.txt
 
 - [x] `grd` on a commit rebases `@` (or `@-` if `@` is empty) onto it
 - [x] `grs` prompts for source revision, rebases onto commit (wired, not tested)
+- [x] `grr` prompts for single revision, rebases onto commit (children stay)
 - [x] `grb` prompts for branch revision, rebases onto commit (wired, not tested)
+- [x] `gra` prompts for revision, inserts after commit in stack
 
 ### Diff View (`:J diff`)
 

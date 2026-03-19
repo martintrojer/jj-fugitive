@@ -192,6 +192,20 @@ function M.show_aliases()
   M.help_popup("jj Aliases", lines, { width = 70 })
 end
 
+--- Silently get file content at a revision (returns "" if file doesn't exist).
+function M.file_at_rev(filename, rev)
+  local repo_root = require("jj-fugitive").repo_root()
+  if not repo_root then
+    return ""
+  end
+  local result =
+    vim.fn.system({ "jj", "file", "show", "root:" .. filename, "-r", rev, "-R", repo_root })
+  if vim.v.shell_error ~= 0 then
+    return ""
+  end
+  return result
+end
+
 --- Open a side-by-side diff in a new tab using Neovim's diffthis.
 --- left_content, right_content: strings
 --- left_name, right_name: buffer names

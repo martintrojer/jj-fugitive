@@ -27,6 +27,22 @@ local function parse_commands(args)
   return commands
 end
 
+--- Cached user aliases (parsed once per session).
+local cached_aliases = nil
+local function get_aliases()
+  if cached_aliases then
+    return cached_aliases
+  end
+  cached_aliases = {}
+  local output = vim.fn.system({ "jj", "config", "list", "aliases" })
+  if vim.v.shell_error == 0 and output then
+    for alias in output:gmatch("aliases%.([%w_-]+)") do
+      table.insert(cached_aliases, alias)
+    end
+  end
+  return cached_aliases
+end
+
 --- Commands known to have subcommands.
 local COMMANDS_WITH_SUBS = {
   "git",
@@ -67,13 +83,10 @@ function M.complete(arglead, cmdline, _)
       end
     end
 
-    -- Add user aliases from jj config
-    local alias_output = vim.fn.system({ "jj", "config", "list", "aliases" })
-    if vim.v.shell_error == 0 and alias_output then
-      for alias in alias_output:gmatch("aliases%.([%w_-]+)") do
-        if not vim.tbl_contains(commands, alias) then
-          table.insert(commands, alias)
-        end
+    -- Add user aliases from jj config (cached)
+    for _, alias in ipairs(get_aliases()) do
+      if not vim.tbl_contains(commands, alias) then
+        table.insert(commands, alias)
       end
     end
 

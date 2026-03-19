@@ -114,23 +114,10 @@ function M.show_sidebyside(filename)
     return
   end
 
-  local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
 
-  -- Silently get file content (missing file = new/deleted, not an error)
-  local repo_root = init.repo_root()
-  local function file_at_rev(rev)
-    if not repo_root then
-      return ""
-    end
-    -- Use root: prefix so jj resolves the path relative to repo root, not cwd
-    local result =
-      vim.fn.system({ "jj", "file", "show", "root:" .. filename, "-r", rev, "-R", repo_root })
-    return vim.v.shell_error == 0 and result or ""
-  end
-
-  local original = file_at_rev("@-")
-  local current = file_at_rev("@")
+  local original = ui.file_at_rev(filename, "@-")
+  local current = ui.file_at_rev(filename, "@")
 
   -- Create side-by-side layout in a new tab
   local left, right = ui.open_sidebyside(

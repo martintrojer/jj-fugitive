@@ -40,8 +40,17 @@ local function run_and_refresh(args, msg)
   end
 end
 
---- Setup keymaps for the bookmark buffer.
+--- Setup keymaps for the bookmark buffer (idempotent).
 local function setup_keymaps(bufnr)
+  local already = false
+  pcall(function()
+    already = vim.api.nvim_buf_get_var(bufnr, "jj_bookmark_keymaps_set") == true
+  end)
+  if already then
+    return
+  end
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_bookmark_keymaps_set", true)
+
   local ui = require("jj-fugitive.ui")
 
   -- Create bookmark

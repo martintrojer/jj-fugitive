@@ -65,27 +65,12 @@ local function run_and_refresh(args, msg)
   end
 end
 
---- Silently get file content at a revision (returns "" if file doesn't exist).
-local function file_at_rev(filename, rev)
-  local repo_root = require("jj-fugitive").repo_root()
-  if not repo_root then
-    return ""
-  end
-  -- Use root: prefix so jj resolves the path relative to repo root, not cwd
-  local result =
-    vim.fn.system({ "jj", "file", "show", "root:" .. filename, "-r", rev, "-R", repo_root })
-  if vim.v.shell_error ~= 0 then
-    return ""
-  end
-  return result
-end
-
 --- Open side-by-side diff for a specific file at a revision.
 local function sidebyside_at_rev(filename, rev)
   local ui = require("jj-fugitive.ui")
 
-  local current = file_at_rev(filename, rev)
-  local parent = file_at_rev(filename, rev .. "-")
+  local current = ui.file_at_rev(filename, rev)
+  local parent = ui.file_at_rev(filename, rev .. "-")
 
   ui.open_sidebyside(
     parent,
