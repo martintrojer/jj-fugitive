@@ -4,6 +4,7 @@ local M = {}
 M.config = {
   default_command = "log", -- "log" or "status"
   open_mode = "split", -- "split" or "tab"
+  ignore_immutable = false, -- add --ignore-immutable to jj commands
 }
 
 --- Setup function for user configuration.
@@ -61,10 +62,15 @@ function M.run_jj(args)
   end
 
   local cmd
+  local immutable_flag = M.config.ignore_immutable and "--ignore-immutable" or nil
   if type(args) == "string" then
-    cmd = "jj " .. args
+    cmd = "jj " .. (immutable_flag and immutable_flag .. " " or "") .. args
   elseif type(args) == "table" then
-    cmd = vim.list_extend({ "jj" }, args)
+    local cmd_args = { "jj" }
+    if immutable_flag then
+      table.insert(cmd_args, immutable_flag)
+    end
+    cmd = vim.list_extend(cmd_args, args)
   else
     ui.err("Invalid arguments to run_jj")
     return nil
@@ -114,10 +120,11 @@ function M.run_jj_terminal(args)
   end
 
   local cmd_str
+  local immutable_prefix = M.config.ignore_immutable and " --ignore-immutable" or ""
   if type(args) == "string" then
-    cmd_str = "jj " .. args
+    cmd_str = "jj" .. immutable_prefix .. " " .. args
   elseif type(args) == "table" then
-    cmd_str = "jj " .. table.concat(args, " ")
+    cmd_str = "jj" .. immutable_prefix .. " " .. table.concat(args, " ")
   else
     return
   end

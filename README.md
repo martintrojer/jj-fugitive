@@ -45,8 +45,9 @@ git clone https://github.com/martintrojer/jj-fugitive ~/.local/share/nvim/site/p
 ```lua
 -- Default settings (no setup call needed)
 require("jj-fugitive").setup({
-  default_command = "log",  -- "log" or "status": what :J opens
-  open_mode = "split",      -- "split" or "tab": how views open
+  default_command = "log",     -- "log" or "status": what :J opens
+  open_mode = "split",         -- "split" or "tab": how views open
+  ignore_immutable = false,    -- allow rewriting immutable commits
 })
 ```
 
