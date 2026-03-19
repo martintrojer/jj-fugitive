@@ -368,7 +368,7 @@ local function setup_keymaps(bufnr)
       "  b         Create/move bookmark to commit",
       "",
       "Rebase:",
-      "  grd       Rebase @ onto commit under cursor",
+      "  grd       Rebase @/@- onto commit (auto-detects empty @)",
       "  grs       Rebase source onto commit (prompts for source)",
       "  grb       Rebase branch onto commit (prompts for branch)",
       "",
