@@ -122,6 +122,17 @@ local function setup_keymaps(bufnr)
     M.refresh()
   end)
 
+  -- Switch views
+  ui.map(bufnr, "n", "gl", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.log").show()
+  end)
+
+  ui.map(bufnr, "n", "gs", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.status").show()
+  end)
+
   -- Close
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
@@ -142,6 +153,8 @@ local function setup_keymaps(bufnr)
       "  f       Fetch from remote",
       "",
       "Other:",
+      "  gl      Switch to log view",
+      "  gs      Switch to status view",
       "  R       Refresh",
       "  q       Close",
       "  g?      This help",

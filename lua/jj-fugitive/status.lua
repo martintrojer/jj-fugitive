@@ -157,7 +157,12 @@ local function setup_keymaps(bufnr)
     ui.show_aliases()
   end)
 
-  -- Switch to log view
+  -- Switch views
+  ui.map(bufnr, "n", "gb", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.bookmark").show()
+  end)
+
   ui.map(bufnr, "n", "gl", function()
     vim.cmd(ui.close_cmd())
     require("jj-fugitive.log").show()
@@ -180,6 +185,7 @@ local function setup_keymaps(bufnr)
       "",
       "Other:",
       "  ga       Show jj aliases",
+      "  gb       Switch to bookmark view",
       "  gl       Switch to log view",
       "  R        Refresh",
       "  q        Close",
