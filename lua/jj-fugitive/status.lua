@@ -268,6 +268,14 @@ function M.show()
     ui.ensure_visible(bufnr)
   end
 
+  -- Position cursor on first file line (skip headers)
+  for i, line in ipairs(lines) do
+    if file_from_line(line) then
+      pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
+      break
+    end
+  end
+
   ui.set_statusline(bufnr, "jj-status")
 end
 
