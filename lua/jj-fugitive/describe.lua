@@ -80,7 +80,7 @@ function M.describe(rev)
     "# Lines starting with # are ignored",
     "# :w to save, q to abort (empty description clears message)",
   }, function(text)
-    local result = init.run_jj({ "describe", rev, "-m", text })
+    local result = init.run_jj({ "describe", rev, "--message=" .. text })
     if result then
       print("Description updated for " .. rev)
       init.refresh_log()
@@ -101,7 +101,7 @@ function M.commit()
     "# Lines starting with # are ignored",
     "# :w to save, q to abort",
   }, function(text)
-    local result = init.run_jj({ "commit", "-m", text })
+    local result = init.run_jj({ "commit", "--message=" .. text })
     if result then
       print("Committed: " .. text:match("^[^\n]*"))
       init.refresh_log()
