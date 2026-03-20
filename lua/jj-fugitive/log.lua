@@ -147,7 +147,20 @@ local function setup_keymaps(bufnr)
   local ui = require("jj-fugitive.ui")
 
   local function get_change_id()
-    return change_id_from_line(vim.api.nvim_get_current_line())
+    local id = change_id_from_line(vim.api.nvim_get_current_line())
+    if id then
+      return id
+    end
+    -- Search upward for nearest change ID (handles multi-line commit entries)
+    local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+    for i = cursor_line - 1, 1, -1 do
+      local line = vim.api.nvim_buf_get_lines(bufnr, i - 1, i, false)[1]
+      id = change_id_from_line(line)
+      if id then
+        return id
+      end
+    end
+    return nil
   end
 
   -- Show commit details
