@@ -88,8 +88,11 @@ local function get_log(opts)
   opts = opts or {}
   local init = require("jj-fugitive")
   local effective_template = opts.template or get_default_log_template(init)
-  local marked_template =
-    '"' .. LOG_REV_MARKER .. '" ++ stringify(commit_id.short()) ++ ">" ++ (' .. effective_template .. ")"
+  local marked_template = '"'
+    .. LOG_REV_MARKER
+    .. '" ++ stringify(commit_id.short()) ++ ">" ++ ('
+    .. effective_template
+    .. ")"
 
   local visible_output = init.run_jj(build_log_args(opts, effective_template))
   if not visible_output then
@@ -393,7 +396,10 @@ local function setup_keymaps(bufnr)
     end
     local dest = vim.fn.input("Rebase " .. id .. " and descendants onto revision: ")
     if dest and dest ~= "" then
-      run_and_refresh({ "rebase", "-s", id, "-d", dest }, "Rebased " .. id .. " and descendants onto " .. dest)
+      run_and_refresh(
+        { "rebase", "-s", id, "-d", dest },
+        "Rebased " .. id .. " and descendants onto " .. dest
+      )
     end
   end)
 
@@ -455,7 +461,10 @@ local function setup_keymaps(bufnr)
     end
     local dest = vim.fn.input("Insert " .. id .. " after revision: ")
     if dest and dest ~= "" then
-      run_and_refresh({ "rebase", "-r", id, "--after", dest }, "Inserted " .. id .. " after " .. dest)
+      run_and_refresh(
+        { "rebase", "-r", id, "--after", dest },
+        "Inserted " .. id .. " after " .. dest
+      )
     end
   end)
 
@@ -669,7 +678,7 @@ function M.show(opts)
 
   -- Position cursor on first commit line
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-  for i, line in ipairs(lines) do
+  for i = 1, #lines do
     if rev_lines[tostring(i)] then
       pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
       break
