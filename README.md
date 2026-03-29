@@ -84,11 +84,14 @@ Bookmark:
   b         Create/move bookmark to commit under cursor
 
 Rebase:
-  grd       Rebase @/@- onto commit (auto-detects empty @)
-  grs       Rebase source + descendants onto commit
-  grr       Rebase single revision onto commit (children stay)
-  grb       Rebase branch onto commit
-  gra       Insert revision after commit in stack
+  grw       Rebase @/@- onto revision under cursor
+  grs       Rebase prompted source + descendants onto revision under cursor
+  grS       Rebase revision under cursor + descendants onto prompted destination
+  grr       Rebase prompted revision onto revision under cursor (children stay)
+  grR       Rebase revision under cursor onto prompted destination (children stay)
+  grb       Rebase prompted branch onto revision under cursor
+  gra       Insert prompted revision after revision under cursor in stack
+  grA       Insert revision under cursor after prompted destination in stack
 
 Navigation:
   gb        Switch to bookmark view
@@ -168,7 +171,7 @@ v2 is a complete rewrite focused on simplicity and core jj workflows.
 
 **New:**
 - Dedicated bookmark buffer with create, delete, move, track, push/fetch
-- Rebase keybindings from log view (`grd`, `grs`, `grb`)
+- Rebase keybindings from log view (`grw`, `grs`, `grS`, `grr`, `grR`, `grb`, `gra`, `grA`)
 - TUI commands (`arrange`, `split`, `diffedit`, `resolve`) run in `:terminal`
 - Annotate/blame view with scroll-locked split
 - Status view with inline diff toggle (`=`)

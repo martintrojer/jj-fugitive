@@ -264,8 +264,8 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Rebase: grd = rebase @/@- onto commit, grs = rebase source, grb = rebase branch
-  ui.map(bufnr, "n", "grd", function()
+  -- Rebase helpers: lowercase prompts source, uppercase uses cursor as source.
+  ui.map(bufnr, "n", "grw", function()
     local id = get_change_id()
     if not id then
       return
@@ -287,6 +287,17 @@ local function setup_keymaps(bufnr)
     local source = vim.fn.input("Rebase source revision (onto " .. id .. "): ")
     if source and source ~= "" then
       run_and_refresh({ "rebase", "-s", source, "-d", id }, "Rebased " .. source .. " onto " .. id)
+    end
+  end)
+
+  ui.map(bufnr, "n", "grS", function()
+    local id = get_change_id()
+    if not id then
+      return
+    end
+    local dest = vim.fn.input("Rebase " .. id .. " and descendants onto revision: ")
+    if dest and dest ~= "" then
+      run_and_refresh({ "rebase", "-s", id, "-d", dest }, "Rebased " .. id .. " and descendants onto " .. dest)
     end
   end)
 
@@ -316,6 +327,18 @@ local function setup_keymaps(bufnr)
     end
   end)
 
+  -- Extract cursor revision and move it elsewhere
+  ui.map(bufnr, "n", "grR", function()
+    local id = get_change_id()
+    if not id then
+      return
+    end
+    local dest = vim.fn.input("Extract " .. id .. " onto revision: ")
+    if dest and dest ~= "" then
+      run_and_refresh({ "rebase", "-r", id, "-d", dest }, "Extracted " .. id .. " onto " .. dest)
+    end
+  end)
+
   -- Insert revision after cursor in stack
   ui.map(bufnr, "n", "gra", function()
     local id = get_change_id()
@@ -325,6 +348,18 @@ local function setup_keymaps(bufnr)
     local rev = vim.fn.input("Insert revision after " .. id .. ": ")
     if rev and rev ~= "" then
       run_and_refresh({ "rebase", "-r", rev, "--after", id }, "Inserted " .. rev .. " after " .. id)
+    end
+  end)
+
+  -- Move cursor revision after another revision in stack
+  ui.map(bufnr, "n", "grA", function()
+    local id = get_change_id()
+    if not id then
+      return
+    end
+    local dest = vim.fn.input("Insert " .. id .. " after revision: ")
+    if dest and dest ~= "" then
+      run_and_refresh({ "rebase", "-r", id, "--after", dest }, "Inserted " .. id .. " after " .. dest)
     end
   end)
 
@@ -400,11 +435,14 @@ local function setup_keymaps(bufnr)
       "  b         Create/move bookmark to commit",
       "",
       "Rebase:",
-      "  grd       Rebase @/@- onto commit (auto-detects empty @)",
-      "  grs       Rebase source + descendants onto commit",
-      "  grr       Rebase single revision onto commit (children stay)",
-      "  grb       Rebase branch onto commit",
-      "  gra       Insert revision after commit in stack",
+      "  grw       Rebase @/@- onto revision under cursor",
+      "  grs       Rebase prompted source + descendants onto revision under cursor",
+      "  grS       Rebase revision under cursor + descendants onto prompted destination",
+      "  grr       Rebase prompted revision onto revision under cursor (children stay)",
+      "  grR       Rebase revision under cursor onto prompted destination (children stay)",
+      "  grb       Rebase prompted branch onto revision under cursor",
+      "  gra       Insert prompted revision after revision under cursor in stack",
+      "  grA       Insert revision under cursor after prompted destination in stack",
       "",
       "Other:",
       "  ga        Show jj aliases",
