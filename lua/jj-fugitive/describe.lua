@@ -78,7 +78,8 @@ function M.describe(rev)
   open_editor("jj-describe-" .. rev, description, {
     "# Describe revision " .. rev,
     "# Lines starting with # are ignored",
-    "# :w to save, q to abort (empty description clears message)",
+    "# :w to save, q to abort",
+    "# Empty description clears message",
   }, function(text)
     local result = init.run_jj({ "describe", rev, "--message=" .. text })
     if result then

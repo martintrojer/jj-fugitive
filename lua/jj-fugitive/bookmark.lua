@@ -122,6 +122,10 @@ local function setup_keymaps(bufnr)
     M.refresh()
   end)
 
+  ui.map(bufnr, "n", "gu", function()
+    require("jj-fugitive").undo()
+  end)
+
   -- Switch views
   ui.map(bufnr, "n", "gl", function()
     vim.cmd(ui.close_cmd())
@@ -164,6 +168,7 @@ local function setup_keymaps(bufnr)
       "",
       "Other:",
       "  ga      Show jj aliases",
+      "  gu      Undo last jj operation",
       "  R       Refresh",
       "  q       Close",
       "  g?      This help",

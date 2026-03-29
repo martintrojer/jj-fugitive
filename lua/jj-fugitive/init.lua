@@ -224,15 +224,32 @@ function M.jj(args)
   end
 end
 
---- Refresh open plugin views (log, status) after state changes.
-function M.refresh_log()
+--- Refresh open plugin views after state changes.
+function M.refresh_views()
   vim.schedule(function()
     local log = require("jj-fugitive.log")
     if log.is_open() then
       log.refresh()
     end
     require("jj-fugitive.status").refresh()
+    require("jj-fugitive.bookmark").refresh()
   end)
+end
+
+--- Backwards-compatible alias.
+function M.refresh_log()
+  M.refresh_views()
+end
+
+--- Undo the last jj operation and refresh plugin views.
+function M.undo()
+  local result = M.run_jj({ "undo" })
+  if result then
+    vim.api.nvim_echo({ { "Undid last jj operation", "MoreMsg" } }, false, {})
+    M.refresh_views()
+    return true
+  end
+  return false
 end
 
 --- Command completion.

@@ -397,6 +397,10 @@ local function setup_keymaps(bufnr)
     M.refresh()
   end)
 
+  ui.map(bufnr, "n", "gu", function()
+    require("jj-fugitive").undo()
+  end)
+
   -- Show aliases
   ui.map(bufnr, "n", "ga", function()
     ui.show_aliases()
@@ -453,6 +457,7 @@ local function setup_keymaps(bufnr)
       "  gs        Switch to status view",
       "",
       "Other:",
+      "  gu        Undo last jj operation",
       "  R         Refresh log",
       "  q         Close",
       "  g?        This help",
