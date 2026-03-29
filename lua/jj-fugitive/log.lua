@@ -5,19 +5,25 @@ local ansi = require("jj-fugitive.ansi")
 local BUF_PATTERN = "jj%-log"
 local BUF_NAME = "jj-log"
 
---- Extract change ID from a displayed log line.
---- jj log lines look like: "@ tztvmqtt user@email 2026-03-17 3259cd17"
---- The change ID is the first alphanumeric word after graph symbols (@, ◆, ○, │, etc.)
-local function change_id_from_line(line)
+--- Extract a revision identifier from a displayed log line.
+--- Prefer the commit ID at the end of the header line since it stays unambiguous
+--- even when the line includes extra markers like conflicts or divergent info.
+local function rev_id_from_line(line)
   if not line or line == "" or line:match("^%s*#") then
     return nil
   end
   local clean = ansi.parse_ansi_colors(line)
-  -- Match the change ID: first word of 8+ lowercase alpha chars after graph symbols
-  -- Graph symbols are: @, ◆, ○, │, ╮, ╯, ~, spaces, etc.
-  local id = clean:match("^[│╮╯╭╰◆○@~%s]*([a-z][a-z]+)%s")
-  if id and #id >= 8 then
-    return id
+
+  -- Default jj log header lines end with a short hex commit ID.
+  local commit_id = clean:match("([0-9a-f]+)%s*$")
+  if commit_id and #commit_id >= 6 then
+    return commit_id
+  end
+
+  -- Fallback to the change ID near the start for older/custom output shapes.
+  local change_id = clean:match("^[│╮╯╭╰◆○@~%s]*([a-z][a-z]+)%s")
+  if change_id and #change_id >= 8 then
+    return change_id
   end
   return nil
 end
@@ -25,7 +31,7 @@ end
 --- Check if log output contains any commits.
 local function has_commits(output)
   for line in output:gmatch("[^\n]+") do
-    if change_id_from_line(line) then
+    if rev_id_from_line(line) then
       return true
     end
   end
@@ -149,8 +155,8 @@ local function setup_keymaps(bufnr)
 
   local ui = require("jj-fugitive.ui")
 
-  local function get_change_id()
-    local id = change_id_from_line(vim.api.nvim_get_current_line())
+  local function get_rev_id()
+    local id = rev_id_from_line(vim.api.nvim_get_current_line())
     if id then
       return id
     end
@@ -158,7 +164,7 @@ local function setup_keymaps(bufnr)
     local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
     for i = cursor_line - 1, 1, -1 do
       local line = vim.api.nvim_buf_get_lines(bufnr, i - 1, i, false)[1]
-      id = change_id_from_line(line)
+      id = rev_id_from_line(line)
       if id then
         return id
       end
@@ -168,7 +174,7 @@ local function setup_keymaps(bufnr)
 
   -- Show commit details
   ui.map(bufnr, "n", "<CR>", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -192,7 +198,7 @@ local function setup_keymaps(bufnr)
 
   -- Show diff for commit
   ui.map(bufnr, "n", "d", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -216,7 +222,7 @@ local function setup_keymaps(bufnr)
 
   -- Edit at commit
   ui.map(bufnr, "n", "e", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if id then
       run_and_refresh({ "edit", id }, "Editing at " .. id)
     end
@@ -224,7 +230,7 @@ local function setup_keymaps(bufnr)
 
   -- New commit after this one
   ui.map(bufnr, "n", "n", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if id then
       run_and_refresh({ "new", id }, "New change after " .. id)
     end
@@ -232,7 +238,7 @@ local function setup_keymaps(bufnr)
 
   -- Squash into parent (S not s — avoid fugitive muscle memory conflict)
   ui.map(bufnr, "n", "S", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if id and ui.confirm("Squash " .. id .. " into its parent?") then
       run_and_refresh({ "squash", "-r", id }, "Squashed " .. id)
     end
@@ -240,7 +246,7 @@ local function setup_keymaps(bufnr)
 
   -- Abandon commit
   ui.map(bufnr, "n", "A", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if id and ui.confirm("Abandon " .. id .. "?") then
       run_and_refresh({ "abandon", id }, "Abandoned " .. id)
     end
@@ -248,7 +254,7 @@ local function setup_keymaps(bufnr)
 
   -- Bookmark mode
   ui.map(bufnr, "n", "b", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -269,7 +275,7 @@ local function setup_keymaps(bufnr)
 
   -- Rebase helpers: lowercase prompts source, uppercase uses cursor as source.
   ui.map(bufnr, "n", "grw", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -283,7 +289,7 @@ local function setup_keymaps(bufnr)
   end)
 
   ui.map(bufnr, "n", "grs", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -294,7 +300,7 @@ local function setup_keymaps(bufnr)
   end)
 
   ui.map(bufnr, "n", "grS", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -305,7 +311,7 @@ local function setup_keymaps(bufnr)
   end)
 
   ui.map(bufnr, "n", "grb", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -320,7 +326,7 @@ local function setup_keymaps(bufnr)
 
   -- Rebase single revision (children stay) onto cursor
   ui.map(bufnr, "n", "grr", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -332,7 +338,7 @@ local function setup_keymaps(bufnr)
 
   -- Extract cursor revision and move it elsewhere
   ui.map(bufnr, "n", "grR", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -373,7 +379,7 @@ local function setup_keymaps(bufnr)
 
   -- Describe (cc like fugitive's commit)
   ui.map(bufnr, "n", "cc", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if id then
       require("jj-fugitive.describe").describe(id)
     end
@@ -556,7 +562,7 @@ function M.show(opts)
   -- Position cursor on first commit line
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for i, line in ipairs(lines) do
-    if not line:match("^%s*#") and line ~= "" and change_id_from_line(line) then
+    if not line:match("^%s*#") and line ~= "" and rev_id_from_line(line) then
       pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
       break
     end
