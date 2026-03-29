@@ -4,45 +4,38 @@ local ansi = require("jj-fugitive.ansi")
 
 local BUF_PATTERN = "jj%-log"
 local BUF_NAME = "jj-log"
+local LOG_REV_MARKER = "JJREV<"
+local LOG_TEMPLATE = '"' .. LOG_REV_MARKER .. '" ++ stringify(commit_id.short()) ++ ">" ++ builtin_log_comfortable'
 
---- Extract a revision identifier from a displayed log line.
---- Prefer the commit ID at the end of the header line since it stays unambiguous
---- even when the line includes extra markers like conflicts or divergent info.
-local function rev_id_from_line(line)
-  if not line or line == "" or line:match("^%s*#") then
-    return nil
-  end
-  local clean = ansi.parse_ansi_colors(line)
+--- Strip machine-readable revision markers from log output and keep a map from
+--- displayed line number (within the log body) to revision ID.
+local function extract_log_metadata(output)
+  local cleaned_lines = {}
+  local line_rev_ids = {}
 
-  -- Default jj log header lines end with a short hex commit ID.
-  local commit_id = clean:match("([0-9a-f]+)%s*$")
-  if commit_id and #commit_id >= 6 then
-    return commit_id
+  for i, line in ipairs(vim.split(output or "", "\n", { plain = true })) do
+    local prefix, rev, suffix = line:match("^(.-)" .. LOG_REV_MARKER .. "([0-9a-f]+)>(.*)$")
+    if rev then
+      table.insert(cleaned_lines, prefix .. suffix)
+      line_rev_ids[i] = rev
+    else
+      table.insert(cleaned_lines, line)
+    end
   end
 
-  -- Fallback to the change ID near the start for older/custom output shapes.
-  local change_id = clean:match("^[│╮╯╭╰◆○@~%s]*([a-z][a-z]+)%s")
-  if change_id and #change_id >= 8 then
-    return change_id
-  end
-  return nil
+  return table.concat(cleaned_lines, "\n"), line_rev_ids
 end
 
 --- Check if log output contains any commits.
-local function has_commits(output)
-  for line in output:gmatch("[^\n]+") do
-    if rev_id_from_line(line) then
-      return true
-    end
-  end
-  return false
+local function has_commits(line_rev_ids)
+  return next(line_rev_ids) ~= nil
 end
 
 --- Get jj log output with ANSI colors.
 local function get_log(opts)
   opts = opts or {}
   local init = require("jj-fugitive")
-  local args = { "log", "--color", "always" }
+  local args = { "log", "--color", "always", "-T", LOG_TEMPLATE }
 
   if opts.limit then
     table.insert(args, "--limit")
@@ -56,7 +49,12 @@ local function get_log(opts)
     end
   end
 
-  return init.run_jj(args)
+  local output = init.run_jj(args)
+  if not output then
+    return nil
+  end
+
+  return extract_log_metadata(output)
 end
 
 --- Run a jj command and refresh log on success.
@@ -156,17 +154,15 @@ local function setup_keymaps(bufnr)
   local ui = require("jj-fugitive.ui")
 
   local function get_rev_id()
-    local id = rev_id_from_line(vim.api.nvim_get_current_line())
-    if id then
-      return id
-    end
-    -- Search upward for nearest change ID (handles multi-line commit entries)
+    local rev_lines = {}
+    pcall(function()
+      rev_lines = vim.api.nvim_buf_get_var(bufnr, "jj_log_rev_lines")
+    end)
     local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
-    for i = cursor_line - 1, 1, -1 do
-      local line = vim.api.nvim_buf_get_lines(bufnr, i - 1, i, false)[1]
-      id = rev_id_from_line(line)
-      if id then
-        return id
+    for i = cursor_line, 1, -1 do
+      local rev = rev_lines[tostring(i)]
+      if rev then
+        return rev
       end
     end
     return nil
@@ -497,7 +493,7 @@ function M.refresh()
     opts.revisions = { ".." }
   end
 
-  local output = get_log(opts)
+  local output, line_rev_ids = get_log(opts)
   if not output then
     return
   end
@@ -513,6 +509,11 @@ function M.refresh()
   ansi.update_colored_buffer(bufnr, output, header, {
     prefix = "JjLog",
   })
+  local rev_lines = {}
+  for line_nr, rev in pairs(line_rev_ids) do
+    rev_lines[tostring(line_nr + #header)] = rev
+  end
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_rev_lines", rev_lines)
 
   setup_keymaps(bufnr)
 end
@@ -521,12 +522,12 @@ end
 function M.show(opts)
   opts = opts or {}
 
-  local output = get_log(opts)
+  local output, line_rev_ids = get_log(opts)
   if not output then
     return
   end
 
-  if not has_commits(output) then
+  if not has_commits(line_rev_ids) then
     vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
     return
   end
@@ -552,6 +553,11 @@ function M.show(opts)
   end
 
   vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
+  local rev_lines = {}
+  for line_nr, rev in pairs(line_rev_ids) do
+    rev_lines[tostring(line_nr + #header)] = rev
+  end
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_rev_lines", rev_lines)
 
   setup_keymaps(bufnr)
 
@@ -562,7 +568,7 @@ function M.show(opts)
   -- Position cursor on first commit line
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for i, line in ipairs(lines) do
-    if not line:match("^%s*#") and line ~= "" and rev_id_from_line(line) then
+    if rev_lines[tostring(i)] then
       pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
       break
     end
