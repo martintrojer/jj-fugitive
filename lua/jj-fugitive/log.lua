@@ -5,15 +5,21 @@ local ansi = require("jj-fugitive.ansi")
 local BUF_PATTERN = "jj%-log"
 local BUF_NAME = "jj-log"
 local LOG_REV_MARKER = "JJREV<"
-local LOG_TEMPLATE = '"' .. LOG_REV_MARKER .. '" ++ stringify(commit_id.short()) ++ ">" ++ builtin_log_comfortable'
+local DEFAULT_LOG_TEMPLATE = "builtin_log_compact"
+local COMFORTABLE_LOG_TEMPLATE = "builtin_log_comfortable"
 
 --- Strip machine-readable revision markers from log output and keep a map from
 --- displayed line number (within the log body) to revision ID.
 local function extract_log_metadata(output)
   local cleaned_lines = {}
   local line_rev_ids = {}
+  local lines = vim.split(output or "", "\n", { plain = true })
 
-  for i, line in ipairs(vim.split(output or "", "\n", { plain = true })) do
+  if lines[#lines] == "" then
+    table.remove(lines)
+  end
+
+  for i, line in ipairs(lines) do
     local prefix, rev, suffix = line:match("^(.-)" .. LOG_REV_MARKER .. "([0-9a-f]+)>(.*)$")
     if rev then
       table.insert(cleaned_lines, prefix .. suffix)
@@ -26,16 +32,28 @@ local function extract_log_metadata(output)
   return table.concat(cleaned_lines, "\n"), line_rev_ids
 end
 
+--- Trim the synthetic trailing blank line from jj output so buffer rendering
+--- doesn't add an extra empty row at the end of the log view.
+local function trim_trailing_blank_line(output)
+  local lines = vim.split(output or "", "\n", { plain = true })
+  if lines[#lines] == "" then
+    table.remove(lines)
+  end
+  return table.concat(lines, "\n")
+end
+
 --- Check if log output contains any commits.
 local function has_commits(line_rev_ids)
   return next(line_rev_ids) ~= nil
 end
 
---- Get jj log output with ANSI colors.
-local function get_log(opts)
-  opts = opts or {}
-  local init = require("jj-fugitive")
-  local args = { "log", "--color", "always", "-T", LOG_TEMPLATE }
+local function build_log_args(opts, template)
+  local args = { "log", "--color", "always" }
+
+  if template then
+    table.insert(args, "-T")
+    table.insert(args, template)
+  end
 
   if opts.limit then
     table.insert(args, "--limit")
@@ -49,12 +67,42 @@ local function get_log(opts)
     end
   end
 
-  local output = init.run_jj(args)
-  if not output then
+  return args
+end
+
+local function get_default_log_template(init)
+  local template = init.run_jj({ "config", "get", "templates.log" })
+  if not template then
+    return DEFAULT_LOG_TEMPLATE
+  end
+
+  template = template:gsub("%s+$", "")
+  if template == "" then
+    return DEFAULT_LOG_TEMPLATE
+  end
+
+  return template
+end
+
+local function get_log(opts)
+  opts = opts or {}
+  local init = require("jj-fugitive")
+  local effective_template = opts.template or get_default_log_template(init)
+  local marked_template =
+    '"' .. LOG_REV_MARKER .. '" ++ stringify(commit_id.short()) ++ ">" ++ (' .. effective_template .. ")"
+
+  local visible_output = init.run_jj(build_log_args(opts, effective_template))
+  if not visible_output then
     return nil
   end
 
-  return extract_log_metadata(output)
+  local marked_output = init.run_jj(build_log_args(opts, marked_template))
+  if not marked_output then
+    return nil
+  end
+
+  local _, line_rev_ids = extract_log_metadata(marked_output)
+  return trim_trailing_blank_line(visible_output), line_rev_ids
 end
 
 --- Run a jj command and refresh log on success.
@@ -67,6 +115,25 @@ local function run_and_refresh(args, msg)
     end
     M.refresh()
   end
+end
+
+--- Format a revision as "change_id (commit_id)" for prompts.
+local function rev_label(rev)
+  local init = require("jj-fugitive")
+  local out = init.run_jj({
+    "log",
+    "-r",
+    rev,
+    "--no-graph",
+    "-T",
+    'change_id.short() ++ " (" ++ commit_id.short() ++ ")"',
+  })
+  if not out then
+    return rev
+  end
+
+  out = out:gsub("%s+$", "")
+  return out ~= "" and out or rev
 end
 
 --- Open side-by-side diff for a specific file at a revision.
@@ -168,6 +235,30 @@ local function setup_keymaps(bufnr)
     return nil
   end
 
+  local function toggle_comfortable()
+    local template = DEFAULT_LOG_TEMPLATE
+    pcall(function()
+      template = vim.api.nvim_buf_get_var(bufnr, "jj_log_template")
+    end)
+    local next_template = template == COMFORTABLE_LOG_TEMPLATE and DEFAULT_LOG_TEMPLATE
+      or COMFORTABLE_LOG_TEMPLATE
+    M.show({
+      revisions = { ".." },
+      limit = (function()
+        local current_limit = 0
+        pcall(function()
+          current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
+        end)
+        return current_limit > 0 and current_limit or nil
+      end)(),
+      template = next_template,
+    })
+    vim.api.nvim_echo({
+      { "Log layout: ", "MoreMsg" },
+      { next_template == COMFORTABLE_LOG_TEMPLATE and "comfortable" or "compact", "MoreMsg" },
+    }, false, {})
+  end
+
   -- Show commit details
   ui.map(bufnr, "n", "<CR>", function()
     local id = get_rev_id()
@@ -235,7 +326,7 @@ local function setup_keymaps(bufnr)
   -- Squash into parent (S not s — avoid fugitive muscle memory conflict)
   ui.map(bufnr, "n", "S", function()
     local id = get_rev_id()
-    if id and ui.confirm("Squash " .. id .. " into its parent?") then
+    if id and ui.confirm("Squash " .. rev_label(id) .. " into its parent?") then
       run_and_refresh({ "squash", "-r", id }, "Squashed " .. id)
     end
   end)
@@ -243,7 +334,7 @@ local function setup_keymaps(bufnr)
   -- Abandon commit
   ui.map(bufnr, "n", "A", function()
     local id = get_rev_id()
-    if id and ui.confirm("Abandon " .. id .. "?") then
+    if id and ui.confirm("Abandon " .. rev_label(id) .. "?") then
       run_and_refresh({ "abandon", id }, "Abandoned " .. id)
     end
   end)
@@ -346,7 +437,7 @@ local function setup_keymaps(bufnr)
 
   -- Insert revision after cursor in stack
   ui.map(bufnr, "n", "gra", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -358,7 +449,7 @@ local function setup_keymaps(bufnr)
 
   -- Move cursor revision after another revision in stack
   ui.map(bufnr, "n", "grA", function()
-    local id = get_change_id()
+    local id = get_rev_id()
     if not id then
       return
     end
@@ -388,11 +479,16 @@ local function setup_keymaps(bufnr)
       current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
     end)
     local new_limit = current_limit == 0 and 50 or current_limit + 50
-    M.show({ revisions = { ".." }, limit = new_limit })
+    local template = DEFAULT_LOG_TEMPLATE
+    pcall(function()
+      template = vim.api.nvim_buf_get_var(bufnr, "jj_log_template")
+    end)
+    M.show({ revisions = { ".." }, limit = new_limit, template = template })
   end
 
   ui.map(bufnr, "n", "+", expand)
   ui.map(bufnr, "n", "=", expand)
+  ui.map(bufnr, "n", "gC", toggle_comfortable)
 
   -- Refresh
   ui.map(bufnr, "n", "R", function()
@@ -456,6 +552,7 @@ local function setup_keymaps(bufnr)
       "Views:",
       "  ga        Show jj aliases",
       "  gb        Switch to bookmark view",
+      "  gC        Toggle compact/comfortable log layout",
       "  gs        Switch to status view",
       "",
       "Other:",
@@ -486,8 +583,12 @@ function M.refresh()
   pcall(function()
     limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
   end)
+  local template = DEFAULT_LOG_TEMPLATE
+  pcall(function()
+    template = vim.api.nvim_buf_get_var(bufnr, "jj_log_template")
+  end)
 
-  local opts = {}
+  local opts = { template = template }
   if limit > 0 then
     opts.limit = limit
     opts.revisions = { ".." }
@@ -553,6 +654,7 @@ function M.show(opts)
   end
 
   vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_template", opts.template)
   local rev_lines = {}
   for line_nr, rev in pairs(line_rev_ids) do
     rev_lines[tostring(line_nr + #header)] = rev
