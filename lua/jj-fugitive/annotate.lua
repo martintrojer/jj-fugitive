@@ -106,9 +106,12 @@ function M.show(filename)
 
   ui.map(ann_buf, "n", "g?", function()
     ui.help_popup("jj-fugitive Annotate", {
-      "Blame/annotate for " .. filename,
+      "Annotate view for " .. filename,
       "",
+      "Actions:",
       "  <CR>    Show commit for this line",
+      "",
+      "Other:",
       "  q       Close annotation",
       "  g?      This help",
     })

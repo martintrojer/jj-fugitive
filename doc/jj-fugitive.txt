@@ -41,14 +41,14 @@ Keybindings:
   S             Squash into parent (jj squash)
   A             Abandon commit (jj abandon)
   b             Create/move bookmark to commit
-  grw           Rebase @/@- onto revision under cursor
-  grs           Rebase prompted source + descendants onto revision under cursor
-  grS           Rebase revision under cursor + descendants onto prompted destination
-  grr           Rebase prompted revision onto revision under cursor (children stay)
-  grR           Rebase revision under cursor onto prompted destination (children stay)
-  grb           Rebase prompted branch onto revision under cursor
-  gra           Insert prompted revision after revision under cursor in stack
-  grA           Insert revision under cursor after prompted destination in stack
+  grw           Rebase @/@- onto cursor
+  grs           Rebase prompted source+desc onto cursor
+  grS           Rebase cursor+desc onto prompted destination
+  grr           Rebase prompted revision onto cursor (children stay)
+  grR           Rebase cursor onto prompted destination (children stay)
+  grb           Rebase prompted branch onto cursor
+  gra           Insert prompted revision after cursor
+  grA           Insert cursor after prompted destination
   gb            Switch to bookmark view
   gs            Switch to status view
   +  =          Show more commits

@@ -41,6 +41,8 @@ local function setup_diff_keymaps(bufnr, filename)
 
   ui.map(bufnr, "n", "g?", function()
     ui.help_popup("jj-fugitive Diff", {
+      "Diff view",
+      "",
       "Navigation:",
       "  [c      Previous change",
       "  ]c      Next change",
@@ -48,6 +50,8 @@ local function setup_diff_keymaps(bufnr, filename)
       "Actions:",
       "  o       Open file in editor",
       "  D       Side-by-side diff",
+      "",
+      "Other:",
       "  q       Close",
       "  g?      This help",
     })

@@ -123,9 +123,12 @@ function M.setup_detail_keymaps(bufnr, kind, id)
 
   ui.map(bufnr, "n", "g?", function()
     ui.help_popup("jj-fugitive " .. kind, {
-      "Viewing " .. kind:lower() .. " for commit " .. id,
+      kind .. " for commit " .. id,
       "",
+      "Actions:",
       "  D       Side-by-side diff (pick file)",
+      "",
+      "Other:",
       "  q       Close",
       "  g?      This help",
     })
@@ -431,27 +434,29 @@ local function setup_keymaps(bufnr)
       "  S         Squash into parent (jj squash)",
       "  A         Abandon commit (jj abandon)",
       "",
-      "Bookmark:",
+      "Actions:",
       "  b         Create/move bookmark to commit",
       "",
       "Rebase:",
-      "  grw       Rebase @/@- onto revision under cursor",
-      "  grs       Rebase prompted source + descendants onto revision under cursor",
-      "  grS       Rebase revision under cursor + descendants onto prompted destination",
-      "  grr       Rebase prompted revision onto revision under cursor (children stay)",
-      "  grR       Rebase revision under cursor onto prompted destination (children stay)",
-      "  grb       Rebase prompted branch onto revision under cursor",
-      "  gra       Insert prompted revision after revision under cursor in stack",
-      "  grA       Insert revision under cursor after prompted destination in stack",
+      "  grw       Rebase @/@- onto cursor",
+      "  grs       Rebase prompted source+desc onto cursor",
+      "  grS       Rebase cursor+desc onto prompted destination",
+      "  grr       Rebase prompted revision onto cursor (children stay)",
+      "  grR       Rebase cursor onto prompted destination (children stay)",
+      "  grb       Rebase prompted branch onto cursor",
+      "  gra       Insert prompted revision after cursor",
+      "  grA       Insert cursor after prompted destination",
       "",
-      "Other:",
+      "Views:",
       "  ga        Show jj aliases",
       "  gb        Switch to bookmark view",
       "  gs        Switch to status view",
+      "",
+      "Other:",
       "  R         Refresh log",
       "  q         Close",
       "  g?        This help",
-    }, { width = 60 })
+    }, { width = 68 })
   end)
 end
 
