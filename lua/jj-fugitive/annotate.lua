@@ -106,6 +106,12 @@ function M.show(filename, rev)
     ui.set_statusline(show_buf, "jj-show: " .. change_id)
   end)
 
+  local function close_annotate()
+    vim.cmd("close")
+    -- Restore the source window's scrollbind
+    vim.cmd("setlocal noscrollbind")
+  end
+
   -- Re-annotate at parent of change under cursor
   ui.map(ann_buf, "n", "p", function()
     local ann_line = vim.api.nvim_get_current_line()
@@ -113,16 +119,11 @@ function M.show(filename, rev)
     if not change_id or #change_id < 8 then
       return
     end
-    -- Close current annotate, re-annotate at parent
-    vim.cmd(ui.close_cmd())
-    vim.cmd("setlocal noscrollbind")
+    close_annotate()
     M.show(filename, change_id .. "-")
   end)
 
-  ui.map(ann_buf, "n", "q", function()
-    vim.cmd(ui.close_cmd())
-    vim.cmd("setlocal noscrollbind")
-  end)
+  ui.map(ann_buf, "n", "q", close_annotate)
 
   ui.map(ann_buf, "n", "g?", function()
     ui.help_popup("jj-fugitive Annotate", {
