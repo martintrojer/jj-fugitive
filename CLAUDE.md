@@ -13,6 +13,8 @@ A Neovim plugin for Jujutsu (jj) version control, inspired by vim-fugitive.
 :J describe [rev]       " Edit commit description
 :J commit               " Commit (describe + new)
 :J bookmark             " Bookmark management
+:J push [args]          " Push to remote (jj git push)
+:J fetch [args]         " Fetch from remote (jj git fetch)
 :JBrowse                " Open remote URL in browser
 ```
 

@@ -24,6 +24,10 @@ end
 --- Setup keymaps for a unified diff buffer.
 local function setup_diff_keymaps(bufnr, filename)
   local ui = require("jj-fugitive.ui")
+  if ui.buf_var(bufnr, "jj_diff_keymaps_set", false) then
+    return
+  end
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_diff_keymaps_set", true)
 
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
@@ -99,14 +103,25 @@ function M.show(file_or_args)
     "",
   }
 
-  local bufname = "jj-diff: " .. file_desc
-  local bufnr = ansi.create_colored_buffer(output, bufname, header, { prefix = "JjDiff" })
-
   local ui = require("jj-fugitive.ui")
-  ui.open_pane()
-  vim.api.nvim_set_current_buf(bufnr)
+  local bufname = "jj-diff: " .. file_desc
+  local existing = ui.find_buf(vim.pesc(bufname))
+  local bufnr
+
+  if existing then
+    bufnr = existing
+    ansi.update_colored_buffer(bufnr, output, header, { prefix = "JjDiff" })
+  else
+    bufnr = ansi.create_colored_buffer(output, bufname, header, { prefix = "JjDiff" })
+  end
 
   setup_diff_keymaps(bufnr, filename)
+
+  if not existing then
+    ui.open_pane()
+    vim.api.nvim_set_current_buf(bufnr)
+  end
+
   ui.set_statusline(bufnr, "jj-diff: " .. file_desc)
 end
 

@@ -142,6 +142,11 @@ local function setup_keymaps(bufnr)
     require("jj-fugitive.describe").describe("@")
   end)
 
+  -- Split working copy (TUI)
+  ui.map(bufnr, "n", "s", function()
+    require("jj-fugitive").run_jj_terminal("split")
+  end)
+
   -- Restore file from parent
   ui.map(bufnr, "n", "x", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
@@ -197,6 +202,7 @@ local function setup_keymaps(bufnr)
       "  d        Show diff for file",
       "  D        Side-by-side diff",
       "  cc       Describe working copy",
+      "  s        Split working copy (jj split TUI)",
       "  x        Restore file from parent (@-)",
       "",
       "Views:",

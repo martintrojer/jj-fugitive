@@ -190,6 +190,18 @@ function M.jj(args)
     require("jj-fugitive.annotate").show(rest ~= "" and rest or nil)
   elseif command == "browse" then
     require("jj-fugitive.browse").browse()
+  elseif command == "push" then
+    local result = M.run_jj({ "git", "push", unpack(parts, 2) })
+    if result then
+      print(result)
+      M.refresh_views()
+    end
+  elseif command == "fetch" then
+    local result = M.run_jj({ "git", "fetch", unpack(parts, 2) })
+    if result then
+      print(result)
+      M.refresh_views()
+    end
   else
     -- TUI commands need a terminal, not vim.fn.system
     if vim.tbl_contains(TUI_COMMANDS, command) then
