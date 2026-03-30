@@ -326,11 +326,54 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Squash into parent (S not s — avoid fugitive muscle memory conflict)
-  ui.map(bufnr, "n", "S", function()
+  -- Squash @/@- into cursor
+  ui.map(bufnr, "n", "gqw", function()
     local id = get_rev_id()
-    if id and ui.confirm("Squash " .. rev_label(id) .. " into its parent?") then
-      run_and_refresh({ "squash", "-r", id }, "Squashed " .. id)
+    if not id then
+      return
+    end
+    local init = require("jj-fugitive")
+    local is_empty = init.run_jj({ "log", "-r", "@", "--no-graph", "-T", "empty" })
+    local source = (is_empty and is_empty:match("true")) and "@-" or "@"
+    if ui.confirm("Squash " .. source .. " into " .. rev_label(id) .. "?") then
+      run_and_refresh(
+        { "squash", "-r", source, "--into", id },
+        "Squashed " .. source .. " into " .. id
+      )
+    end
+  end)
+
+  -- Squash prompted source into cursor (lowercase = prompt source, cursor is dest)
+  ui.map(bufnr, "n", "gqs", function()
+    local id = get_rev_id()
+    if not id then
+      return
+    end
+    local source = vim.fn.input("Squash revision into " .. id .. ": ")
+    if source and source ~= "" then
+      if ui.confirm("Squash " .. source .. " into " .. rev_label(id) .. "?") then
+        run_and_refresh(
+          { "squash", "-r", source, "--into", id },
+          "Squashed " .. source .. " into " .. id
+        )
+      end
+    end
+  end)
+
+  -- Squash cursor into prompted destination (uppercase = cursor is source)
+  ui.map(bufnr, "n", "gqS", function()
+    local id = get_rev_id()
+    if not id then
+      return
+    end
+    local into = vim.fn.input("Squash " .. id .. " into revision: ")
+    if into and into ~= "" then
+      if ui.confirm("Squash " .. rev_label(id) .. " into " .. into .. "?") then
+        run_and_refresh(
+          { "squash", "-r", id, "--into", into },
+          "Squashed " .. id .. " into " .. into
+        )
+      end
     end
   end)
 
@@ -373,7 +416,7 @@ local function setup_keymaps(bufnr)
     local init = require("jj-fugitive")
     local is_empty = init.run_jj({ "log", "-r", "@", "--no-graph", "-T", "empty" })
     local source = (is_empty and is_empty:match("true")) and "@-" or "@"
-    if ui.confirm("Rebase " .. source .. " onto " .. id .. "?") then
+    if ui.confirm("Rebase " .. source .. " onto " .. rev_label(id) .. "?") then
       run_and_refresh({ "rebase", "-s", source, "-d", id }, "Rebased " .. source .. " onto " .. id)
     end
   end)
@@ -542,11 +585,8 @@ local function setup_keymaps(bufnr)
       "  cc        Describe (edit commit message)",
       "  e         Edit at commit (jj edit)",
       "  n         New change after commit (jj new)",
-      "  S         Squash into parent (jj squash)",
-      "  A         Abandon commit (jj abandon)",
-      "",
-      "Actions:",
       "  b         Create/move bookmark to commit",
+      "  A         Abandon commit (jj abandon)",
       "",
       "Rebase:",
       "  grw       Rebase @/@- onto cursor",
@@ -557,6 +597,11 @@ local function setup_keymaps(bufnr)
       "  grb       Rebase prompted branch onto cursor",
       "  gra       Insert prompted revision after cursor",
       "  grA       Insert cursor after prompted destination",
+      "",
+      "Squash:",
+      "  gqw       Squash @/@- into cursor",
+      "  gqs       Squash prompted revision into cursor",
+      "  gqS       Squash cursor into prompted revision",
       "",
       "Views:",
       "  ga        Show jj aliases",
