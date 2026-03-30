@@ -108,6 +108,19 @@ function M.run_jj(args)
     if err_msg:match("^%s*$") then
       err_msg = "command failed (exit code " .. result.code .. ")"
     end
+    -- Exit code 124: operation may have completed but jj detected a
+    -- concurrent issue. Warn but don't refresh — let user check state.
+    if result.code == 124 then
+      vim.api.nvim_echo({
+        {
+          "jj: "
+            .. err_msg:gsub("%s+$", "")
+            .. " (concurrent operation — check state, gu to undo)",
+          "WarningMsg",
+        },
+      }, false, {})
+      return nil
+    end
     ui.err("jj: " .. err_msg:gsub("%s+$", ""))
     return nil
   end
