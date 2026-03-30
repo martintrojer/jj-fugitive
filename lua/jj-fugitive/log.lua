@@ -108,6 +108,29 @@ local function get_log(opts)
   return trim_trailing_blank_line(visible_output), line_rev_ids
 end
 
+--- Get a buffer variable with a fallback default.
+local function buf_var(bufnr, name, default)
+  local ok, val = pcall(vim.api.nvim_buf_get_var, bufnr, name)
+  return ok and val or default
+end
+
+--- Determine the working copy source: @ if non-empty, @- otherwise.
+local function working_copy_source()
+  local init = require("jj-fugitive")
+  local is_empty = init.run_jj({ "log", "-r", "@", "--no-graph", "-T", "empty" })
+  return (is_empty and is_empty:match("true")) and "@-" or "@"
+end
+
+--- Store rev line mapping on a buffer.
+local function set_rev_lines(bufnr, line_rev_ids, header_size)
+  local rev_lines = {}
+  for line_nr, rev in pairs(line_rev_ids) do
+    rev_lines[tostring(line_nr + header_size)] = rev
+  end
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_rev_lines", rev_lines)
+  return rev_lines
+end
+
 --- Run a jj command and refresh log on success.
 local function run_and_refresh(args, msg)
   local init = require("jj-fugitive")
@@ -212,11 +235,7 @@ end
 --- Setup keymaps for the log buffer (idempotent — safe to call on refresh).
 local function setup_keymaps(bufnr)
   -- Guard: only set keymaps once per buffer
-  local already = false
-  pcall(function()
-    already = vim.api.nvim_buf_get_var(bufnr, "jj_log_keymaps_set") == true
-  end)
-  if already then
+  if buf_var(bufnr, "jj_log_keymaps_set", false) then
     return
   end
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_log_keymaps_set", true)
@@ -224,10 +243,7 @@ local function setup_keymaps(bufnr)
   local ui = require("jj-fugitive.ui")
 
   local function get_rev_id()
-    local rev_lines = {}
-    pcall(function()
-      rev_lines = vim.api.nvim_buf_get_var(bufnr, "jj_log_rev_lines")
-    end)
+    local rev_lines = buf_var(bufnr, "jj_log_rev_lines", {})
     local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
     for i = cursor_line, 1, -1 do
       local rev = rev_lines[tostring(i)]
@@ -239,21 +255,13 @@ local function setup_keymaps(bufnr)
   end
 
   local function toggle_comfortable()
-    local template = DEFAULT_LOG_TEMPLATE
-    pcall(function()
-      template = vim.api.nvim_buf_get_var(bufnr, "jj_log_template")
-    end)
+    local template = buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
     local next_template = template == COMFORTABLE_LOG_TEMPLATE and DEFAULT_LOG_TEMPLATE
       or COMFORTABLE_LOG_TEMPLATE
+    local current_limit = buf_var(bufnr, "jj_log_limit", 0)
     M.show({
       revisions = { ".." },
-      limit = (function()
-        local current_limit = 0
-        pcall(function()
-          current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
-        end)
-        return current_limit > 0 and current_limit or nil
-      end)(),
+      limit = current_limit > 0 and current_limit or nil,
       template = next_template,
     })
     vim.api.nvim_echo({
@@ -332,13 +340,12 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local init = require("jj-fugitive")
-    local is_empty = init.run_jj({ "log", "-r", "@", "--no-graph", "-T", "empty" })
-    local source = (is_empty and is_empty:match("true")) and "@-" or "@"
-    if ui.confirm("Squash " .. source .. " into " .. rev_label(id) .. "?") then
+    local source = working_copy_source()
+    local label = rev_label(id)
+    if ui.confirm("Squash " .. source .. " into " .. label .. "?") then
       run_and_refresh(
         { "squash", "-r", source, "--into", id },
-        "Squashed " .. source .. " into " .. id
+        "Squashed " .. source .. " into " .. label
       )
     end
   end)
@@ -349,12 +356,13 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local source = vim.fn.input("Squash revision into " .. id .. ": ")
+    local label = rev_label(id)
+    local source = vim.fn.input("Squash revision into " .. label .. ": ")
     if source and source ~= "" then
-      if ui.confirm("Squash " .. source .. " into " .. rev_label(id) .. "?") then
+      if ui.confirm("Squash " .. source .. " into " .. label .. "?") then
         run_and_refresh(
           { "squash", "-r", source, "--into", id },
-          "Squashed " .. source .. " into " .. id
+          "Squashed " .. source .. " into " .. label
         )
       end
     end
@@ -366,12 +374,13 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local into = vim.fn.input("Squash " .. id .. " into revision: ")
+    local label = rev_label(id)
+    local into = vim.fn.input("Squash " .. label .. " into revision: ")
     if into and into ~= "" then
-      if ui.confirm("Squash " .. rev_label(id) .. " into " .. into .. "?") then
+      if ui.confirm("Squash " .. label .. " into " .. into .. "?") then
         run_and_refresh(
           { "squash", "-r", id, "--into", into },
-          "Squashed " .. id .. " into " .. into
+          "Squashed " .. label .. " into " .. into
         )
       end
     end
@@ -412,12 +421,13 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    -- If @ is empty, rebase @- instead (common case: empty working copy)
-    local init = require("jj-fugitive")
-    local is_empty = init.run_jj({ "log", "-r", "@", "--no-graph", "-T", "empty" })
-    local source = (is_empty and is_empty:match("true")) and "@-" or "@"
-    if ui.confirm("Rebase " .. source .. " onto " .. rev_label(id) .. "?") then
-      run_and_refresh({ "rebase", "-s", source, "-d", id }, "Rebased " .. source .. " onto " .. id)
+    local source = working_copy_source()
+    local label = rev_label(id)
+    if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
+      run_and_refresh(
+        { "rebase", "-s", source, "-d", id },
+        "Rebased " .. source .. " onto " .. label
+      )
     end
   end)
 
@@ -426,9 +436,15 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local source = vim.fn.input("Rebase source revision (onto " .. id .. "): ")
+    local label = rev_label(id)
+    local source = vim.fn.input("Rebase source+desc onto " .. label .. ": ")
     if source and source ~= "" then
-      run_and_refresh({ "rebase", "-s", source, "-d", id }, "Rebased " .. source .. " onto " .. id)
+      if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
+        run_and_refresh(
+          { "rebase", "-s", source, "-d", id },
+          "Rebased " .. source .. " onto " .. label
+        )
+      end
     end
   end)
 
@@ -437,12 +453,15 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local dest = vim.fn.input("Rebase " .. id .. " and descendants onto revision: ")
+    local label = rev_label(id)
+    local dest = vim.fn.input("Rebase " .. label .. " and descendants onto revision: ")
     if dest and dest ~= "" then
-      run_and_refresh(
-        { "rebase", "-s", id, "-d", dest },
-        "Rebased " .. id .. " and descendants onto " .. dest
-      )
+      if ui.confirm("Rebase " .. label .. " and descendants onto " .. dest .. "?") then
+        run_and_refresh(
+          { "rebase", "-s", id, "-d", dest },
+          "Rebased " .. label .. " and descendants onto " .. dest
+        )
+      end
     end
   end)
 
@@ -451,12 +470,15 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local branch = vim.fn.input("Rebase branch revision (onto " .. id .. "): ")
+    local label = rev_label(id)
+    local branch = vim.fn.input("Rebase branch onto " .. label .. ": ")
     if branch and branch ~= "" then
-      run_and_refresh(
-        { "rebase", "-b", branch, "-d", id },
-        "Rebased branch " .. branch .. " onto " .. id
-      )
+      if ui.confirm("Rebase branch " .. branch .. " onto " .. label .. "?") then
+        run_and_refresh(
+          { "rebase", "-b", branch, "-d", id },
+          "Rebased branch " .. branch .. " onto " .. label
+        )
+      end
     end
   end)
 
@@ -466,9 +488,12 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local rev = vim.fn.input("Rebase single revision (onto " .. id .. "): ")
+    local label = rev_label(id)
+    local rev = vim.fn.input("Rebase single revision onto " .. label .. ": ")
     if rev and rev ~= "" then
-      run_and_refresh({ "rebase", "-r", rev, "-d", id }, "Rebased " .. rev .. " onto " .. id)
+      if ui.confirm("Rebase " .. rev .. " onto " .. label .. "?") then
+        run_and_refresh({ "rebase", "-r", rev, "-d", id }, "Rebased " .. rev .. " onto " .. label)
+      end
     end
   end)
 
@@ -478,9 +503,15 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local dest = vim.fn.input("Extract " .. id .. " onto revision: ")
+    local label = rev_label(id)
+    local dest = vim.fn.input("Extract " .. label .. " onto revision: ")
     if dest and dest ~= "" then
-      run_and_refresh({ "rebase", "-r", id, "-d", dest }, "Extracted " .. id .. " onto " .. dest)
+      if ui.confirm("Extract " .. label .. " onto " .. dest .. "?") then
+        run_and_refresh(
+          { "rebase", "-r", id, "-d", dest },
+          "Extracted " .. label .. " onto " .. dest
+        )
+      end
     end
   end)
 
@@ -490,9 +521,15 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local rev = vim.fn.input("Insert revision after " .. id .. ": ")
+    local label = rev_label(id)
+    local rev = vim.fn.input("Insert revision after " .. label .. ": ")
     if rev and rev ~= "" then
-      run_and_refresh({ "rebase", "-r", rev, "--after", id }, "Inserted " .. rev .. " after " .. id)
+      if ui.confirm("Insert " .. rev .. " after " .. label .. "?") then
+        run_and_refresh(
+          { "rebase", "-r", rev, "--after", id },
+          "Inserted " .. rev .. " after " .. label
+        )
+      end
     end
   end)
 
@@ -502,16 +539,19 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local dest = vim.fn.input("Insert " .. id .. " after revision: ")
+    local label = rev_label(id)
+    local dest = vim.fn.input("Insert " .. label .. " after revision: ")
     if dest and dest ~= "" then
-      run_and_refresh(
-        { "rebase", "-r", id, "--after", dest },
-        "Inserted " .. id .. " after " .. dest
-      )
+      if ui.confirm("Insert " .. label .. " after " .. dest .. "?") then
+        run_and_refresh(
+          { "rebase", "-r", id, "--after", dest },
+          "Inserted " .. label .. " after " .. dest
+        )
+      end
     end
   end)
 
-  -- Block built-in c (change) and r (replace) which error on read-only buffer
+  -- Block built-in keys that error on read-only buffer
   -- Mapping to a function (not <Nop>) lets Neovim still wait for multi-key sequences
   ui.map(bufnr, "n", "c", function() end)
   ui.map(bufnr, "n", "r", function() end)
@@ -526,15 +566,9 @@ local function setup_keymaps(bufnr)
 
   -- Expand (show more commits)
   local function expand()
-    local current_limit = 0
-    pcall(function()
-      current_limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
-    end)
+    local current_limit = buf_var(bufnr, "jj_log_limit", 0)
     local new_limit = current_limit == 0 and 50 or current_limit + 50
-    local template = DEFAULT_LOG_TEMPLATE
-    pcall(function()
-      template = vim.api.nvim_buf_get_var(bufnr, "jj_log_template")
-    end)
+    local template = buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
     M.show({ revisions = { ".." }, limit = new_limit, template = template })
   end
 
@@ -633,14 +667,8 @@ function M.refresh()
   end
 
   -- Preserve limit
-  local limit = 0
-  pcall(function()
-    limit = vim.api.nvim_buf_get_var(bufnr, "jj_log_limit")
-  end)
-  local template = DEFAULT_LOG_TEMPLATE
-  pcall(function()
-    template = vim.api.nvim_buf_get_var(bufnr, "jj_log_template")
-  end)
+  local limit = buf_var(bufnr, "jj_log_limit", 0)
+  local template = buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
 
   local opts = { template = template }
   if limit > 0 then
@@ -664,11 +692,7 @@ function M.refresh()
   ansi.update_colored_buffer(bufnr, output, header, {
     prefix = "JjLog",
   })
-  local rev_lines = {}
-  for line_nr, rev in pairs(line_rev_ids) do
-    rev_lines[tostring(line_nr + #header)] = rev
-  end
-  vim.api.nvim_buf_set_var(bufnr, "jj_log_rev_lines", rev_lines)
+  set_rev_lines(bufnr, line_rev_ids, #header)
 
   setup_keymaps(bufnr)
 end
@@ -709,11 +733,7 @@ function M.show(opts)
 
   vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
   vim.api.nvim_buf_set_var(bufnr, "jj_log_template", opts.template)
-  local rev_lines = {}
-  for line_nr, rev in pairs(line_rev_ids) do
-    rev_lines[tostring(line_nr + #header)] = rev
-  end
-  vim.api.nvim_buf_set_var(bufnr, "jj_log_rev_lines", rev_lines)
+  local rev_lines = set_rev_lines(bufnr, line_rev_ids, #header)
 
   setup_keymaps(bufnr)
 
