@@ -134,6 +134,14 @@ local function setup_keymaps(bufnr)
     end
   end)
 
+  -- Block c so Neovim waits for cc
+  ui.map(bufnr, "n", "c", function() end)
+
+  -- Describe working copy
+  ui.map(bufnr, "n", "cc", function()
+    require("jj-fugitive.describe").describe("@")
+  end)
+
   -- Restore file from parent
   ui.map(bufnr, "n", "x", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
@@ -188,6 +196,7 @@ local function setup_keymaps(bufnr)
       "  =        Toggle inline diff",
       "  d        Show diff for file",
       "  D        Side-by-side diff",
+      "  cc       Describe working copy",
       "  x        Restore file from parent (@-)",
       "",
       "Views:",
