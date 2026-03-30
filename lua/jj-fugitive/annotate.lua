@@ -2,7 +2,8 @@ local M = {}
 
 --- Show blame/annotate for the current file.
 --- Opens a vertical split with annotations aligned to the source buffer.
-function M.show(filename)
+--- rev: optional revision to annotate at (defaults to working copy)
+function M.show(filename, rev)
   local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
 
@@ -21,7 +22,12 @@ function M.show(filename)
     end
   end
 
-  local output = init.run_jj({ "file", "annotate", filename })
+  local annotate_args = { "file", "annotate", filename }
+  if rev then
+    table.insert(annotate_args, "-r")
+    table.insert(annotate_args, rev)
+  end
+  local output = init.run_jj(annotate_args)
   if not output then
     return
   end
@@ -36,8 +42,9 @@ function M.show(filename)
   end
 
   -- Create the annotation buffer
+  local rev_suffix = rev and (" @ " .. rev) or ""
   local ann_buf = ui.create_scratch_buffer({
-    name = "jj-annotate: " .. filename,
+    name = "jj-annotate: " .. filename .. rev_suffix,
   })
 
   vim.api.nvim_buf_set_option(ann_buf, "modifiable", true)
@@ -99,6 +106,19 @@ function M.show(filename)
     ui.set_statusline(show_buf, "jj-show: " .. change_id)
   end)
 
+  -- Re-annotate at parent of change under cursor
+  ui.map(ann_buf, "n", "p", function()
+    local ann_line = vim.api.nvim_get_current_line()
+    local change_id = ann_line:match("^(%S+)")
+    if not change_id or #change_id < 8 then
+      return
+    end
+    -- Close current annotate, re-annotate at parent
+    vim.cmd(ui.close_cmd())
+    vim.cmd("setlocal noscrollbind")
+    M.show(filename, change_id .. "-")
+  end)
+
   ui.map(ann_buf, "n", "q", function()
     vim.cmd(ui.close_cmd())
     vim.cmd("setlocal noscrollbind")
@@ -106,10 +126,11 @@ function M.show(filename)
 
   ui.map(ann_buf, "n", "g?", function()
     ui.help_popup("jj-fugitive Annotate", {
-      "Annotate view for " .. filename,
+      "Annotate view for " .. filename .. rev_suffix,
       "",
       "Actions:",
       "  <CR>    Show commit for this line",
+      "  p       Re-annotate at parent of this line's change",
       "",
       "Other:",
       "  q       Close annotation",
@@ -117,7 +138,7 @@ function M.show(filename)
     })
   end)
 
-  ui.set_statusline(ann_buf, "jj-annotate: " .. filename)
+  ui.set_statusline(ann_buf, "jj-annotate: " .. filename .. rev_suffix)
 end
 
 return M

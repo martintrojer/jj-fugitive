@@ -139,7 +139,13 @@ local function run_and_refresh(args, msg)
 end
 
 --- Format a revision as "change_id (commit_id)" for prompts.
+--- Results are cached and cleared on each refresh.
+local rev_label_cache = {}
+
 local function rev_label(rev)
+  if rev_label_cache[rev] then
+    return rev_label_cache[rev]
+  end
   local init = require("jj-fugitive")
   local out = init.run_jj({
     "log",
@@ -154,7 +160,9 @@ local function rev_label(rev)
   end
 
   out = out:gsub("%s+$", "")
-  return out ~= "" and out or rev
+  local label = out ~= "" and out or rev
+  rev_label_cache[rev] = label
+  return label
 end
 
 --- Open side-by-side diff for a specific file at a revision.
@@ -648,6 +656,7 @@ end
 
 --- Refresh the current log view.
 function M.refresh()
+  rev_label_cache = {}
   local bufnr = ui.find_buf(BUF_PATTERN)
   if not bufnr then
     return

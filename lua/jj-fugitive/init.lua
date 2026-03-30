@@ -76,12 +76,19 @@ function M.run_jj(args)
     return nil
   end
 
+  -- Show feedback so the user knows something is happening
+  vim.api.nvim_echo({ { "jj: running...", "Comment" } }, false, {})
+  vim.cmd("redraw")
+
   local result = vim
     .system(cmd_args, {
       cwd = repo_root,
       env = { JJ_EDITOR = "true" },
     })
     :wait()
+
+  -- Clear the "running..." message
+  vim.api.nvim_echo({ { "" } }, false, {})
 
   if result.code ~= 0 then
     ui.err("jj: " .. (result.stderr or result.stdout or "unknown error"))
