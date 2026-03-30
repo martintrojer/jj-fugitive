@@ -89,23 +89,21 @@ local function get_log(opts)
   opts = opts or {}
   local init = require("jj-fugitive")
   local effective_template = opts.template or get_default_log_template(init)
+  -- Embed rev markers into the template so we only need one jj call.
+  -- Markers are plain text (no ANSI) so they survive color output and
+  -- can be stripped cleanly by extract_log_metadata.
   local marked_template = '"'
     .. LOG_REV_MARKER
     .. '" ++ stringify(commit_id.short()) ++ ">" ++ ('
     .. effective_template
     .. ")"
 
-  local visible_output = init.run_jj(build_log_args(opts, effective_template))
-  if not visible_output then
-    return nil
-  end
-
   local marked_output = init.run_jj(build_log_args(opts, marked_template))
   if not marked_output then
     return nil
   end
 
-  local _, line_rev_ids = extract_log_metadata(marked_output)
+  local visible_output, line_rev_ids = extract_log_metadata(marked_output)
   return trim_trailing_blank_line(visible_output), line_rev_ids
 end
 

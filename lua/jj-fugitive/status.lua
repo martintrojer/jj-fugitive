@@ -49,10 +49,10 @@ local function toggle_inline_diff(bufnr)
       end
     end
     -- Delete 1-indexed range [first, last] using 0-indexed API
-    vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+    vim.bo[bufnr].modifiable = true
     vim.api.nvim_buf_set_lines(bufnr, first - 1, last, false, {})
-    vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-    vim.api.nvim_buf_set_option(bufnr, "modified", false)
+    vim.bo[bufnr].modifiable = false
+    vim.bo[bufnr].modified = false
     return
   end
 
@@ -70,10 +70,10 @@ local function toggle_inline_diff(bufnr)
     end
   end
 
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.bo[bufnr].modifiable = true
   vim.api.nvim_buf_set_lines(bufnr, line_nr, line_nr, false, diff_lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  vim.api.nvim_buf_set_option(bufnr, "modified", false)
+  vim.bo[bufnr].modifiable = false
+  vim.bo[bufnr].modified = false
 
   -- Add inline diff highlighting
   for i = line_nr, line_nr + #diff_lines - 1 do

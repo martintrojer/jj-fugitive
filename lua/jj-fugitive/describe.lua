@@ -46,7 +46,7 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
       local text = table.concat(filtered, "\n"):gsub("^%s+", ""):gsub("%s+$", "")
 
       if save_fn(text) then
-        vim.api.nvim_buf_set_option(bufnr, "modified", false)
+        vim.bo[bufnr].modified = false
         vim.cmd(ui.close_cmd())
       end
     end,
@@ -54,7 +54,7 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
 
   -- q to abort (close without saving)
   ui.map(bufnr, "n", "q", function()
-    vim.api.nvim_buf_set_option(bufnr, "modified", false)
+    vim.bo[bufnr].modified = false
     vim.cmd(ui.close_cmd())
   end)
 

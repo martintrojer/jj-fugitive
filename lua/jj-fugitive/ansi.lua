@@ -304,8 +304,8 @@ function M.create_colored_buffer(content, buffer_name, header_lines, opts)
   -- Mark this as a jj-fugitive plugin buffer to enable safe updates
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_plugin_buffer", true)
 
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  vim.api.nvim_buf_set_option(bufnr, "modified", false)
+  vim.bo[bufnr].modifiable = false
+  vim.bo[bufnr].modified = false
 
   return bufnr
 end
@@ -315,7 +315,7 @@ function M.update_colored_buffer(bufnr, content, header_lines, opts)
   opts = opts or {}
 
   -- Make buffer modifiable temporarily
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.bo[bufnr].modifiable = true
 
   -- Clear existing content
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {})
@@ -330,8 +330,8 @@ function M.update_colored_buffer(bufnr, content, header_lines, opts)
   -- Setup highlighting with parsed ANSI colors
   M.setup_diff_highlighting(bufnr, highlights, opts)
 
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  vim.api.nvim_buf_set_option(bufnr, "modified", false)
+  vim.bo[bufnr].modifiable = false
+  vim.bo[bufnr].modified = false
 end
 
 return M

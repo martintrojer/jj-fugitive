@@ -47,10 +47,10 @@ function M.show(filename, rev)
     name = "jj-annotate: " .. filename .. rev_suffix,
   })
 
-  vim.api.nvim_buf_set_option(ann_buf, "modifiable", true)
+  vim.bo[ann_buf].modifiable = true
   vim.api.nvim_buf_set_lines(ann_buf, 0, -1, false, annotations)
-  vim.api.nvim_buf_set_option(ann_buf, "modifiable", false)
-  vim.api.nvim_buf_set_option(ann_buf, "modified", false)
+  vim.bo[ann_buf].modifiable = false
+  vim.bo[ann_buf].modified = false
 
   -- Highlighting
   vim.api.nvim_buf_call(ann_buf, function()
@@ -68,12 +68,13 @@ function M.show(filename, rev)
       modifiable = true,
     })
     vim.api.nvim_buf_set_lines(source_buf, 0, -1, false, vim.split(file_content, "\n"))
-    vim.api.nvim_buf_set_option(source_buf, "modifiable", false)
-    vim.api.nvim_buf_set_option(source_buf, "modified", false)
+    vim.bo[source_buf].modifiable = false
+    vim.bo[source_buf].modified = false
     local ft = vim.filetype.match({ filename = filename })
     if ft then
-      vim.api.nvim_buf_set_option(source_buf, "filetype", ft)
+      vim.bo[source_buf].filetype = ft
     end
+    vim.api.nvim_buf_set_var(source_buf, "jj_annotate_source", true)
     vim.api.nvim_set_current_buf(source_buf)
   end
 
@@ -128,12 +129,9 @@ function M.show(filename, rev)
     -- Restore the source window's scrollbind
     vim.cmd("setlocal noscrollbind")
     -- Clean up scratch source buffer if we created one for a historical revision
-    if rev then
-      local source_buf = vim.api.nvim_get_current_buf()
-      local name = vim.api.nvim_buf_get_name(source_buf)
-      if name:match(" @ ") then
-        vim.api.nvim_buf_delete(source_buf, { force = true })
-      end
+    local source_buf = vim.api.nvim_get_current_buf()
+    if ui.buf_var(source_buf, "jj_annotate_source", false) then
+      vim.api.nvim_buf_delete(source_buf, { force = true })
     end
   end
 

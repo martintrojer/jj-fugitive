@@ -17,7 +17,7 @@ end
 local last_repo_root = nil
 
 --- Find the jj repository root from the current buffer or cwd.
---- Uses vim.fs.find (Neovim 0.8+) to walk upward.
+--- Uses vim.fs.find to walk upward.
 local function find_jj_root()
   -- Try from current buffer's directory first
   local buf_name = vim.api.nvim_buf_get_name(0)
@@ -48,38 +48,9 @@ local function find_jj_root()
   return nil
 end
 
---- Run a jj command from the repository root.
---- args: string or table of arguments
---- Returns: output string, repo_root string (or nil on error)
-function M.run_jj(args)
-  local ui = require("jj-fugitive.ui")
-
-  local repo_root = find_jj_root()
-  if not repo_root then
-    ui.err("Not in a jj repository")
-    return nil
-  end
-
-  local cmd_args = { "jj", "-R", repo_root }
-  if M.config.ignore_immutable then
-    table.insert(cmd_args, "--ignore-immutable")
-  end
-
-  if type(args) == "string" then
-    for arg in args:gmatch("%S+") do
-      table.insert(cmd_args, arg)
-    end
-  elseif type(args) == "table" then
-    vim.list_extend(cmd_args, args)
-  else
-    ui.err("Invalid arguments to run_jj")
-    return nil
-  end
-
-  local proc = vim.system(cmd_args, {
-    cwd = repo_root,
-    env = { JJ_EDITOR = "true" },
-  })
+--- Run a command with timeout feedback and transient error retry.
+local function run_with_feedback(cmd, opts)
+  local proc = vim.system(cmd, opts)
 
   -- Only show feedback if command takes longer than 200ms
   local result = proc:wait(200)
@@ -97,9 +68,48 @@ function M.run_jj(args)
       vim.api.nvim_echo({ { "jj: retrying...", "Comment" } }, false, {})
       vim.cmd("redraw")
       vim.wait(500)
-      result = vim.system(cmd_args, { cwd = repo_root, env = { JJ_EDITOR = "true" } }):wait()
+      result = vim.system(cmd, opts):wait()
     end
   end
+
+  return result
+end
+
+--- Run a jj command from the repository root.
+--- args: string or table of arguments
+--- Returns: output string, repo_root string (or nil on error)
+function M.run_jj(args)
+  local ui = require("jj-fugitive.ui")
+
+  local repo_root = find_jj_root()
+  if not repo_root then
+    ui.err("Not in a jj repository")
+    return nil
+  end
+
+  local sys_opts = { cwd = repo_root, env = { JJ_EDITOR = "true" } }
+  local cmd
+
+  local base = "jj -R " .. vim.fn.shellescape(repo_root)
+  if M.config.ignore_immutable then
+    base = base .. " --ignore-immutable"
+  end
+
+  if type(args) == "string" then
+    -- Use shell to handle quoting correctly (e.g. -m "multi word")
+    cmd = { "sh", "-c", base .. " " .. args }
+  elseif type(args) == "table" then
+    cmd = { "jj", "-R", repo_root }
+    if M.config.ignore_immutable then
+      table.insert(cmd, "--ignore-immutable")
+    end
+    vim.list_extend(cmd, args)
+  else
+    ui.err("Invalid arguments to run_jj")
+    return nil
+  end
+
+  local result = run_with_feedback(cmd, sys_opts)
 
   if result.code ~= 0 then
     local err_msg = result.stderr or ""
@@ -218,13 +228,15 @@ function M.jj(args)
   elseif command == "push" then
     local result = M.run_jj({ "git", "push", unpack(parts, 2) })
     if result then
-      print(result)
+      local msg = result:gsub("%s+$", "")
+      vim.api.nvim_echo({ { msg ~= "" and msg or "Pushed to remote", "MoreMsg" } }, false, {})
       M.refresh_views()
     end
   elseif command == "fetch" then
     local result = M.run_jj({ "git", "fetch", unpack(parts, 2) })
     if result then
-      print(result)
+      local msg = result:gsub("%s+$", "")
+      vim.api.nvim_echo({ { msg ~= "" and msg or "Fetched from remote", "MoreMsg" } }, false, {})
       M.refresh_views()
     end
   else

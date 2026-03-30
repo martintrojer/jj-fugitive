@@ -6,13 +6,13 @@ function M.create_scratch_buffer(opts)
   opts = opts or {}
   local bufnr = vim.api.nvim_create_buf(false, true)
 
-  vim.api.nvim_buf_set_option(bufnr, "buftype", opts.buftype or "nofile")
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", opts.bufhidden or "wipe")
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", opts.modifiable == true)
+  vim.bo[bufnr].buftype = opts.buftype or "nofile"
+  vim.bo[bufnr].bufhidden = opts.bufhidden or "wipe"
+  vim.bo[bufnr].swapfile = false
+  vim.bo[bufnr].modifiable = opts.modifiable == true
 
   if opts.filetype then
-    vim.api.nvim_buf_set_option(bufnr, "filetype", opts.filetype)
+    vim.bo[bufnr].filetype = opts.filetype
   end
 
   if opts.name then
@@ -24,10 +24,10 @@ end
 
 --- Set buffer lines and lock it (modifiable=false, modified=false).
 function M.set_buf_lines(bufnr, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.bo[bufnr].modifiable = true
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
-  vim.api.nvim_buf_set_option(bufnr, "modified", false)
+  vim.bo[bufnr].modifiable = false
+  vim.bo[bufnr].modified = false
 end
 
 --- Buffer-local keymap helper.
@@ -127,11 +127,11 @@ function M.help_popup(title, lines, opts)
   opts = opts or {}
   local help_buf = M.create_scratch_buffer({ filetype = "markdown", modifiable = true })
   vim.api.nvim_buf_set_lines(help_buf, 0, -1, false, lines or {})
-  vim.api.nvim_buf_set_option(help_buf, "modifiable", false)
-  vim.api.nvim_buf_set_option(help_buf, "modified", false)
+  vim.bo[help_buf].modifiable = false
+  vim.bo[help_buf].modified = false
 
-  local win_width = vim.api.nvim_get_option("columns")
-  local win_height = vim.api.nvim_get_option("lines")
+  local win_width = vim.o.columns
+  local win_height = vim.o.lines
   local width = math.min(opts.width or 60, win_width - 4)
   local height = math.min(#(lines or {}) + 2, win_height - 4)
 
@@ -222,19 +222,19 @@ function M.open_sidebyside(left_content, left_name, right_content, right_name, f
 
   local left = M.create_scratch_buffer({ name = left_name, modifiable = true })
   vim.api.nvim_buf_set_lines(left, 0, -1, false, vim.split(left_content, "\n"))
-  vim.api.nvim_buf_set_option(left, "modifiable", false)
-  vim.api.nvim_buf_set_option(left, "modified", false)
+  vim.bo[left].modifiable = false
+  vim.bo[left].modified = false
 
   local right = M.create_scratch_buffer({ name = right_name, modifiable = true })
   vim.api.nvim_buf_set_lines(right, 0, -1, false, vim.split(right_content, "\n"))
-  vim.api.nvim_buf_set_option(right, "modifiable", false)
-  vim.api.nvim_buf_set_option(right, "modified", false)
+  vim.bo[right].modifiable = false
+  vim.bo[right].modified = false
 
   if filename then
     local ft = vim.filetype.match({ filename = filename })
     if ft then
-      vim.api.nvim_buf_set_option(left, "filetype", ft)
-      vim.api.nvim_buf_set_option(right, "filetype", ft)
+      vim.bo[left].filetype = ft
+      vim.bo[right].filetype = ft
     end
   end
 
