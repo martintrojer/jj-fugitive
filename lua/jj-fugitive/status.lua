@@ -100,7 +100,7 @@ local function setup_keymaps(bufnr)
   ui.map(bufnr, "n", "<CR>", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file then
-      vim.cmd("close")
+      vim.cmd(ui.close_cmd())
       vim.cmd("edit " .. vim.fn.fnameescape(file))
     end
   end)
@@ -108,8 +108,8 @@ local function setup_keymaps(bufnr)
   ui.map(bufnr, "n", "o", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file then
-      vim.cmd("close")
-      vim.cmd("edit " .. vim.fn.fnameescape(file))
+      vim.cmd(ui.close_cmd())
+      vim.cmd("split " .. vim.fn.fnameescape(file))
     end
   end)
 
@@ -183,7 +183,8 @@ local function setup_keymaps(bufnr)
       "Status view",
       "",
       "Actions:",
-      "  <CR>/o   Open file",
+      "  <CR>     Open file",
+      "  o        Open file in split",
       "  =        Toggle inline diff",
       "  d        Show diff for file",
       "  D        Side-by-side diff",
@@ -206,6 +207,7 @@ end
 --- Format status output into display lines.
 local function format_lines(output)
   local lines = {
+    "",
     "# jj Status",
     "# Press g? for help",
     "",

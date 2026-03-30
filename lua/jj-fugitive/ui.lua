@@ -39,6 +39,12 @@ function M.map(bufnr, mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, base)
 end
 
+--- Get a buffer variable with a fallback default.
+function M.buf_var(bufnr, name, default)
+  local ok, val = pcall(vim.api.nvim_buf_get_var, bufnr, name)
+  return ok and val or default
+end
+
 --- Show an error message.
 function M.err(msg)
   vim.api.nvim_err_writeln(msg)

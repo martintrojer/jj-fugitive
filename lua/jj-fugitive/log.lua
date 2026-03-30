@@ -1,6 +1,7 @@
 local M = {}
 
 local ansi = require("jj-fugitive.ansi")
+local ui = require("jj-fugitive.ui")
 
 local BUF_PATTERN = "jj%-log"
 local BUF_NAME = "jj-log"
@@ -108,12 +109,6 @@ local function get_log(opts)
   return trim_trailing_blank_line(visible_output), line_rev_ids
 end
 
---- Get a buffer variable with a fallback default.
-local function buf_var(bufnr, name, default)
-  local ok, val = pcall(vim.api.nvim_buf_get_var, bufnr, name)
-  return ok and val or default
-end
-
 --- Determine the working copy source: @ if non-empty, @- otherwise.
 local function working_copy_source()
   local init = require("jj-fugitive")
@@ -164,8 +159,6 @@ end
 
 --- Open side-by-side diff for a specific file at a revision.
 local function sidebyside_at_rev(filename, rev)
-  local ui = require("jj-fugitive.ui")
-
   local current = ui.file_at_rev(filename, rev)
   local parent = ui.file_at_rev(filename, rev .. "-")
 
@@ -180,8 +173,6 @@ end
 
 --- Setup keymaps for a detail buffer (show/diff opened from log).
 function M.setup_detail_keymaps(bufnr, kind, id)
-  local ui = require("jj-fugitive.ui")
-
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
   end)
@@ -235,15 +226,13 @@ end
 --- Setup keymaps for the log buffer (idempotent — safe to call on refresh).
 local function setup_keymaps(bufnr)
   -- Guard: only set keymaps once per buffer
-  if buf_var(bufnr, "jj_log_keymaps_set", false) then
+  if ui.buf_var(bufnr, "jj_log_keymaps_set", false) then
     return
   end
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_log_keymaps_set", true)
 
-  local ui = require("jj-fugitive.ui")
-
   local function get_rev_id()
-    local rev_lines = buf_var(bufnr, "jj_log_rev_lines", {})
+    local rev_lines = ui.buf_var(bufnr, "jj_log_rev_lines", {})
     local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
     for i = cursor_line, 1, -1 do
       local rev = rev_lines[tostring(i)]
@@ -255,10 +244,10 @@ local function setup_keymaps(bufnr)
   end
 
   local function toggle_comfortable()
-    local template = buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
+    local template = ui.buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
     local next_template = template == COMFORTABLE_LOG_TEMPLATE and DEFAULT_LOG_TEMPLATE
       or COMFORTABLE_LOG_TEMPLATE
-    local current_limit = buf_var(bufnr, "jj_log_limit", 0)
+    local current_limit = ui.buf_var(bufnr, "jj_log_limit", 0)
     M.show({
       revisions = { ".." },
       limit = current_limit > 0 and current_limit or nil,
@@ -566,9 +555,9 @@ local function setup_keymaps(bufnr)
 
   -- Expand (show more commits)
   local function expand()
-    local current_limit = buf_var(bufnr, "jj_log_limit", 0)
+    local current_limit = ui.buf_var(bufnr, "jj_log_limit", 0)
     local new_limit = current_limit == 0 and 50 or current_limit + 50
-    local template = buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
+    local template = ui.buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
     M.show({ revisions = { ".." }, limit = new_limit, template = template })
   end
 
@@ -638,14 +627,14 @@ local function setup_keymaps(bufnr)
       "  gqS       Squash cursor into prompted revision",
       "",
       "Views:",
-      "  ga        Show jj aliases",
       "  gb        Switch to bookmark view",
       "  gC        Toggle compact/comfortable log layout",
       "  gs        Switch to status view",
       "",
       "Other:",
+      "  ga        Show jj aliases",
       "  gu        Undo last jj operation",
-      "  R         Refresh log",
+      "  R         Refresh",
       "  q         Close",
       "  g?        This help",
     }, { width = 68 })
@@ -654,21 +643,19 @@ end
 
 --- Check if a log buffer exists.
 function M.is_open()
-  local ui = require("jj-fugitive.ui")
   return ui.find_buf(BUF_PATTERN) ~= nil
 end
 
 --- Refresh the current log view.
 function M.refresh()
-  local ui = require("jj-fugitive.ui")
   local bufnr = ui.find_buf(BUF_PATTERN)
   if not bufnr then
     return
   end
 
   -- Preserve limit
-  local limit = buf_var(bufnr, "jj_log_limit", 0)
-  local template = buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
+  local limit = ui.buf_var(bufnr, "jj_log_limit", 0)
+  local template = ui.buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
 
   local opts = { template = template }
   if limit > 0 then
@@ -720,7 +707,6 @@ function M.show(opts)
   }
 
   -- Reuse existing log buffer if open
-  local ui = require("jj-fugitive.ui")
   local existing = ui.find_buf(BUF_PATTERN)
   local bufnr
 

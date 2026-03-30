@@ -42,16 +42,11 @@ end
 
 --- Setup keymaps for the bookmark buffer (idempotent).
 local function setup_keymaps(bufnr)
-  local already = false
-  pcall(function()
-    already = vim.api.nvim_buf_get_var(bufnr, "jj_bookmark_keymaps_set") == true
-  end)
-  if already then
+  local ui = require("jj-fugitive.ui")
+  if ui.buf_var(bufnr, "jj_bookmark_keymaps_set", false) then
     return
   end
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_bookmark_keymaps_set", true)
-
-  local ui = require("jj-fugitive.ui")
 
   -- Create bookmark
   ui.map(bufnr, "n", "c", function()
@@ -179,6 +174,7 @@ end
 --- Format bookmark output into display lines.
 local function format_lines(output)
   local lines = {
+    "",
     "# jj Bookmarks",
     "# Press g? for help",
     "",
