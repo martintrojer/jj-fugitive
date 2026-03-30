@@ -477,6 +477,24 @@ local function setup_keymaps(bufnr)
     end
   end)
 
+  -- Rebase cursor's branch onto prompted destination
+  ui.map(bufnr, "n", "grB", function()
+    local id = get_rev_id()
+    if not id then
+      return
+    end
+    local label = rev_label(id)
+    local dest = vim.fn.input("Rebase branch of " .. label .. " onto revision: ")
+    if dest and dest ~= "" then
+      if ui.confirm("Rebase branch of " .. label .. " onto " .. dest .. "?") then
+        run_and_refresh(
+          { "rebase", "-b", id, "-d", dest },
+          "Rebased branch of " .. label .. " onto " .. dest
+        )
+      end
+    end
+  end)
+
   -- Rebase single revision (children stay) onto cursor
   ui.map(bufnr, "n", "grr", function()
     local id = get_rev_id()
@@ -624,6 +642,7 @@ local function setup_keymaps(bufnr)
       "  grr       Rebase prompted revision onto cursor (children stay)",
       "  grR       Rebase cursor onto prompted destination (children stay)",
       "  grb       Rebase prompted branch onto cursor",
+      "  grB       Rebase cursor branch onto prompted destination",
       "  gra       Insert prompted revision after cursor",
       "  grA       Insert cursor after prompted destination",
       "",
