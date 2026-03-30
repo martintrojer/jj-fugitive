@@ -107,6 +107,25 @@ local function get_log(opts)
   return trim_trailing_blank_line(visible_output), line_rev_ids
 end
 
+--- Check if a revision is divergent.
+local function is_divergent(rev)
+  local init = require("jj-fugitive")
+  local out = init.run_jj({ "log", "-r", rev, "--no-graph", "-T", "divergent" })
+  return out and out:match("true")
+end
+
+local function warn_divergent(rev)
+  if is_divergent(rev) then
+    vim.api.nvim_echo(
+      { { "Revision " .. rev .. " is divergent — resolve divergence first", "WarningMsg" } },
+      false,
+      {}
+    )
+    return true
+  end
+  return false
+end
+
 --- Determine the working copy source: @ if non-empty, @- otherwise.
 local function working_copy_source()
   local init = require("jj-fugitive")
@@ -316,7 +335,7 @@ local function setup_keymaps(bufnr)
   -- Edit at commit
   ui.map(bufnr, "n", "e", function()
     local id = get_rev_id()
-    if id then
+    if id and not warn_divergent(id) then
       run_and_refresh({ "edit", id }, "Editing at " .. id)
     end
   end)
@@ -324,7 +343,7 @@ local function setup_keymaps(bufnr)
   -- New commit after this one
   ui.map(bufnr, "n", "n", function()
     local id = get_rev_id()
-    if id then
+    if id and not warn_divergent(id) then
       run_and_refresh({ "new", id }, "New change after " .. id)
     end
   end)
@@ -336,6 +355,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local source = working_copy_source()
+    if warn_divergent(id) or warn_divergent(source) then
+      return
+    end
     local label = rev_label(id)
     if ui.confirm("Squash " .. source .. " into " .. label .. "?") then
       run_and_refresh(
@@ -348,7 +370,7 @@ local function setup_keymaps(bufnr)
   -- Squash prompted source into cursor (lowercase = prompt source, cursor is dest)
   ui.map(bufnr, "n", "gqs", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -366,7 +388,7 @@ local function setup_keymaps(bufnr)
   -- Squash cursor into prompted destination (uppercase = cursor is source)
   ui.map(bufnr, "n", "gqS", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -392,7 +414,7 @@ local function setup_keymaps(bufnr)
   -- Bookmark mode
   ui.map(bufnr, "n", "b", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local name = vim.fn.input("Bookmark name (create/move to " .. id .. "): ")
@@ -417,6 +439,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local source = working_copy_source()
+    if warn_divergent(id) or warn_divergent(source) then
+      return
+    end
     local label = rev_label(id)
     if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
       run_and_refresh(
@@ -428,7 +453,7 @@ local function setup_keymaps(bufnr)
 
   ui.map(bufnr, "n", "grs", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -445,7 +470,7 @@ local function setup_keymaps(bufnr)
 
   ui.map(bufnr, "n", "grS", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -462,7 +487,7 @@ local function setup_keymaps(bufnr)
 
   ui.map(bufnr, "n", "grb", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -480,7 +505,7 @@ local function setup_keymaps(bufnr)
   -- Rebase cursor's branch onto prompted destination
   ui.map(bufnr, "n", "grB", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -498,7 +523,7 @@ local function setup_keymaps(bufnr)
   -- Rebase single revision (children stay) onto cursor
   ui.map(bufnr, "n", "grr", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -513,7 +538,7 @@ local function setup_keymaps(bufnr)
   -- Extract cursor revision and move it elsewhere
   ui.map(bufnr, "n", "grR", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -531,7 +556,7 @@ local function setup_keymaps(bufnr)
   -- Insert revision after cursor in stack
   ui.map(bufnr, "n", "gra", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -549,7 +574,7 @@ local function setup_keymaps(bufnr)
   -- Move cursor revision after another revision in stack
   ui.map(bufnr, "n", "grA", function()
     local id = get_rev_id()
-    if not id then
+    if not id or warn_divergent(id) then
       return
     end
     local label = rev_label(id)
@@ -572,7 +597,7 @@ local function setup_keymaps(bufnr)
   -- Describe (cc like fugitive's commit)
   ui.map(bufnr, "n", "cc", function()
     local id = get_rev_id()
-    if id then
+    if id and not warn_divergent(id) then
       require("jj-fugitive.describe").describe(id)
     end
   end)
