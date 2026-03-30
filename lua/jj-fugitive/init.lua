@@ -48,7 +48,7 @@ local function find_jj_root()
   return nil
 end
 
---- Run a command with timeout feedback and transient error retry.
+--- Run a command with timeout feedback.
 local function run_with_feedback(cmd, opts)
   local proc = vim.system(cmd, opts)
 
@@ -59,18 +59,6 @@ local function run_with_feedback(cmd, opts)
     vim.cmd("redraw")
     result = proc:wait()
     vim.api.nvim_echo({ { "" } }, false, {})
-  end
-
-  -- Retry once on transient errors (e.g. stale working copy on cold start)
-  if result.code ~= 0 then
-    local err = result.stderr or ""
-    if result.code == 124 or err:match("stale") or err:match("concurrent") then
-      vim.wait(500)
-      vim.api.nvim_echo({ { "jj: retrying...", "Comment" } }, false, {})
-      vim.cmd("redraw")
-      result = vim.system(cmd, opts):wait()
-      vim.api.nvim_echo({ { "" } }, false, {})
-    end
   end
 
   return result

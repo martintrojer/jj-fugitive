@@ -45,6 +45,9 @@ All jj commands run synchronously. `vim.system():wait()` still processes Neovim
 events (redraws, etc.) so the UI is not fully frozen. A "jj: running..." message
 appears after 200ms for slow commands.
 
+Do NOT automatically retry failed commands. Retrying mutations (rebase, squash)
+on already-modified state causes cascading damage. Let the user retry manually.
+
 Do NOT convert to async callbacks. The synchronous flow keeps the code simple —
 every caller gets a return value and acts on it linearly. Async would introduce
 race conditions, callback-scattered error handling, ordering bugs (refresh before
