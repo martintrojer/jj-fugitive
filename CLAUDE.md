@@ -37,7 +37,7 @@ plugin/jj-fugitive.lua  # Registers :J, :JBrowse commands
 
 ## Dependencies
 
-- Neovim 0.8+ with Lua support
+- Neovim 0.10+ with Lua support
 - jj CLI tool in PATH
 
 ## Development

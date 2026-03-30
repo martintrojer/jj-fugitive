@@ -26,7 +26,7 @@ local function setup_diff_keymaps(bufnr, filename)
   local ui = require("jj-fugitive.ui")
 
   ui.map(bufnr, "n", "q", function()
-    vim.cmd(require("jj-fugitive.ui").close_cmd())
+    vim.cmd(ui.close_cmd())
   end)
 
   if filename then
@@ -102,12 +102,11 @@ function M.show(file_or_args)
   local bufname = "jj-diff: " .. file_desc
   local bufnr = ansi.create_colored_buffer(output, bufname, header, { prefix = "JjDiff" })
 
-  require("jj-fugitive.ui").open_pane()
+  local ui = require("jj-fugitive.ui")
+  ui.open_pane()
   vim.api.nvim_set_current_buf(bufnr)
 
   setup_diff_keymaps(bufnr, filename)
-
-  local ui = require("jj-fugitive.ui")
   ui.set_statusline(bufnr, "jj-diff: " .. file_desc)
 end
 
@@ -135,7 +134,7 @@ function M.show_sidebyside(filename)
   -- Additional keymaps for working copy diff
   for _, buf in ipairs({ left, right }) do
     ui.map(buf, "n", "o", function()
-      vim.cmd("tabclose")
+      vim.cmd(ui.close_cmd())
       vim.cmd("edit " .. vim.fn.fnameescape(filename))
     end)
   end

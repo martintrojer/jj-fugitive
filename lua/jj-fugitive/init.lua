@@ -60,44 +60,35 @@ function M.run_jj(args)
     return nil
   end
 
-  local cmd
-  local immutable_flag = M.config.ignore_immutable and "--ignore-immutable" or nil
+  local cmd_args = { "jj", "-R", repo_root }
+  if M.config.ignore_immutable then
+    table.insert(cmd_args, "--ignore-immutable")
+  end
+
   if type(args) == "string" then
-    cmd = "jj " .. (immutable_flag and immutable_flag .. " " or "") .. args
-  elseif type(args) == "table" then
-    local cmd_args = { "jj" }
-    if immutable_flag then
-      table.insert(cmd_args, immutable_flag)
+    for arg in args:gmatch("%S+") do
+      table.insert(cmd_args, arg)
     end
-    cmd = vim.list_extend(cmd_args, args)
+  elseif type(args) == "table" then
+    vim.list_extend(cmd_args, args)
   else
     ui.err("Invalid arguments to run_jj")
     return nil
   end
 
-  local old_cwd = vim.fn.getcwd()
-  local ok = pcall(vim.cmd, "lcd " .. vim.fn.fnameescape(repo_root))
-  if not ok then
-    ui.err("Failed to change to repository root: " .. repo_root)
+  local result = vim
+    .system(cmd_args, {
+      cwd = repo_root,
+      env = { JJ_EDITOR = "true" },
+    })
+    :wait()
+
+  if result.code ~= 0 then
+    ui.err("jj: " .. (result.stderr or result.stdout or "unknown error"))
     return nil
   end
 
-  -- Suppress jj's editor to prevent hangs when running via vim.fn.system.
-  -- Commands like squash, split, etc. would otherwise try to open $EDITOR.
-  local saved_editor = vim.env.JJ_EDITOR
-  vim.env.JJ_EDITOR = "true"
-  local result = vim.fn.system(cmd)
-  local exit_code = vim.v.shell_error
-  vim.env.JJ_EDITOR = saved_editor
-
-  pcall(vim.cmd, "lcd " .. vim.fn.fnameescape(old_cwd))
-
-  if exit_code ~= 0 then
-    ui.err("jj: " .. result)
-    return nil
-  end
-
-  return result, repo_root
+  return result.stdout, repo_root
 end
 
 --- Get the repository root path (or nil).
@@ -118,15 +109,12 @@ function M.run_jj_terminal(args)
     return
   end
 
-  local cmd_str
-  local immutable_prefix = M.config.ignore_immutable and " --ignore-immutable" or ""
-  if type(args) == "string" then
-    cmd_str = "jj" .. immutable_prefix .. " " .. args
-  elseif type(args) == "table" then
-    cmd_str = "jj" .. immutable_prefix .. " " .. table.concat(args, " ")
-  else
+  local immutable_flag = M.config.ignore_immutable and " --ignore-immutable" or ""
+  local args_str = type(args) == "table" and table.concat(args, " ") or args
+  if not args_str then
     return
   end
+  local cmd_str = "jj -R " .. vim.fn.shellescape(repo_root) .. immutable_flag .. " " .. args_str
 
   -- Show hint for builtin TUI keybindings
   vim.api.nvim_echo({
@@ -141,23 +129,18 @@ function M.run_jj_terminal(args)
   -- Use jj's builtin TUI editors to avoid nested $EDITOR
   vim.cmd("tabnew")
   local term_buf = vim.api.nvim_get_current_buf()
-  local env_prefix = "JJ_EDITOR=:builtin JJ_DIFF_EDITOR=:builtin"
-  vim.fn.termopen(
-    "cd " .. vim.fn.shellescape(repo_root) .. " && " .. env_prefix .. " " .. cmd_str,
-    {
-      on_exit = function(_, exit_code)
-        -- Close the terminal tab
-        vim.schedule(function()
-          if vim.api.nvim_buf_is_valid(term_buf) then
-            vim.api.nvim_buf_delete(term_buf, { force = true })
-          end
-          if exit_code == 0 then
-            M.refresh_log()
-          end
-        end)
-      end,
-    }
-  )
+  vim.fn.termopen("JJ_EDITOR=:builtin JJ_DIFF_EDITOR=:builtin " .. cmd_str, {
+    on_exit = function(_, exit_code)
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(term_buf) then
+          vim.api.nvim_buf_delete(term_buf, { force = true })
+        end
+        if exit_code == 0 then
+          M.refresh_log()
+        end
+      end)
+    end,
+  })
   vim.cmd("startinsert")
 end
 

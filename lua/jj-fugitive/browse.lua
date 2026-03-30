@@ -1,8 +1,6 @@
 local M = {}
 
-local function get_init()
-  return require("jj-fugitive")
-end
+local init = require("jj-fugitive")
 
 -- Parse a git remote URL into a web base and repo info
 -- Supports: git@github.com:user/repo.git, https://github.com/user/repo(.git), ssh://git@github.com/user/repo.git
@@ -90,7 +88,7 @@ function M.build_file_url(web_base, host, path, rev, line_start, line_end)
 end
 
 local function get_origin_url()
-  local out = get_init().run_jj({ "git", "remote", "list" })
+  local out = init.run_jj({ "git", "remote", "list" })
   if not out then
     return nil, "Failed to list git remotes"
   end
@@ -107,13 +105,13 @@ end
 
 local function get_default_rev()
   -- Prefer 'main' bookmark if it exists
-  local bl = get_init().run_jj({ "bookmark", "list" })
-  if bl and bl:match("^main:") or (bl and bl:match("\nmain:")) then
+  local bl = init.run_jj({ "bookmark", "list" })
+  if bl and (bl:match("^main:") or bl:match("\nmain:")) then
     return "main"
   end
 
   -- Fallback to current git commit id (short) of @
-  local log = get_init().run_jj({ "log", "-r", "@", "--no-graph", "--limit", "1" })
+  local log = init.run_jj({ "log", "-r", "@", "--no-graph", "--limit", "1" })
   if log then
     local hash = log:match("([a-f0-9]+)%s*$")
     if hash then
@@ -128,7 +126,7 @@ local function get_relative_path()
   if file == "" then
     return nil
   end
-  local root = get_init().repo_root()
+  local root = init.repo_root()
   if not root then
     return nil
   end

@@ -100,7 +100,7 @@ function M.show(filename)
   end)
 
   ui.map(ann_buf, "n", "q", function()
-    vim.cmd("close")
+    vim.cmd(ui.close_cmd())
     vim.cmd("setlocal noscrollbind")
   end)
 
