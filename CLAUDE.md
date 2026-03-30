@@ -37,6 +37,19 @@ lua/jj-fugitive/
 plugin/jj-fugitive.lua  # Registers :J, :JBrowse commands
 ```
 
+## Design Decisions
+
+### Synchronous `run_jj` via `vim.system():wait()`
+
+All jj commands run synchronously. `vim.system():wait()` still processes Neovim
+events (redraws, etc.) so the UI is not fully frozen. A "jj: running..." message
+appears after 200ms for slow commands.
+
+Do NOT convert to async callbacks. The synchronous flow keeps the code simple —
+every caller gets a return value and acts on it linearly. Async would introduce
+race conditions, callback-scattered error handling, ordering bugs (refresh before
+mutation completes), and stale UI state between dispatch and callback.
+
 ## Dependencies
 
 - Neovim 0.10+ with Lua support
