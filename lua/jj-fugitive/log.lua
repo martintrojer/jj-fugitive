@@ -420,7 +420,7 @@ local function setup_keymaps(bufnr)
     local label = rev_label(id)
     if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
       run_and_refresh(
-        { "rebase", "-s", source, "-d", id },
+        { "rebase", "-r", source, "-d", id },
         "Rebased " .. source .. " onto " .. label
       )
     end
@@ -636,7 +636,7 @@ local function setup_keymaps(bufnr)
       "  A         Abandon commit (jj abandon)",
       "",
       "Rebase:",
-      "  grw       Rebase @/@- onto cursor",
+      "  grw       Rebase @/@- onto cursor (children stay)",
       "  grs       Rebase prompted source+desc onto cursor",
       "  grS       Rebase cursor+desc onto prompted destination",
       "  grr       Rebase prompted revision onto cursor (children stay)",
