@@ -65,10 +65,11 @@ local function run_with_feedback(cmd, opts)
   if result.code ~= 0 then
     local err = result.stderr or ""
     if result.code == 124 or err:match("stale") or err:match("concurrent") then
+      vim.wait(500)
       vim.api.nvim_echo({ { "jj: retrying...", "Comment" } }, false, {})
       vim.cmd("redraw")
-      vim.wait(500)
       result = vim.system(cmd, opts):wait()
+      vim.api.nvim_echo({ { "" } }, false, {})
     end
   end
 
