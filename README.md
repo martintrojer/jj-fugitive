@@ -6,18 +6,19 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 
 - **Log view as primary hub** — native jj log with ANSI colors, interactive commit actions
 - **Bookmark management** — create, delete, move, track, push/fetch in a dedicated buffer
-- **Rebase & stack management** — rebase from log view, passthrough for `jj arrange` and `jj parallelize`
-- **Diff viewer** — unified diff with ANSI colors, side-by-side with Neovim's built-in diff mode
-- **Status view** — changed files with inline diff toggle (`=`), open, diff, restore
+- **Rebase & squash** — full rebase and squash keybindings from log view with symmetric lowercase/uppercase convention
+- **Diff viewer** — unified diff with ANSI colors, side-by-side with Neovim's built-in diff mode, buffer reuse
+- **Status view** — changed files with inline diff toggle (`=`), open, split, diff, restore, describe, split
 - **Describe & commit** — editor buffers for commit messages with `:w` to save
-- **Annotate/blame** — scroll-locked per-line attribution with `<CR>` to show commit
+- **Annotate/blame** — scroll-locked per-line attribution with `<CR>` to show commit, `~` to drill into history
 - **TUI integration** — `arrange`, `split`, `diffedit`, `resolve` run in `:terminal`
-- **Smart completion** — tab completion for jj commands and subcommands
+- **Smart completion** — tab completion for jj commands, subcommands, and revisions/bookmarks
 - **Browse** — open current file on GitHub/GitLab from Neovim
+- **Divergence protection** — mutation commands warn and refuse on divergent revisions
 
 ## Requirements
 
-- Neovim 0.8+
+- Neovim 0.10+
 - [Jujutsu](https://github.com/martinvonz/jj) installed and available in PATH
 
 ## Installation
@@ -63,6 +64,8 @@ require("jj-fugitive").setup({
 | `:J commit` | Describe current change and create new one |
 | `:J bookmark` | Open bookmark management buffer |
 | `:J annotate [file]` | Blame/annotate current file (also `:J blame`) |
+| `:J push [args]` | Push to remote (jj git push) |
+| `:J fetch [args]` | Fetch from remote (jj git fetch) |
 | `:J browse` / `:JBrowse` | Open current file on remote |
 | `:J <any>` | Pass through to jj (e.g. `:J new`, `:J squash`, `:J arrange`) |
 
@@ -77,26 +80,56 @@ Commit actions:
   cc        Describe (edit commit message)
   e         Edit at commit (jj edit)
   n         New change after commit (jj new)
-  S         Squash into parent (jj squash)
+  b         Create/move bookmark to commit
   A         Abandon commit (jj abandon)
 
-Bookmark:
-  b         Create/move bookmark to commit under cursor
-
 Rebase:
-  grw       Rebase @/@- onto cursor
+  grw       Rebase @/@- onto cursor (children stay)
   grs       Rebase prompted source+desc onto cursor
   grS       Rebase cursor+desc onto prompted destination
   grr       Rebase prompted revision onto cursor (children stay)
   grR       Rebase cursor onto prompted destination (children stay)
   grb       Rebase prompted branch onto cursor
+  grB       Rebase cursor branch onto prompted destination
   gra       Insert prompted revision after cursor
   grA       Insert cursor after prompted destination
 
-Navigation:
+Squash:
+  gqw       Squash @/@- into cursor
+  gqs       Squash prompted revision into cursor
+  gqS       Squash cursor into prompted revision
+
+Views:
   gb        Switch to bookmark view
+  gC        Toggle compact/comfortable log layout
   gs        Switch to status view
+
+Other:
+  ga        Show jj aliases
+  gu        Undo last jj operation
   +/=       Show more commits
+  R         Refresh
+  q         Close
+  g?        Help
+```
+
+## Status View
+
+Open with `:J status` or `:J st`. Shows changed files in the working copy.
+
+```
+  <CR>      Open file
+  o         Open file in split
+  =         Toggle inline diff (fugitive-style)
+  d         Show diff for file
+  D         Side-by-side diff
+  cc        Describe working copy
+  s         Split working copy (jj split TUI)
+  x         Restore file from parent (@-)
+  gb        Switch to bookmark view
+  gl        Switch to log view
+  ga        Show jj aliases
+  gu        Undo last jj operation
   R         Refresh
   q         Close
   g?        Help
@@ -116,23 +149,8 @@ Open with `:J bookmark`.
   f         Fetch from remote
   gl        Switch to log view
   gs        Switch to status view
-  R         Refresh
-  q         Close
-  g?        Help
-```
-
-## Status View
-
-Open with `:J status` or `:J st`. Shows changed files in the working copy.
-
-```
-  <CR>/o    Open file
-  =         Toggle inline diff (fugitive-style)
-  d         Show diff for file
-  D         Side-by-side diff
-  x         Restore file from parent (@-)
-  gb        Switch to bookmark view
-  gl        Switch to log view
+  ga        Show jj aliases
+  gu        Undo last jj operation
   R         Refresh
   q         Close
   g?        Help
@@ -157,6 +175,7 @@ scroll-locked split alongside the source file.
 
 ```
   <CR>      Show commit for this line
+  ~         Re-annotate at parent of this line's change
   q         Close annotation
   g?        Help
 ```
@@ -164,34 +183,6 @@ scroll-locked split alongside the source file.
 ## Describe & Commit
 
 `:J describe [rev]` opens an editor buffer for the commit message. `:J commit` does the same but also creates a new change after saving. Lines starting with `#` are ignored. Save with `:w`.
-
-## Changes from v1
-
-v2 is a complete rewrite focused on simplicity and core jj workflows.
-
-**New:**
-- Dedicated bookmark buffer with create, delete, move, track, push/fetch
-- Rebase keybindings from log view (`grw`, `grs`, `grS`, `grr`, `grR`, `grb`, `gra`, `grA`)
-- TUI commands (`arrange`, `split`, `diffedit`, `resolve`) run in `:terminal`
-- Annotate/blame view with scroll-locked split
-- Status view with inline diff toggle (`=`)
-- Uses jj change IDs (stable across rewrites) instead of commit hashes
-- Configurable default command and open mode (`split` or `tab`)
-- `setup()` function for user configuration
-
-**Changed:**
-- `:J` opens log by default (was status in v1)
-- Describe key in log is `cc` (was `D`)
-- Simpler completion (commands + subcommands, no deep flag parsing)
-- Single `run_jj()` API (no `run_jj_command_from_module` indirection)
-- Repo detection via `vim.fs.find` (no manual cache)
-
-**Removed:**
-- Interactive command stubs (split/diffedit/resolve editor interception)
-- Buffer-reuse state machine (`update_current`/`previous_view`)
-- Format selector in diff view
-- Emoji indicators in log (jj's native symbols are used)
-- Deep flag completion and caching
 
 ## License
 

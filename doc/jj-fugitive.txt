@@ -6,7 +6,8 @@ License: MIT
 INTRODUCTION                                    *jj-fugitive*
 
 A Neovim plugin for Jujutsu (jj) version control, inspired by vim-fugitive.
-Provides interactive log, diff, bookmark, and commit message editing views.
+Provides interactive log, diff, bookmark, status, annotate, and commit
+message editing views.
 
 COMMANDS                                        *jj-fugitive-commands*
 
@@ -20,6 +21,8 @@ COMMANDS                                        *jj-fugitive-commands*
 :J describe [{rev}]     Edit commit description (default: @).
 :J commit               Describe current change and create new one.
 :J bookmark             Open bookmark management buffer.
+:J push [{args}]        Push to remote (jj git push).
+:J fetch [{args}]       Fetch from remote (jj git fetch).
 :J browse               Open current file on remote.
 :J {any}                Pass through to jj CLI.
 
@@ -31,26 +34,52 @@ LOG VIEW                                        *jj-fugitive-log*
 The log view is the primary hub. Opened by |:J| or `:J log`.
 Shows native jj log output with ANSI colors preserved.
 
+Mutation commands refuse to operate on divergent revisions (except
+abandon, which is needed to resolve divergence).
+
 Keybindings:
+
+Commit actions: ~
 
   <CR>          Show commit details (jj show)
   d             Show diff for commit
   cc            Describe (edit commit message)
   e             Edit at commit (jj edit)
   n             New change after commit (jj new)
-  S             Squash into parent (jj squash)
-  A             Abandon commit (jj abandon)
   b             Create/move bookmark to commit
-  grw           Rebase @/@- onto cursor
+  A             Abandon commit (jj abandon)
+
+Rebase: ~
+
+  Lowercase prompts for source, cursor is destination.
+  Uppercase uses cursor as source, prompts for destination.
+
+  grw           Rebase @/@- onto cursor (children stay)
   grs           Rebase prompted source+desc onto cursor
   grS           Rebase cursor+desc onto prompted destination
   grr           Rebase prompted revision onto cursor (children stay)
   grR           Rebase cursor onto prompted destination (children stay)
   grb           Rebase prompted branch onto cursor
+  grB           Rebase cursor branch onto prompted destination
   gra           Insert prompted revision after cursor
   grA           Insert cursor after prompted destination
+
+Squash: ~
+
+  gqw           Squash @/@- into cursor
+  gqs           Squash prompted revision into cursor
+  gqS           Squash cursor into prompted revision
+
+Views: ~
+
   gb            Switch to bookmark view
+  gC            Toggle compact/comfortable log layout
   gs            Switch to status view
+
+Other: ~
+
+  ga            Show jj aliases
+  gu            Undo last jj operation
   +  =          Show more commits
   R             Refresh
   q             Close
@@ -63,13 +92,18 @@ working copy with syntax-highlighted status indicators.
 
 Keybindings:
 
-  <CR>  o       Open file
+  <CR>          Open file
+  o             Open file in split
   =             Toggle inline diff (fugitive-style)
   d             Show diff for file
   D             Side-by-side diff
+  cc            Describe working copy
+  s             Split working copy (jj split TUI)
   x             Restore file from parent (@-)
   gb            Switch to bookmark view
   gl            Switch to log view
+  ga            Show jj aliases
+  gu            Undo last jj operation
   R             Refresh
   q             Close
   g?            Help
@@ -77,7 +111,7 @@ Keybindings:
 DIFF VIEW                                       *jj-fugitive-diff*
 
 Opened by `:J diff` or `:J diff {file}`. Shows unified diff with
-ANSI color rendering from jj output.
+ANSI color rendering from jj output. Reuses existing diff buffers.
 
 Keybindings:
 
@@ -102,6 +136,8 @@ Keybindings:
   f             Fetch from remote
   gl            Switch to log view
   gs            Switch to status view
+  ga            Show jj aliases
+  gu            Undo last jj operation
   R             Refresh
   q             Close
   g?            Help
@@ -111,8 +147,13 @@ ANNOTATE                                        *jj-fugitive-annotate*
 Opened by `:J annotate` or `:J blame`. Shows per-line change ID and
 author in a scroll-locked vertical split alongside the source file.
 
+When navigating to a historical revision with `~`, both the annotation
+pane and the source pane update to show the file at that revision.
+
 Keybindings:
 
+  <CR>          Show commit for this line
+  ~             Re-annotate at parent of this line's change
   q             Close annotation
   g?            Help
 
@@ -122,6 +163,7 @@ DESCRIBE AND COMMIT                             *jj-fugitive-describe*
 `:J commit` does the same but also creates a new change after saving.
 
 Lines starting with # are ignored. Save with `:w` to apply.
+Press `q` to abort without saving.
 
 BROWSE                                          *jj-fugitive-browse*
 
@@ -131,7 +173,7 @@ Prefers the `main` bookmark for the revision.
 
 REQUIREMENTS                                    *jj-fugitive-requirements*
 
-- Neovim 0.8+
+- Neovim 0.10+
 - jj CLI (https://github.com/martinvonz/jj) in PATH
 
  vim:tw=78:ts=8:ft=help:norl:
