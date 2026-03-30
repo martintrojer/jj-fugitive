@@ -50,14 +50,16 @@ local function setup_keymaps(bufnr)
 
   -- Create bookmark
   ui.map(bufnr, "n", "c", function()
-    local name = vim.fn.input("New bookmark name: ")
-    if name and name ~= "" then
-      local rev = vim.fn.input("At revision (default @): ")
-      if rev == "" then
-        rev = "@"
+    vim.ui.input({ prompt = "New bookmark name" }, function(name)
+      if name and name ~= "" then
+        vim.ui.input({ prompt = "At revision (default @)" }, function(rev)
+          if not rev or rev == "" then
+            rev = "@"
+          end
+          run_and_refresh({ "bookmark", "create", name, "-r", rev }, "Created bookmark: " .. name)
+        end)
       end
-      run_and_refresh({ "bookmark", "create", name, "-r", rev }, "Created bookmark: " .. name)
-    end
+    end)
   end)
 
   -- Delete bookmark
@@ -74,13 +76,14 @@ local function setup_keymaps(bufnr)
     if not name then
       return
     end
-    local rev = vim.fn.input("Move '" .. name .. "' to revision: ")
-    if rev and rev ~= "" then
-      run_and_refresh(
-        { "bookmark", "set", name, "-r", rev, "--allow-backwards" },
-        "Moved " .. name .. " -> " .. rev
-      )
-    end
+    vim.ui.input({ prompt = "Move '" .. name .. "' to revision" }, function(rev)
+      if rev and rev ~= "" then
+        run_and_refresh(
+          { "bookmark", "set", name, "-r", rev, "--allow-backwards" },
+          "Moved " .. name .. " -> " .. rev
+        )
+      end
+    end)
   end)
 
   -- Track remote bookmark

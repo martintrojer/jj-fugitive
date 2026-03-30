@@ -374,15 +374,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local source = vim.fn.input("Squash revision into " .. label .. ": ")
-    if source and source ~= "" then
-      if ui.confirm("Squash " .. source .. " into " .. label .. "?") then
-        run_and_refresh(
-          { "squash", "-r", source, "--into", id },
-          "Squashed " .. source .. " into " .. label
-        )
+    vim.ui.input({ prompt = "Squash into " .. label .. " from" }, function(source)
+      if source and source ~= "" then
+        if ui.confirm("Squash " .. source .. " into " .. label .. "?") then
+          run_and_refresh(
+            { "squash", "-r", source, "--into", id },
+            "Squashed " .. source .. " into " .. label
+          )
+        end
       end
-    end
+    end)
   end)
 
   -- Squash cursor into prompted destination (uppercase = cursor is source)
@@ -392,15 +393,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local into = vim.fn.input("Squash " .. label .. " into revision: ")
-    if into and into ~= "" then
-      if ui.confirm("Squash " .. label .. " into " .. into .. "?") then
-        run_and_refresh(
-          { "squash", "-r", id, "--into", into },
-          "Squashed " .. label .. " into " .. into
-        )
+    vim.ui.input({ prompt = "Squash " .. label .. " into" }, function(into)
+      if into and into ~= "" then
+        if ui.confirm("Squash " .. label .. " into " .. into .. "?") then
+          run_and_refresh(
+            { "squash", "-r", id, "--into", into },
+            "Squashed " .. label .. " into " .. into
+          )
+        end
       end
-    end
+    end)
   end)
 
   -- Abandon commit
@@ -417,19 +419,20 @@ local function setup_keymaps(bufnr)
     if not id or warn_divergent(id) then
       return
     end
-    local name = vim.fn.input("Bookmark name (create/move to " .. id .. "): ")
-    if name and name ~= "" then
-      -- Try set first (moves existing), fall back to create
-      local init = require("jj-fugitive")
-      local result = init.run_jj({ "bookmark", "set", name, "-r", id, "--allow-backwards" })
-      if not result then
-        result = init.run_jj({ "bookmark", "create", name, "-r", id })
+    vim.ui.input({ prompt = "Bookmark name (create/move to " .. id .. ")" }, function(name)
+      if name and name ~= "" then
+        -- Try set first (moves existing), fall back to create
+        local init = require("jj-fugitive")
+        local result = init.run_jj({ "bookmark", "set", name, "-r", id, "--allow-backwards" })
+        if not result then
+          result = init.run_jj({ "bookmark", "create", name, "-r", id })
+        end
+        if result then
+          vim.api.nvim_echo({ { "Bookmark '" .. name .. "' -> " .. id, "MoreMsg" } }, false, {})
+          M.refresh()
+        end
       end
-      if result then
-        vim.api.nvim_echo({ { "Bookmark '" .. name .. "' -> " .. id, "MoreMsg" } }, false, {})
-        M.refresh()
-      end
-    end
+    end)
   end)
 
   -- Rebase helpers: lowercase prompts source, uppercase uses cursor as source.
@@ -457,15 +460,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local source = vim.fn.input("Rebase source+desc onto " .. label .. ": ")
-    if source and source ~= "" then
-      if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
-        run_and_refresh(
-          { "rebase", "-s", source, "-d", id },
-          "Rebased " .. source .. " onto " .. label
-        )
+    vim.ui.input({ prompt = "Rebase onto " .. label .. " from" }, function(source)
+      if source and source ~= "" then
+        if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
+          run_and_refresh(
+            { "rebase", "-s", source, "-d", id },
+            "Rebased " .. source .. " onto " .. label
+          )
+        end
       end
-    end
+    end)
   end)
 
   ui.map(bufnr, "n", "grS", function()
@@ -474,15 +478,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local dest = vim.fn.input("Rebase " .. label .. " and descendants onto revision: ")
-    if dest and dest ~= "" then
-      if ui.confirm("Rebase " .. label .. " and descendants onto " .. dest .. "?") then
-        run_and_refresh(
-          { "rebase", "-s", id, "-d", dest },
-          "Rebased " .. label .. " and descendants onto " .. dest
-        )
+    vim.ui.input({ prompt = "Rebase " .. label .. " onto" }, function(dest)
+      if dest and dest ~= "" then
+        if ui.confirm("Rebase " .. label .. " and descendants onto " .. dest .. "?") then
+          run_and_refresh(
+            { "rebase", "-s", id, "-d", dest },
+            "Rebased " .. label .. " and descendants onto " .. dest
+          )
+        end
       end
-    end
+    end)
   end)
 
   ui.map(bufnr, "n", "grb", function()
@@ -491,15 +496,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local branch = vim.fn.input("Rebase branch onto " .. label .. ": ")
-    if branch and branch ~= "" then
-      if ui.confirm("Rebase branch " .. branch .. " onto " .. label .. "?") then
-        run_and_refresh(
-          { "rebase", "-b", branch, "-d", id },
-          "Rebased branch " .. branch .. " onto " .. label
-        )
+    vim.ui.input({ prompt = "Rebase branch onto " .. label .. " from" }, function(branch)
+      if branch and branch ~= "" then
+        if ui.confirm("Rebase branch " .. branch .. " onto " .. label .. "?") then
+          run_and_refresh(
+            { "rebase", "-b", branch, "-d", id },
+            "Rebased branch " .. branch .. " onto " .. label
+          )
+        end
       end
-    end
+    end)
   end)
 
   -- Rebase cursor's branch onto prompted destination
@@ -509,15 +515,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local dest = vim.fn.input("Rebase branch of " .. label .. " onto revision: ")
-    if dest and dest ~= "" then
-      if ui.confirm("Rebase branch of " .. label .. " onto " .. dest .. "?") then
-        run_and_refresh(
-          { "rebase", "-b", id, "-d", dest },
-          "Rebased branch of " .. label .. " onto " .. dest
-        )
+    vim.ui.input({ prompt = "Rebase branch of " .. label .. " onto" }, function(dest)
+      if dest and dest ~= "" then
+        if ui.confirm("Rebase branch of " .. label .. " onto " .. dest .. "?") then
+          run_and_refresh(
+            { "rebase", "-b", id, "-d", dest },
+            "Rebased branch of " .. label .. " onto " .. dest
+          )
+        end
       end
-    end
+    end)
   end)
 
   -- Rebase single revision (children stay) onto cursor
@@ -527,12 +534,13 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local rev = vim.fn.input("Rebase single revision onto " .. label .. ": ")
-    if rev and rev ~= "" then
-      if ui.confirm("Rebase " .. rev .. " onto " .. label .. "?") then
-        run_and_refresh({ "rebase", "-r", rev, "-d", id }, "Rebased " .. rev .. " onto " .. label)
+    vim.ui.input({ prompt = "Rebase onto " .. label .. " rev" }, function(rev)
+      if rev and rev ~= "" then
+        if ui.confirm("Rebase " .. rev .. " onto " .. label .. "?") then
+          run_and_refresh({ "rebase", "-r", rev, "-d", id }, "Rebased " .. rev .. " onto " .. label)
+        end
       end
-    end
+    end)
   end)
 
   -- Extract cursor revision and move it elsewhere
@@ -542,15 +550,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local dest = vim.fn.input("Extract " .. label .. " onto revision: ")
-    if dest and dest ~= "" then
-      if ui.confirm("Extract " .. label .. " onto " .. dest .. "?") then
-        run_and_refresh(
-          { "rebase", "-r", id, "-d", dest },
-          "Extracted " .. label .. " onto " .. dest
-        )
+    vim.ui.input({ prompt = "Extract " .. label .. " onto" }, function(dest)
+      if dest and dest ~= "" then
+        if ui.confirm("Extract " .. label .. " onto " .. dest .. "?") then
+          run_and_refresh(
+            { "rebase", "-r", id, "-d", dest },
+            "Extracted " .. label .. " onto " .. dest
+          )
+        end
       end
-    end
+    end)
   end)
 
   -- Insert revision after cursor in stack
@@ -560,15 +569,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local rev = vim.fn.input("Insert revision after " .. label .. ": ")
-    if rev and rev ~= "" then
-      if ui.confirm("Insert " .. rev .. " after " .. label .. "?") then
-        run_and_refresh(
-          { "rebase", "-r", rev, "--after", id },
-          "Inserted " .. rev .. " after " .. label
-        )
+    vim.ui.input({ prompt = "Insert after " .. label .. " rev" }, function(rev)
+      if rev and rev ~= "" then
+        if ui.confirm("Insert " .. rev .. " after " .. label .. "?") then
+          run_and_refresh(
+            { "rebase", "-r", rev, "--after", id },
+            "Inserted " .. rev .. " after " .. label
+          )
+        end
       end
-    end
+    end)
   end)
 
   -- Move cursor revision after another revision in stack
@@ -578,15 +588,16 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    local dest = vim.fn.input("Insert " .. label .. " after revision: ")
-    if dest and dest ~= "" then
-      if ui.confirm("Insert " .. label .. " after " .. dest .. "?") then
-        run_and_refresh(
-          { "rebase", "-r", id, "--after", dest },
-          "Inserted " .. label .. " after " .. dest
-        )
+    vim.ui.input({ prompt = "Insert " .. label .. " after" }, function(dest)
+      if dest and dest ~= "" then
+        if ui.confirm("Insert " .. label .. " after " .. dest .. "?") then
+          run_and_refresh(
+            { "rebase", "-r", id, "--after", dest },
+            "Inserted " .. label .. " after " .. dest
+          )
+        end
       end
-    end
+    end)
   end)
 
   -- Block built-in keys that error on read-only buffer
