@@ -29,7 +29,7 @@ function M.show(filename, rev)
   end
   local output = init.run_jj(annotate_args)
   if not output then
-    return
+    return false
   end
 
   -- Parse annotations: separate the annotation prefix from the file content
@@ -120,7 +120,12 @@ function M.show(filename, rev)
       return
     end
     close_annotate()
-    M.show(filename, change_id .. "-")
+    -- File may not exist at parent revision (e.g. first commit that added it)
+    local ok = M.show(filename, change_id .. "-")
+    if not ok then
+      -- Re-open at current revision
+      M.show(filename, rev)
+    end
   end)
 
   ui.map(ann_buf, "n", "q", close_annotate)
@@ -140,6 +145,7 @@ function M.show(filename, rev)
   end)
 
   ui.set_statusline(ann_buf, "jj-annotate: " .. filename .. rev_suffix)
+  return true
 end
 
 return M
