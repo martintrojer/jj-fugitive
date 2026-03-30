@@ -90,6 +90,17 @@ function M.run_jj(args)
     vim.api.nvim_echo({ { "" } }, false, {})
   end
 
+  -- Retry once on transient errors (e.g. stale working copy on cold start)
+  if result.code ~= 0 then
+    local err = result.stderr or ""
+    if result.code == 124 or err:match("stale") or err:match("concurrent") then
+      vim.api.nvim_echo({ { "jj: retrying...", "Comment" } }, false, {})
+      vim.cmd("redraw")
+      vim.wait(500)
+      result = vim.system(cmd_args, { cwd = repo_root, env = { JJ_EDITOR = "true" } }):wait()
+    end
+  end
+
   if result.code ~= 0 then
     local err_msg = result.stderr or ""
     if err_msg:match("^%s*$") then
