@@ -91,7 +91,14 @@ function M.run_jj(args)
   end
 
   if result.code ~= 0 then
-    ui.err("jj: " .. (result.stderr or result.stdout or "unknown error"))
+    local err_msg = result.stderr or ""
+    if err_msg:match("^%s*$") then
+      err_msg = result.stdout or ""
+    end
+    if err_msg:match("^%s*$") then
+      err_msg = "command failed (exit code " .. result.code .. ")"
+    end
+    ui.err("jj: " .. err_msg:gsub("%s+$", ""))
     return nil
   end
 
