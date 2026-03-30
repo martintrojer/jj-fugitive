@@ -60,6 +60,23 @@ function M.show(filename, rev)
     vim.cmd("highlight default link JjAnnotateAuthor Comment")
   end)
 
+  -- When viewing a historical revision, show file content at that revision
+  if rev then
+    local file_content = ui.file_at_rev(filename, rev)
+    local source_buf = ui.create_scratch_buffer({
+      name = filename .. " @ " .. rev,
+      modifiable = true,
+    })
+    vim.api.nvim_buf_set_lines(source_buf, 0, -1, false, vim.split(file_content, "\n"))
+    vim.api.nvim_buf_set_option(source_buf, "modifiable", false)
+    vim.api.nvim_buf_set_option(source_buf, "modified", false)
+    local ft = vim.filetype.match({ filename = filename })
+    if ft then
+      vim.api.nvim_buf_set_option(source_buf, "filetype", ft)
+    end
+    vim.api.nvim_set_current_buf(source_buf)
+  end
+
   -- Open annotation as a left vsplit
   vim.cmd("vsplit")
   vim.cmd("wincmd H")
@@ -110,6 +127,14 @@ function M.show(filename, rev)
     vim.cmd("close")
     -- Restore the source window's scrollbind
     vim.cmd("setlocal noscrollbind")
+    -- Clean up scratch source buffer if we created one for a historical revision
+    if rev then
+      local source_buf = vim.api.nvim_get_current_buf()
+      local name = vim.api.nvim_buf_get_name(source_buf)
+      if name:match(" @ ") then
+        vim.api.nvim_buf_delete(source_buf, { force = true })
+      end
+    end
   end
 
   -- Re-annotate at parent of change under cursor
