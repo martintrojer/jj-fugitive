@@ -113,7 +113,7 @@ function M.show(filename, rev)
   end
 
   -- Re-annotate at parent of change under cursor
-  ui.map(ann_buf, "n", "p", function()
+  ui.map(ann_buf, "n", "~", function()
     local ann_line = vim.api.nvim_get_current_line()
     local change_id = ann_line:match("^(%S+)")
     if not change_id or #change_id < 8 then
@@ -136,7 +136,7 @@ function M.show(filename, rev)
       "",
       "Actions:",
       "  <CR>    Show commit for this line",
-      "  p       Re-annotate at parent of this line's change",
+      "  ~       Re-annotate at parent of this line's change",
       "",
       "Other:",
       "  q       Close annotation",
