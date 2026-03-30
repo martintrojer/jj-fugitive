@@ -154,7 +154,7 @@ local function setup_keymaps(bufnr)
       local init = require("jj-fugitive")
       local result = init.run_jj({ "restore", "--from", "@-", file })
       if result then
-        vim.api.nvim_echo({ { "Restored: " .. file, "MoreMsg" } }, false, {})
+        ui.info("Restored: " .. file)
         M.refresh()
       end
     end

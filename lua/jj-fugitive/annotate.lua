@@ -170,7 +170,7 @@ function M.show(filename, rev)
   ui.set_statusline(ann_buf, "jj-annotate: " .. filename .. rev_suffix)
 
   if rev then
-    vim.api.nvim_echo({ { "Annotate: " .. filename .. " @ " .. rev, "MoreMsg" } }, false, {})
+    ui.info("Annotate: " .. filename .. " @ " .. rev)
   end
 
   return true

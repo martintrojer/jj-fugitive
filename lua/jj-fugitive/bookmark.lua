@@ -33,7 +33,7 @@ local function run_and_refresh(args, msg)
   local result = init.run_jj(args)
   if result then
     if msg then
-      vim.api.nvim_echo({ { msg, "MoreMsg" } }, false, {})
+      require("jj-fugitive.ui").info(msg)
     end
     M.refresh()
     init.refresh_log()

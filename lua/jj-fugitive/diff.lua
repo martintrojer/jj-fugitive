@@ -87,11 +87,7 @@ function M.show(file_or_args)
   end
 
   if output:match("^%s*$") then
-    vim.api.nvim_echo(
-      { { "No changes in " .. (filename or "working copy"), "WarningMsg" } },
-      false,
-      {}
-    )
+    require("jj-fugitive.ui").warn("No changes in " .. (filename or "working copy"))
     return
   end
 

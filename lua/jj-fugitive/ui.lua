@@ -47,7 +47,17 @@ end
 
 --- Show an error message.
 function M.err(msg)
-  vim.api.nvim_err_writeln(msg)
+  vim.notify(msg, vim.log.levels.ERROR)
+end
+
+--- Show a warning message.
+function M.warn(msg)
+  vim.notify(msg, vim.log.levels.WARN)
+end
+
+--- Show an info message.
+function M.info(msg)
+  vim.notify(msg, vim.log.levels.INFO)
 end
 
 --- Show a confirmation dialog. Returns true if user confirms.
@@ -180,7 +190,7 @@ end
 function M.show_aliases()
   local output = vim.fn.system({ "jj", "config", "list", "aliases" })
   if vim.v.shell_error ~= 0 or not output or output == "" then
-    vim.api.nvim_echo({ { "No jj aliases configured", "WarningMsg" } }, false, {})
+    M.warn("No jj aliases configured")
     return
   end
 

@@ -116,11 +116,7 @@ end
 
 local function warn_divergent(rev)
   if is_divergent(rev) then
-    vim.api.nvim_echo(
-      { { "Revision " .. rev .. " is divergent — resolve divergence first", "WarningMsg" } },
-      false,
-      {}
-    )
+    ui.warn("Revision " .. rev .. " is divergent — resolve divergence first")
     return true
   end
   return false
@@ -149,7 +145,7 @@ local function run_and_refresh(args, msg)
   local result = init.run_jj(args)
   if result then
     if msg then
-      vim.api.nvim_echo({ { msg, "MoreMsg" } }, false, {})
+      ui.info(msg)
     end
     M.refresh()
   end
@@ -218,7 +214,7 @@ function M.setup_detail_keymaps(bufnr, kind, id)
     end
 
     if #files == 0 then
-      vim.api.nvim_echo({ { "No files changed", "WarningMsg" } }, false, {})
+      ui.warn("No files changed")
       return
     end
 
@@ -278,10 +274,9 @@ local function setup_keymaps(bufnr)
       limit = current_limit > 0 and current_limit or nil,
       template = next_template,
     })
-    vim.api.nvim_echo({
-      { "Log layout: ", "MoreMsg" },
-      { next_template == COMFORTABLE_LOG_TEMPLATE and "comfortable" or "compact", "MoreMsg" },
-    }, false, {})
+    ui.info(
+      "Log layout: " .. (next_template == COMFORTABLE_LOG_TEMPLATE and "comfortable" or "compact")
+    )
   end
 
   -- Show commit details
@@ -428,7 +423,7 @@ local function setup_keymaps(bufnr)
           result = init.run_jj({ "bookmark", "create", name, "-r", id })
         end
         if result then
-          vim.api.nvim_echo({ { "Bookmark '" .. name .. "' -> " .. id, "MoreMsg" } }, false, {})
+          ui.info("Bookmark '" .. name .. "' -> " .. id)
           M.refresh()
         end
       end
@@ -756,7 +751,7 @@ function M.show(opts)
   end
 
   if not has_commits(line_rev_ids) then
-    vim.api.nvim_echo({ { "No commits found", "WarningMsg" } }, false, {})
+    ui.warn("No commits found")
     return
   end
 

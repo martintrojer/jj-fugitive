@@ -111,14 +111,9 @@ function M.run_jj(args)
     -- Exit code 124: operation may have completed but jj detected a
     -- concurrent issue. Warn but don't refresh — let user check state.
     if result.code == 124 then
-      vim.api.nvim_echo({
-        {
-          "jj: "
-            .. err_msg:gsub("%s+$", "")
-            .. " (concurrent operation — check state, gu to undo)",
-          "WarningMsg",
-        },
-      }, false, {})
+      ui.warn(
+        "jj: " .. err_msg:gsub("%s+$", "") .. " (concurrent operation — check state, gu to undo)"
+      )
       return nil
     end
     ui.err("jj: " .. err_msg:gsub("%s+$", ""))
@@ -154,13 +149,7 @@ function M.run_jj_terminal(args)
   local cmd_str = "jj -R " .. vim.fn.shellescape(repo_root) .. immutable_flag .. " " .. args_str
 
   -- Show hint for builtin TUI keybindings
-  vim.api.nvim_echo({
-    { "jj builtin TUI keybindings:\n", "MoreMsg" },
-    { "  Space/Enter  toggle selection\n", "Comment" },
-    { "  c            confirm\n", "Comment" },
-    { "  q            cancel\n", "Comment" },
-    { "  ?            help", "Comment" },
-  }, true, {})
+  vim.notify("jj TUI: Space/Enter=toggle  c=confirm  q=cancel  ?=help", vim.log.levels.INFO)
 
   -- Open terminal in a new tab so it gets full screen
   -- Use jj's builtin TUI editors to avoid nested $EDITOR
@@ -231,14 +220,14 @@ function M.jj(args)
     local result = M.run_jj({ "git", "push", unpack(parts, 2) })
     if result then
       local msg = result:gsub("%s+$", "")
-      vim.api.nvim_echo({ { msg ~= "" and msg or "Pushed to remote", "MoreMsg" } }, false, {})
+      vim.notify(msg ~= "" and msg or "Pushed to remote", vim.log.levels.INFO)
       M.refresh_views()
     end
   elseif command == "fetch" then
     local result = M.run_jj({ "git", "fetch", unpack(parts, 2) })
     if result then
       local msg = result:gsub("%s+$", "")
-      vim.api.nvim_echo({ { msg ~= "" and msg or "Fetched from remote", "MoreMsg" } }, false, {})
+      vim.notify(msg ~= "" and msg or "Fetched from remote", vim.log.levels.INFO)
       M.refresh_views()
     end
   else
@@ -279,7 +268,7 @@ end
 function M.undo()
   local result = M.run_jj({ "undo" })
   if result then
-    vim.api.nvim_echo({ { "Undid last jj operation", "MoreMsg" } }, false, {})
+    vim.notify("Undid last jj operation", vim.log.levels.INFO)
     M.refresh_views()
     return true
   end
