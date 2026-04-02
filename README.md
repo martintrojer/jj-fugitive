@@ -5,6 +5,7 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 ## Features
 
 - **Log view as primary hub** — native jj log with ANSI colors, interactive commit actions
+- **AI review workflow** — capture comments from unified diffs, show buffers, and status inline diffs into a shared AI-ready review packet
 - **Bookmark management** — create, delete, move, track, push/fetch in a dedicated buffer
 - **Rebase & squash** — full rebase and squash keybindings from log view with symmetric lowercase/uppercase convention
 - **Diff viewer** — unified diff with ANSI colors, side-by-side with Neovim's built-in diff mode, buffer reuse
@@ -69,6 +70,35 @@ require("jj-fugitive").setup({
 | `:J browse` / `:JBrowse` | Open current file on remote |
 | `:J <any>` | Pass through to jj (e.g. `:J new`, `:J squash`, `:J arrange`) |
 
+## AI Review Workflow
+
+The review workflow is designed for collecting code review notes inside Neovim
+and then pasting the result directly into an AI prompt.
+
+From unified diff buffers, commit show buffers, and expanded status inline
+diffs:
+
+```
+  cR        Add review comment for the current diff line
+  gR        Open the shared review buffer
+```
+
+The review buffer is a shared scratch buffer formatted as an AI-ready review
+packet. It includes a preamble for the AI model, jj repo context, and numbered
+review items with file, revision, hunk, selected line, and your comment.
+
+The review buffer also has lightweight navigation:
+
+```
+  gl        Switch to log view
+  gs        Switch to status view
+  q         Close
+  g?        Help
+```
+
+Review capture is supported in unified diff buffers, show buffers, and status
+inline diffs. Side-by-side diff mode is intentionally not supported.
+
 ## Log View
 
 The log view is the primary hub. Open with `:J` or `:J log`.
@@ -76,6 +106,7 @@ The log view is the primary hub. Open with `:J` or `:J log`.
 ```
 Commit actions:
   <CR>      Show commit details (jj show)
+            Show buffers also support `cR` and `gR` for review capture/navigation
   d         Show diff for commit
   cc        Describe (edit commit message)
   e         Edit at commit (jj edit)
@@ -121,10 +152,12 @@ Open with `:J status` or `:J st`. Shows changed files in the working copy.
   <CR>      Open file
   o         Open file in split
   =         Toggle inline diff (fugitive-style)
+  cR        Add review comment from inline diff line
+  gR        Open shared review buffer
   d         Show diff for file
   D         Side-by-side diff
   cc        Describe working copy
-  s         Split working copy (jj split TUI)
+  S         Split working copy (jj split TUI)
   x         Restore file from parent (@-)
   gb        Switch to bookmark view
   gl        Switch to log view
@@ -161,12 +194,19 @@ Open with `:J bookmark`.
 Open with `:J diff` or `:J diff <file>`.
 
 ```
+  cR        Add review comment for current diff line
+  gR        Open shared review buffer
   D         Side-by-side diff (opens in new tab with diffthis)
   o         Open file in editor
   [c / ]c   Navigate changes
   q         Close
   g?        Help
 ```
+
+Review comments append to a shared scratch buffer formatted as an AI-ready
+review packet, so the whole buffer can be pasted as-is into an AI review
+prompt. Review comments are supported in unified diff and show buffers, plus
+status inline diffs, but not in side-by-side diff mode.
 
 ## Annotate / Blame
 

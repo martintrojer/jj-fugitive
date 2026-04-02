@@ -1,0 +1,8 @@
+WRN 2026-04-02T19:13:56.858 ?.53734    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/gLtF6o/nvim.53734.0
+WRN 2026-04-02T19:13:56.881 ?.53734    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/gLtF6o/fzf-lua.1775153636.53734.1
+WRN 2026-04-02T19:24:01.594 ?.61855    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/9nxDq5/nvim.61855.0
+WRN 2026-04-02T19:24:01.617 ?.61855    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/9nxDq5/fzf-lua.1775154241.61855.1
+WRN 2026-04-02T19:31:20.085 ?.65542    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/1cCx4U/nvim.65542.0
+WRN 2026-04-02T19:31:20.085 ?.65541    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/uT80GJ/nvim.65541.0
+WRN 2026-04-02T19:31:20.110 ?.65542    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/1cCx4U/fzf-lua.1775154680.65542.1
+WRN 2026-04-02T19:31:20.110 ?.65541    server_start:197: Failed to start server: operation not permitted: /var/folders/r4/qqt5yqt54k31mwytpl73yrdw0000gn/T/nvim.martintrojer/uT80GJ/fzf-lua.1775154680.65541.1

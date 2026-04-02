@@ -198,6 +198,14 @@ function M.setup_detail_keymaps(bufnr, kind, id)
     vim.cmd(ui.close_cmd())
   end)
 
+  ui.map(bufnr, "n", "cR", function()
+    require("jj-fugitive.review").comment_current_line(bufnr)
+  end)
+
+  ui.map(bufnr, "n", "gR", function()
+    require("jj-fugitive.review").show()
+  end)
+
   -- Side-by-side diff (available in both show and diff views)
   ui.map(bufnr, "n", "D", function()
     local init = require("jj-fugitive")
@@ -235,6 +243,8 @@ function M.setup_detail_keymaps(bufnr, kind, id)
       kind .. " for commit " .. id,
       "",
       "Actions:",
+      "  cR      Add review comment",
+      "  gR      Open review buffer",
       "  D       Side-by-side diff (pick file)",
       "",
       "Other:",
@@ -296,6 +306,10 @@ local function setup_keymaps(bufnr)
     local show_buf = ansi.create_colored_buffer(result, bufname, header, {
       prefix = "JjShow",
     })
+    pcall(vim.api.nvim_buf_set_var, show_buf, "jj_review_context", {
+      kind = "unified_diff",
+      rev = id,
+    })
 
     ui.open_pane()
     vim.api.nvim_set_current_buf(show_buf)
@@ -309,22 +323,7 @@ local function setup_keymaps(bufnr)
     if not id then
       return
     end
-    local init = require("jj-fugitive")
-    local result = init.run_jj({ "diff", "--color", "always", "--git", "-r", id })
-    if not result then
-      return
-    end
-
-    local header = { "", "# Diff: " .. id, "# Press g? for help, q to close", "" }
-    local bufname = "jj-diff: " .. id
-    local diff_buf = ansi.create_colored_buffer(result, bufname, header, {
-      prefix = "JjDiff",
-    })
-
-    ui.open_pane()
-    vim.api.nvim_set_current_buf(diff_buf)
-    M.setup_detail_keymaps(diff_buf, "Diff", id)
-    ui.set_statusline(diff_buf, "jj-diff: " .. id)
+    require("jj-fugitive.diff").show({ rev = id })
   end)
 
   -- Edit at commit

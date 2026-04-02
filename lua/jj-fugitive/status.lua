@@ -24,6 +24,23 @@ local function file_from_line(line)
   return nil
 end
 
+local function inline_diff_state(bufnr)
+  return require("jj-fugitive.ui").buf_var(bufnr, "jj_status_inline_diffs", {})
+end
+
+local function set_inline_diff_state(bufnr, state)
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_inline_diffs", state)
+end
+
+local function shift_inline_ranges(state, from_line, delta)
+  for _, item in ipairs(state) do
+    if item.start_line > from_line then
+      item.start_line = item.start_line + delta
+      item.end_line = item.end_line + delta
+    end
+  end
+end
+
 --- Toggle inline diff for the file on the current line.
 --- Inserts/removes diff lines below the status line.
 local function toggle_inline_diff(bufnr)
@@ -35,25 +52,20 @@ local function toggle_inline_diff(bufnr)
     return
   end
 
-  -- Check if next line is already an inline diff (indented with 4 spaces)
-  local all_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-  if line_nr < #all_lines and (all_lines[line_nr + 1] or ""):match("^    ") then
-    -- Collapse: find the end of the indented block
-    local first = line_nr + 1 -- 1-indexed first diff line
-    local last = first
-    for i = first + 1, #all_lines do
-      if all_lines[i]:match("^    ") then
-        last = i
-      else
-        break
-      end
+  local state = inline_diff_state(bufnr)
+  for i, item in ipairs(state) do
+    if item.start_line == line_nr + 1 then
+      vim.bo[bufnr].modifiable = true
+      vim.api.nvim_buf_set_lines(bufnr, item.start_line - 1, item.end_line, false, {})
+      vim.bo[bufnr].modifiable = false
+      vim.bo[bufnr].modified = false
+
+      local removed = item.end_line - item.start_line + 1
+      table.remove(state, i)
+      shift_inline_ranges(state, item.start_line - 1, -removed)
+      set_inline_diff_state(bufnr, state)
+      return
     end
-    -- Delete 1-indexed range [first, last] using 0-indexed API
-    vim.bo[bufnr].modifiable = true
-    vim.api.nvim_buf_set_lines(bufnr, first - 1, last, false, {})
-    vim.bo[bufnr].modifiable = false
-    vim.bo[bufnr].modified = false
-    return
   end
 
   -- Expand: get diff and insert below
@@ -75,6 +87,15 @@ local function toggle_inline_diff(bufnr)
   vim.bo[bufnr].modifiable = false
   vim.bo[bufnr].modified = false
 
+  shift_inline_ranges(state, line_nr, #diff_lines)
+  table.insert(state, {
+    start_line = line_nr + 1,
+    end_line = line_nr + #diff_lines,
+    file = file,
+    rev = "@",
+  })
+  set_inline_diff_state(bufnr, state)
+
   -- Add inline diff highlighting
   for i = line_nr, line_nr + #diff_lines - 1 do
     local dl = diff_lines[i - line_nr + 1]
@@ -90,6 +111,26 @@ local function toggle_inline_diff(bufnr)
       vim.api.nvim_buf_add_highlight(bufnr, -1, hl, i, 0, -1)
     end
   end
+end
+
+local function comment_inline_diff(bufnr)
+  local ui = require("jj-fugitive.ui")
+  local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+  for _, item in ipairs(inline_diff_state(bufnr)) do
+    if cursor_line >= item.start_line and cursor_line <= item.end_line then
+      pcall(vim.api.nvim_buf_set_var, bufnr, "jj_review_context", {
+        kind = "status_inline",
+      })
+      require("jj-fugitive.review").comment_current_line(bufnr)
+      return
+    end
+  end
+
+  ui.warn("Place the cursor on an inline diff line")
+end
+
+local function open_review_buffer()
+  require("jj-fugitive.review").show()
 end
 
 --- Setup keymaps for the status buffer.
@@ -118,6 +159,12 @@ local function setup_keymaps(bufnr)
     toggle_inline_diff(bufnr)
   end)
 
+  ui.map(bufnr, "n", "cR", function()
+    comment_inline_diff(bufnr)
+  end)
+
+  ui.map(bufnr, "n", "gR", open_review_buffer)
+
   -- Diff file
   ui.map(bufnr, "n", "d", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
@@ -143,7 +190,7 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Split working copy (TUI)
-  ui.map(bufnr, "n", "s", function()
+  ui.map(bufnr, "n", "S", function()
     require("jj-fugitive").run_jj_terminal("split")
   end)
 
@@ -199,10 +246,12 @@ local function setup_keymaps(bufnr)
       "  <CR>     Open file",
       "  o        Open file in split",
       "  =        Toggle inline diff",
+      "  cR       Add review comment from inline diff",
+      "  gR       Open review buffer",
       "  d        Show diff for file",
       "  D        Side-by-side diff",
       "  cc       Describe working copy",
-      "  s        Split working copy (jj split TUI)",
+      "  S        Split working copy (jj split TUI)",
       "  x        Restore file from parent (@-)",
       "",
       "Views:",
@@ -271,6 +320,8 @@ function M.show()
     bufnr = ui.create_scratch_buffer({ name = BUF_NAME })
     ui.set_buf_lines(bufnr, lines)
   end
+
+  set_inline_diff_state(bufnr, {})
 
   -- Highlighting
   vim.api.nvim_buf_call(bufnr, function()

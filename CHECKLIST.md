@@ -59,6 +59,8 @@ nvim file1.txt
 - [x] Cursor starts on first commit line
 - [x] `j`/`k` navigates between lines
 - [x] `<CR>` on a commit opens show buffer with details
+- [ ] `cR` in show buffer appends a review item without leaving the buffer
+- [ ] `gR` in show buffer opens the shared review buffer
 - [x] `d` on a commit opens diff buffer
 - [x] Show/diff buffers have `g?` help and `q` to close
 - [x] `D` in commit diff buffer opens file picker for side-by-side
@@ -100,6 +102,8 @@ nvim file1.txt
 - [x] Side-by-side shows left (parent) and right (working copy)
 - [x] Side-by-side has syntax highlighting for file type
 - [x] `o` opens the file in editor
+- [ ] `cR` appends a review item from the current diff line
+- [ ] `gR` opens the shared review buffer
 - [x] `q` closes diff buffer
 - [x] `g?` shows help popup
 
@@ -143,6 +147,9 @@ nvim file1.txt
 - [x] `<CR>`/`o` opens file
 - [x] `d` shows diff for file
 - [x] `D` opens side-by-side diff
+- [ ] `cR` on an expanded inline diff line appends a review item
+- [ ] `gR` opens the shared review buffer
+- [x] `S` opens working copy split (jj split TUI)
 - [x] `x` restores file from parent (with confirm)
 - [x] `=` toggles inline diff for file (fugitive-style)
 - [x] `R` refreshes

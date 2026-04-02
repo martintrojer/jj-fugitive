@@ -42,6 +42,7 @@ Keybindings:
 Commit actions: ~
 
   <CR>          Show commit details (jj show)
+                Show buffers also support `cR` and `gR` for review actions
   d             Show diff for commit
   cc            Describe (edit commit message)
   e             Edit at commit (jj edit)
@@ -95,10 +96,12 @@ Keybindings:
   <CR>          Open file
   o             Open file in split
   =             Toggle inline diff (fugitive-style)
+  cR            Add review comment from inline diff line
+  gR            Open shared review buffer
   d             Show diff for file
   D             Side-by-side diff
   cc            Describe working copy
-  s             Split working copy (jj split TUI)
+  S             Split working copy (jj split TUI)
   x             Restore file from parent (@-)
   gb            Switch to bookmark view
   gl            Switch to log view
@@ -115,11 +118,23 @@ ANSI color rendering from jj output. Reuses existing diff buffers.
 
 Keybindings:
 
+  cR            Add review comment for current diff line
+  gR            Open shared review buffer
   D             Side-by-side diff (opens in new tab)
   o             Open file in editor
   [c  ]c        Navigate changes
   q             Close
   g?            Help
+
+REVIEW BUFFER                                   *jj-fugitive-review*
+
+Unified diff views can append review comments to a shared scratch buffer for
+AI-assisted review workflows. The buffer is formatted as an AI-ready review
+packet, including jj repo metadata and structured review items, so the whole
+buffer can be pasted into an AI prompt as-is.
+
+Review comments are supported in unified diff buffers, show buffers, and status
+inline diffs. Side-by-side diff view is not supported.
 
 BOOKMARK VIEW                                   *jj-fugitive-bookmark*
 

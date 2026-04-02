@@ -21,6 +21,10 @@ local function get_diff(file, rev)
   return init.run_jj(args)
 end
 
+local function set_review_context(bufnr, ctx)
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_review_context", ctx)
+end
+
 --- Setup keymaps for a unified diff buffer.
 local function setup_diff_keymaps(bufnr, filename)
   local ui = require("jj-fugitive.ui")
@@ -31,6 +35,14 @@ local function setup_diff_keymaps(bufnr, filename)
 
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
+  end)
+
+  ui.map(bufnr, "n", "cR", function()
+    require("jj-fugitive.review").comment_current_line(bufnr)
+  end)
+
+  ui.map(bufnr, "n", "gR", function()
+    require("jj-fugitive.review").show()
   end)
 
   if filename then
@@ -52,6 +64,8 @@ local function setup_diff_keymaps(bufnr, filename)
       "  ]c      Next change",
       "",
       "Actions:",
+      "  cR      Add review comment",
+      "  gR      Open review buffer",
       "  o       Open file in editor",
       "  D       Side-by-side diff",
       "",
@@ -63,11 +77,17 @@ local function setup_diff_keymaps(bufnr, filename)
 end
 
 --- Show unified diff view.
---- file_or_args: filename string, or nil for all changes
-function M.show(file_or_args)
+--- opts: filename string, or { file = "...", rev = "..." }, or nil for all changes
+function M.show(opts)
+  if type(opts) ~= "table" then
+    opts = { file = opts }
+  end
+
   local filename = nil
-  if file_or_args and file_or_args ~= "" then
-    filename = vim.fn.expand(file_or_args:match("^%s*(.-)%s*$"))
+  local rev = opts.rev
+
+  if opts.file and opts.file ~= "" then
+    filename = vim.fn.expand(opts.file:match("^%s*(.-)%s*$"))
   else
     -- If in a real file buffer, diff that file
     local buf_name = vim.api.nvim_buf_get_name(0)
@@ -81,17 +101,17 @@ function M.show(file_or_args)
     end
   end
 
-  local output = get_diff(filename)
+  local output = get_diff(filename, rev)
   if not output then
     return
   end
 
   if output:match("^%s*$") then
-    require("jj-fugitive.ui").warn("No changes in " .. (filename or "working copy"))
+    require("jj-fugitive.ui").warn("No changes in " .. (filename or rev or "working copy"))
     return
   end
 
-  local file_desc = filename or "all changes"
+  local file_desc = filename or rev or "all changes"
   local header = {
     "",
     "# Diff: " .. file_desc,
@@ -111,12 +131,14 @@ function M.show(file_or_args)
     bufnr = ansi.create_colored_buffer(output, bufname, header, { prefix = "JjDiff" })
   end
 
+  set_review_context(bufnr, {
+    kind = "unified_diff",
+    file = filename,
+    rev = rev or "@",
+  })
   setup_diff_keymaps(bufnr, filename)
 
-  if not existing then
-    ui.open_pane()
-    vim.api.nvim_set_current_buf(bufnr)
-  end
+  ui.ensure_visible(bufnr)
 
   ui.set_statusline(bufnr, "jj-diff: " .. file_desc)
 end

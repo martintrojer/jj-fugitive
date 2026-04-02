@@ -26,6 +26,7 @@ lua/jj-fugitive/
 ├── log.lua           # Log view: display, keybindings, commit actions
 ├── status.lua        # Status view: changed files with file actions
 ├── diff.lua          # Diff view: unified + side-by-side
+├── review.lua        # Shared AI-ready review buffer and comment capture
 ├── annotate.lua      # Blame/annotate with scroll-locked split
 ├── describe.lua      # Describe/commit editor buffers
 ├── bookmark.lua      # Bookmark management buffer
