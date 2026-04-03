@@ -206,6 +206,21 @@ function M.setup_detail_keymaps(bufnr, kind, id)
     require("jj-fugitive.review").show()
   end)
 
+  ui.map(bufnr, "n", "gb", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.bookmark").show()
+  end)
+
+  ui.map(bufnr, "n", "gl", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.log").show()
+  end)
+
+  ui.map(bufnr, "n", "gs", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.status").show()
+  end)
+
   -- Side-by-side diff (available in both show and diff views)
   ui.map(bufnr, "n", "D", function()
     local init = require("jj-fugitive")
@@ -246,6 +261,11 @@ function M.setup_detail_keymaps(bufnr, kind, id)
       "  cR      Add review comment",
       "  gR      Open review buffer",
       "  D       Side-by-side diff (pick file)",
+      "",
+      "Views:",
+      "  gb      Switch to bookmark view",
+      "  gl      Switch to log view",
+      "  gs      Switch to status view",
       "",
       "Other:",
       "  q       Close",
@@ -633,6 +653,10 @@ local function setup_keymaps(bufnr)
     ui.show_aliases()
   end)
 
+  ui.map(bufnr, "n", "gR", function()
+    require("jj-fugitive.review").show()
+  end)
+
   -- Switch views
   ui.map(bufnr, "n", "gb", function()
     vim.cmd(ui.close_cmd())
@@ -684,6 +708,7 @@ local function setup_keymaps(bufnr)
       "Views:",
       "  gb        Switch to bookmark view",
       "  gC        Toggle compact/comfortable log layout",
+      "  gR        Open review buffer",
       "  gs        Switch to status view",
       "",
       "Other:",

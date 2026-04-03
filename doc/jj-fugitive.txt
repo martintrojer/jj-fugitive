@@ -75,6 +75,7 @@ Views: ~
 
   gb            Switch to bookmark view
   gC            Toggle compact/comfortable log layout
+  gR            Open review buffer
   gs            Switch to status view
 
 Other: ~
@@ -122,6 +123,9 @@ Keybindings:
   gR            Open shared review buffer
   D             Side-by-side diff (opens in new tab)
   o             Open file in editor
+  gb            Switch to bookmark view
+  gl            Switch to log view
+  gs            Switch to status view
   [c  ]c        Navigate changes
   q             Close
   g?            Help
@@ -136,6 +140,14 @@ buffer can be pasted into an AI prompt as-is.
 Review comments are supported in unified diff buffers, show buffers, and status
 inline diffs. Side-by-side diff view is not supported.
 
+Keybindings:
+
+  gb            Switch to bookmark view
+  gl            Switch to log view
+  gs            Switch to status view
+  q             Close
+  g?            Help
+
 BOOKMARK VIEW                                   *jj-fugitive-bookmark*
 
 Opened by `:J bookmark`. Shows all bookmarks with tracking status.
@@ -149,6 +161,7 @@ Keybindings:
   u             Untrack remote bookmark
   p             Push bookmark to remote
   f             Fetch from remote
+  gR            Open shared review buffer
   gl            Switch to log view
   gs            Switch to status view
   ga            Show jj aliases

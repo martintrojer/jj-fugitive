@@ -18,6 +18,13 @@ A Neovim plugin for Jujutsu (jj) version control, inspired by vim-fugitive.
 :JBrowse                " Open remote URL in browser
 ```
 
+## Core UX
+
+- AI review workflow is a first-class feature
+- Use `cR` in unified diff, show, and status inline diff buffers to append a review item
+- Use `gR` to open the shared AI-ready review buffer
+- Review buffer supports `gb`, `gl`, `gs`, `q`, and `g?`
+
 ## Architecture
 
 ```

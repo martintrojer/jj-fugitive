@@ -90,6 +90,7 @@ review items with file, revision, hunk, selected line, and your comment.
 The review buffer also has lightweight navigation:
 
 ```
+  gb        Switch to bookmark view
   gl        Switch to log view
   gs        Switch to status view
   q         Close
@@ -133,6 +134,7 @@ Squash:
 Views:
   gb        Switch to bookmark view
   gC        Toggle compact/comfortable log layout
+  gR        Open review buffer
   gs        Switch to status view
 
 Other:
@@ -180,6 +182,7 @@ Open with `:J bookmark`.
   u         Untrack remote bookmark
   p         Push bookmark to remote
   f         Fetch from remote
+  gR        Open shared review buffer
   gl        Switch to log view
   gs        Switch to status view
   ga        Show jj aliases
@@ -198,6 +201,9 @@ Open with `:J diff` or `:J diff <file>`.
   gR        Open shared review buffer
   D         Side-by-side diff (opens in new tab with diffthis)
   o         Open file in editor
+  gb        Switch to bookmark view
+  gl        Switch to log view
+  gs        Switch to status view
   [c / ]c   Navigate changes
   q         Close
   g?        Help

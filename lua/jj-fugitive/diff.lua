@@ -45,6 +45,21 @@ local function setup_diff_keymaps(bufnr, filename)
     require("jj-fugitive.review").show()
   end)
 
+  ui.map(bufnr, "n", "gb", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.bookmark").show()
+  end)
+
+  ui.map(bufnr, "n", "gl", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.log").show()
+  end)
+
+  ui.map(bufnr, "n", "gs", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.status").show()
+  end)
+
   if filename then
     ui.map(bufnr, "n", "o", function()
       vim.cmd("edit " .. vim.fn.fnameescape(filename))
@@ -68,6 +83,11 @@ local function setup_diff_keymaps(bufnr, filename)
       "  gR      Open review buffer",
       "  o       Open file in editor",
       "  D       Side-by-side diff",
+      "",
+      "Views:",
+      "  gb      Switch to bookmark view",
+      "  gl      Switch to log view",
+      "  gs      Switch to status view",
       "",
       "Other:",
       "  q       Close",

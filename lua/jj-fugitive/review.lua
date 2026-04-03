@@ -24,11 +24,17 @@ local function setup_keymaps(bufnr)
     require("jj-fugitive.status").show()
   end)
 
+  ui.map(bufnr, "n", "gb", function()
+    vim.cmd(ui.close_cmd())
+    require("jj-fugitive.bookmark").show()
+  end)
+
   ui.map(bufnr, "n", "g?", function()
     ui.help_popup("jj-fugitive Review", {
       "Review buffer",
       "",
       "Views:",
+      "  gb      Switch to bookmark view",
       "  gl      Switch to log view",
       "  gs      Switch to status view",
       "",
@@ -96,9 +102,12 @@ end
 
 local function find_file_for_cursor(lines, cursor_line)
   for i = cursor_line, 1, -1 do
-    local file = lines[i]:match("^diff %-%-git a/(.-) b/")
-    if file then
-      return file
+    local old_file, new_file = lines[i]:match("^diff %-%-git a/(.-) b/(.-)$")
+    if new_file and new_file ~= "" then
+      return new_file
+    end
+    if old_file and old_file ~= "" then
+      return old_file
     end
   end
   return nil
