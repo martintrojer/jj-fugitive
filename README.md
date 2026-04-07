@@ -5,7 +5,6 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 ## Features
 
 - **Log view as primary hub** — native jj log with ANSI colors, interactive commit actions
-- **AI review workflow** — capture comments from unified diffs, show buffers, and status inline diffs into a shared AI-ready review packet
 - **Bookmark management** — create, delete, move, track, push/fetch in a dedicated buffer
 - **Rebase & squash** — full rebase and squash keybindings from log view with symmetric lowercase/uppercase convention
 - **Diff viewer** — unified diff with ANSI colors, side-by-side with Neovim's built-in diff mode, buffer reuse
@@ -16,11 +15,18 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 - **Smart completion** — tab completion for jj commands, subcommands, and revisions/bookmarks
 - **Browse** — open current file on GitHub/GitLab from Neovim
 - **Divergence protection** — mutation commands warn and refuse on divergent revisions
+- **AI review workflow** (optional, via [redline.nvim](https://github.com/martintrojer/redline.nvim)) — capture comments from unified diffs, show buffers, and status inline diffs into a shared AI-ready review packet
 
 ## Requirements
 
 - Neovim 0.10+
 - [Jujutsu](https://github.com/martinvonz/jj) installed and available in PATH
+
+### Optional
+
+- [redline.nvim](https://github.com/martintrojer/redline.nvim) — AI review
+  comment capture (`cR`/`gR` keymaps). Without it, everything else works
+  normally; review keymaps just won't appear.
 
 ## Installation
 
@@ -28,6 +34,8 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 
 ```lua
 { "martintrojer/jj-fugitive" }
+-- For AI review support:
+-- { "martintrojer/jj-fugitive", dependencies = { "martintrojer/redline.nvim" } }
 ```
 
 ### [packer.nvim](https://github.com/wbthomason/packer.nvim)
@@ -72,8 +80,9 @@ require("jj-fugitive").setup({
 
 ## AI Review Workflow
 
-The review workflow is designed for collecting code review notes inside Neovim
-and then pasting the result directly into an AI prompt.
+Requires [redline.nvim](https://github.com/martintrojer/redline.nvim) (optional
+dependency). Without it, review keymaps are not mapped and everything else works
+normally.
 
 From unified diff buffers, commit show buffers, and expanded status inline
 diffs:

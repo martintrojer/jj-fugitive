@@ -21,12 +21,8 @@ local function get_diff(file, rev)
   return init.run_jj(args)
 end
 
-local function set_review_context(bufnr, ctx)
-  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_review_context", ctx)
-end
-
 --- Setup keymaps for a unified diff buffer.
-local function setup_diff_keymaps(bufnr, filename)
+local function setup_diff_keymaps(bufnr, filename, review_ctx)
   local ui = require("jj-fugitive.ui")
   if ui.buf_var(bufnr, "jj_diff_keymaps_set", false) then
     return
@@ -37,13 +33,15 @@ local function setup_diff_keymaps(bufnr, filename)
     vim.cmd(ui.close_cmd())
   end)
 
-  ui.map(bufnr, "n", "cR", function()
-    require("jj-fugitive.review").comment_current_line(bufnr)
-  end)
-
-  ui.map(bufnr, "n", "gR", function()
-    require("jj-fugitive.review").show()
-  end)
+  local init = require("jj-fugitive")
+  if init.review_config then
+    ui.map(bufnr, "n", "cR", function()
+      require("redline").comment_unified_diff(init.review_config, bufnr, review_ctx)
+    end)
+    ui.map(bufnr, "n", "gR", function()
+      require("redline").show(init.review_config)
+    end)
+  end
 
   ui.map(bufnr, "n", "gb", function()
     vim.cmd(ui.close_cmd())
@@ -151,12 +149,8 @@ function M.show(opts)
     bufnr = ansi.create_colored_buffer(output, bufname, header, { prefix = "JjDiff" })
   end
 
-  set_review_context(bufnr, {
-    kind = "unified_diff",
-    file = filename,
-    rev = rev or "@",
-  })
-  setup_diff_keymaps(bufnr, filename)
+  local review_ctx = { file = filename, rev = rev or "@" }
+  setup_diff_keymaps(bufnr, filename, review_ctx)
 
   ui.ensure_visible(bufnr)
 

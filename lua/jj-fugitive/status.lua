@@ -114,23 +114,15 @@ local function toggle_inline_diff(bufnr)
 end
 
 local function comment_inline_diff(bufnr)
-  local ui = require("jj-fugitive.ui")
-  local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
-  for _, item in ipairs(inline_diff_state(bufnr)) do
-    if cursor_line >= item.start_line and cursor_line <= item.end_line then
-      pcall(vim.api.nvim_buf_set_var, bufnr, "jj_review_context", {
-        kind = "status_inline",
-      })
-      require("jj-fugitive.review").comment_current_line(bufnr)
-      return
-    end
+  local init = require("jj-fugitive")
+  if not init.review_config then
+    require("jj-fugitive.ui").warn("Review not available (redline.nvim not installed)")
+    return
   end
-
-  ui.warn("Place the cursor on an inline diff line")
-end
-
-local function open_review_buffer()
-  require("jj-fugitive.review").show()
+  local ranges = inline_diff_state(bufnr)
+  require("redline").comment(init.review_config, bufnr, function(b)
+    return require("redline").extract_inline_diff_entry(b, ranges)
+  end)
 end
 
 --- Setup keymaps for the status buffer.
@@ -163,7 +155,12 @@ local function setup_keymaps(bufnr)
     comment_inline_diff(bufnr)
   end)
 
-  ui.map(bufnr, "n", "gR", open_review_buffer)
+  local init = require("jj-fugitive")
+  if init.review_config then
+    ui.map(bufnr, "n", "gR", function()
+      require("redline").show(init.review_config)
+    end)
+  end
 
   -- Diff file
   ui.map(bufnr, "n", "d", function()
@@ -198,8 +195,7 @@ local function setup_keymaps(bufnr)
   ui.map(bufnr, "n", "x", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file and ui.confirm("Restore " .. file .. " from parent?") then
-      local init = require("jj-fugitive")
-      local result = init.run_jj({ "restore", "--from", "@-", file })
+      local result = require("jj-fugitive").run_jj({ "restore", "--from", "@-", file })
       if result then
         ui.info("Restored: " .. file)
         M.refresh()

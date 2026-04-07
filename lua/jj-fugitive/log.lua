@@ -198,13 +198,16 @@ function M.setup_detail_keymaps(bufnr, kind, id)
     vim.cmd(ui.close_cmd())
   end)
 
-  ui.map(bufnr, "n", "cR", function()
-    require("jj-fugitive.review").comment_current_line(bufnr)
-  end)
-
-  ui.map(bufnr, "n", "gR", function()
-    require("jj-fugitive.review").show()
-  end)
+  local init = require("jj-fugitive")
+  if init.review_config then
+    local review_ctx = { rev = id }
+    ui.map(bufnr, "n", "cR", function()
+      require("redline").comment_unified_diff(init.review_config, bufnr, review_ctx)
+    end)
+    ui.map(bufnr, "n", "gR", function()
+      require("redline").show(init.review_config)
+    end)
+  end
 
   ui.map(bufnr, "n", "gb", function()
     vim.cmd(ui.close_cmd())
@@ -223,8 +226,7 @@ function M.setup_detail_keymaps(bufnr, kind, id)
 
   -- Side-by-side diff (available in both show and diff views)
   ui.map(bufnr, "n", "D", function()
-    local init = require("jj-fugitive")
-    local files_output = init.run_jj({ "diff", "--name-only", "-r", id })
+    local files_output = require("jj-fugitive").run_jj({ "diff", "--name-only", "-r", id })
     if not files_output then
       return
     end
@@ -326,11 +328,6 @@ local function setup_keymaps(bufnr)
     local show_buf = ansi.create_colored_buffer(result, bufname, header, {
       prefix = "JjShow",
     })
-    pcall(vim.api.nvim_buf_set_var, show_buf, "jj_review_context", {
-      kind = "unified_diff",
-      rev = id,
-    })
-
     ui.open_pane()
     vim.api.nvim_set_current_buf(show_buf)
     M.setup_detail_keymaps(show_buf, "Show", id)
@@ -653,9 +650,12 @@ local function setup_keymaps(bufnr)
     ui.show_aliases()
   end)
 
-  ui.map(bufnr, "n", "gR", function()
-    require("jj-fugitive.review").show()
-  end)
+  local init = require("jj-fugitive")
+  if init.review_config then
+    ui.map(bufnr, "n", "gR", function()
+      require("redline").show(init.review_config)
+    end)
+  end
 
   -- Switch views
   ui.map(bufnr, "n", "gb", function()

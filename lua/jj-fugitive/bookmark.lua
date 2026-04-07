@@ -139,9 +139,12 @@ local function setup_keymaps(bufnr)
     ui.show_aliases()
   end)
 
-  ui.map(bufnr, "n", "gR", function()
-    require("jj-fugitive.review").show()
-  end)
+  local init = require("jj-fugitive")
+  if init.review_config then
+    ui.map(bufnr, "n", "gR", function()
+      require("redline").show(init.review_config)
+    end)
+  end
 
   -- Close
   ui.map(bufnr, "n", "q", function()

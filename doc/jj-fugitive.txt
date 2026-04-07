@@ -132,10 +132,14 @@ Keybindings:
 
 REVIEW BUFFER                                   *jj-fugitive-review*
 
-Unified diff views can append review comments to a shared scratch buffer for
-AI-assisted review workflows. The buffer is formatted as an AI-ready review
-packet, including jj repo metadata and structured review items, so the whole
-buffer can be pasted into an AI prompt as-is.
+Requires redline.nvim (optional dependency). Without it, review keymaps
+(cR/gR) are not mapped and everything else works normally.
+
+When redline.nvim is installed, unified diff views can append review comments
+to a shared scratch buffer for AI-assisted review workflows. The buffer is
+formatted as an AI-ready review packet, including jj repo metadata and
+structured review items, so the whole buffer can be pasted into an AI prompt
+as-is.
 
 Review comments are supported in unified diff buffers, show buffers, and status
 inline diffs. Side-by-side diff view is not supported.
@@ -203,5 +207,10 @@ REQUIREMENTS                                    *jj-fugitive-requirements*
 
 - Neovim 0.10+
 - jj CLI (https://github.com/martinvonz/jj) in PATH
+
+Optional: ~
+
+- redline.nvim — AI review comment capture (cR/gR keymaps)
+  https://github.com/martintrojer/redline.nvim
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -10,6 +10,53 @@ M.config = {
 --- Setup function for user configuration.
 function M.setup(opts)
   M.config = vim.tbl_extend("force", M.config, opts or {})
+
+  local has_redline, redline = pcall(require, "redline")
+  if has_redline then
+    local ui = require("jj-fugitive.ui")
+    M.review_config = redline.make_config({
+      repo_type = "jj",
+      repo_root = function()
+        return M.repo_root() or vim.fn.getcwd()
+      end,
+      open_mode = M.config.open_mode,
+      buf_name = "jj-review",
+      source = "jj-fugitive review",
+      on_show = function(bufnr)
+        if ui.buf_var(bufnr, "jj_review_keymaps_set", false) then
+          return
+        end
+        pcall(vim.api.nvim_buf_set_var, bufnr, "jj_review_keymaps_set", true)
+
+        ui.map(bufnr, "n", "gl", function()
+          vim.cmd(ui.close_cmd())
+          require("jj-fugitive.log").show()
+        end)
+        ui.map(bufnr, "n", "gs", function()
+          vim.cmd(ui.close_cmd())
+          require("jj-fugitive.status").show()
+        end)
+        ui.map(bufnr, "n", "gb", function()
+          vim.cmd(ui.close_cmd())
+          require("jj-fugitive.bookmark").show()
+        end)
+        ui.map(bufnr, "n", "g?", function()
+          ui.help_popup("jj-fugitive Review", {
+            "Review buffer",
+            "",
+            "Views:",
+            "  gb      Switch to bookmark view",
+            "  gl      Switch to log view",
+            "  gs      Switch to status view",
+            "",
+            "Other:",
+            "  q       Close",
+            "  g?      This help",
+          })
+        end)
+      end,
+    })
+  end
 end
 
 -- Cache the last known repo root so plugin buffers (jj-log, jj-diff, etc.)

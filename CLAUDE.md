@@ -20,10 +20,12 @@ A Neovim plugin for Jujutsu (jj) version control, inspired by vim-fugitive.
 
 ## Core UX
 
-- AI review workflow is a first-class feature
-- Use `cR` in unified diff, show, and status inline diff buffers to append a review item
-- Use `gR` to open the shared AI-ready review buffer
+- AI review workflow requires redline.nvim (optional dependency)
+- When redline.nvim is installed, `cR` in unified diff, show, and status inline diff buffers appends a review item
+- `gR` opens the shared AI-ready review buffer (powered by redline.nvim)
 - Review buffer supports `gb`, `gl`, `gs`, `q`, and `g?`
+- Review config is stored as `M.review_config` on the init module, created via `redline.make_config()` in `setup()`
+- All modules check `init.review_config` to guard review keymaps — if nil (redline not installed), keymaps are skipped
 
 ## Architecture
 
@@ -33,7 +35,6 @@ lua/jj-fugitive/
 ├── log.lua           # Log view: display, keybindings, commit actions
 ├── status.lua        # Status view: changed files with file actions
 ├── diff.lua          # Diff view: unified + side-by-side
-├── review.lua        # Shared AI-ready review buffer and comment capture
 ├── annotate.lua      # Blame/annotate with scroll-locked split
 ├── describe.lua      # Describe/commit editor buffers
 ├── bookmark.lua      # Bookmark management buffer
@@ -65,6 +66,7 @@ mutation completes), and stale UI state between dispatch and callback.
 
 - Neovim 0.10+ with Lua support
 - jj CLI tool in PATH
+- redline.nvim (optional) — AI review comment capture
 
 ## Development
 
