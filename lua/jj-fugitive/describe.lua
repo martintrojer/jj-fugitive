@@ -83,8 +83,8 @@ function M.describe(rev)
   }, function(text)
     local result = init.run_jj({ "describe", rev, "-m", text })
     if result then
-      print("Description updated for " .. rev)
-      init.refresh_log()
+      vim.notify("Description updated for " .. rev, vim.log.levels.INFO)
+      init.refresh_views()
       return true
     end
     return false
@@ -104,8 +104,8 @@ function M.commit()
   }, function(text)
     local result = init.run_jj({ "commit", "-m", text })
     if result then
-      print("Committed: " .. text:match("^[^\n]*"))
-      init.refresh_log()
+      vim.notify("Committed: " .. text:match("^[^\n]*"), vim.log.levels.INFO)
+      init.refresh_views()
       return true
     end
     return false

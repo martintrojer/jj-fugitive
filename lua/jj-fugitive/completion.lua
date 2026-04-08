@@ -34,8 +34,8 @@ local function get_aliases()
     return cached_aliases
   end
   cached_aliases = {}
-  local output = vim.fn.system({ "jj", "config", "list", "aliases" })
-  if vim.v.shell_error == 0 and output then
+  local output = require("jj-fugitive").run_jj({ "config", "list", "aliases" })
+  if output then
     for alias in output:gmatch("aliases%.([%w_-]+)") do
       table.insert(cached_aliases, alias)
     end

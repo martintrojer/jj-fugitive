@@ -188,8 +188,8 @@ end
 
 --- Show jj aliases in a help popup.
 function M.show_aliases()
-  local output = vim.fn.system({ "jj", "config", "list", "aliases" })
-  if vim.v.shell_error ~= 0 or not output or output == "" then
+  local output = require("jj-fugitive").run_jj({ "config", "list", "aliases" })
+  if not output or output == "" then
     M.warn("No jj aliases configured")
     return
   end

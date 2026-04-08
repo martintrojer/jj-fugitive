@@ -35,8 +35,7 @@ local function run_and_refresh(args, msg)
     if msg then
       require("jj-fugitive.ui").info(msg)
     end
-    M.refresh()
-    init.refresh_log()
+    init.refresh_views()
   end
 end
 

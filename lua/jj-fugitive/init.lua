@@ -209,7 +209,7 @@ function M.run_jj_terminal(args)
           vim.api.nvim_buf_delete(term_buf, { force = true })
         end
         if exit_code == 0 then
-          M.refresh_log()
+          M.refresh_views()
         end
       end)
     end,
@@ -290,7 +290,7 @@ function M.jj(args)
       print(result)
     end
     -- Always refresh — can't know which commands mutate (custom aliases)
-    M.refresh_log()
+    M.refresh_views()
   end
 end
 
@@ -304,11 +304,6 @@ function M.refresh_views()
     require("jj-fugitive.status").refresh()
     require("jj-fugitive.bookmark").refresh()
   end)
-end
-
---- Backwards-compatible alias.
-function M.refresh_log()
-  M.refresh_views()
 end
 
 --- Undo the last jj operation and refresh plugin views.

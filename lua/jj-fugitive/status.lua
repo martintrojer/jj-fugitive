@@ -128,6 +128,10 @@ end
 --- Setup keymaps for the status buffer.
 local function setup_keymaps(bufnr)
   local ui = require("jj-fugitive.ui")
+  if ui.buf_var(bufnr, "jj_status_keymaps_set", false) then
+    return
+  end
+  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_keymaps_set", true)
 
   -- Open file
   ui.map(bufnr, "n", "<CR>", function()
@@ -319,21 +323,24 @@ function M.show()
 
   set_inline_diff_state(bufnr, {})
 
-  -- Highlighting
-  vim.api.nvim_buf_call(bufnr, function()
-    vim.cmd("syntax match JjStatusHeader '^#.*'")
-    vim.cmd("syntax match JjStatusModified '^M .*'")
-    vim.cmd("syntax match JjStatusAdded '^A .*'")
-    vim.cmd("syntax match JjStatusDeleted '^D .*'")
-    vim.cmd("syntax match JjStatusRenamed '^R .*'")
-    vim.cmd("syntax match JjStatusSection '^Working copy.*\\|^Parent commit.*'")
-    vim.cmd("highlight default link JjStatusHeader Comment")
-    vim.cmd("highlight default link JjStatusModified DiffChange")
-    vim.cmd("highlight default link JjStatusAdded DiffAdd")
-    vim.cmd("highlight default link JjStatusDeleted DiffDelete")
-    vim.cmd("highlight default link JjStatusRenamed DiffText")
-    vim.cmd("highlight default link JjStatusSection Title")
-  end)
+  -- Highlighting (only once per buffer)
+  if not ui.buf_var(bufnr, "jj_status_syntax_set", false) then
+    pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_syntax_set", true)
+    vim.api.nvim_buf_call(bufnr, function()
+      vim.cmd("syntax match JjStatusHeader '^#.*'")
+      vim.cmd("syntax match JjStatusModified '^M .*'")
+      vim.cmd("syntax match JjStatusAdded '^A .*'")
+      vim.cmd("syntax match JjStatusDeleted '^D .*'")
+      vim.cmd("syntax match JjStatusRenamed '^R .*'")
+      vim.cmd("syntax match JjStatusSection '^Working copy.*\\|^Parent commit.*'")
+      vim.cmd("highlight default link JjStatusHeader Comment")
+      vim.cmd("highlight default link JjStatusModified DiffChange")
+      vim.cmd("highlight default link JjStatusAdded DiffAdd")
+      vim.cmd("highlight default link JjStatusDeleted DiffDelete")
+      vim.cmd("highlight default link JjStatusRenamed DiffText")
+      vim.cmd("highlight default link JjStatusSection Title")
+    end)
+  end
 
   setup_keymaps(bufnr)
 

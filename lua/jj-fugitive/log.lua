@@ -33,16 +33,6 @@ local function extract_log_metadata(output)
   return table.concat(cleaned_lines, "\n"), line_rev_ids
 end
 
---- Trim the synthetic trailing blank line from jj output so buffer rendering
---- doesn't add an extra empty row at the end of the log view.
-local function trim_trailing_blank_line(output)
-  local lines = vim.split(output or "", "\n", { plain = true })
-  if lines[#lines] == "" then
-    table.remove(lines)
-  end
-  return table.concat(lines, "\n")
-end
-
 --- Check if log output contains any commits.
 local function has_commits(line_rev_ids)
   return next(line_rev_ids) ~= nil
@@ -104,7 +94,7 @@ local function get_log(opts)
   end
 
   local visible_output, line_rev_ids = extract_log_metadata(marked_output)
-  return trim_trailing_blank_line(visible_output), line_rev_ids
+  return visible_output, line_rev_ids, effective_template
 end
 
 --- Check if a revision is divergent.
@@ -147,7 +137,7 @@ local function run_and_refresh(args, msg)
     if msg then
       ui.info(msg)
     end
-    M.refresh()
+    init.refresh_views()
   end
 end
 
@@ -440,7 +430,7 @@ local function setup_keymaps(bufnr)
         end
         if result then
           ui.info("Bookmark '" .. name .. "' -> " .. id)
-          M.refresh()
+          init.refresh_views()
         end
       end
     end)
@@ -769,7 +759,7 @@ end
 function M.show(opts)
   opts = opts or {}
 
-  local output, line_rev_ids = get_log(opts)
+  local output, line_rev_ids, effective_template = get_log(opts)
   if not output then
     return
   end
@@ -799,7 +789,7 @@ function M.show(opts)
   end
 
   vim.api.nvim_buf_set_var(bufnr, "jj_log_limit", opts.limit or 0)
-  vim.api.nvim_buf_set_var(bufnr, "jj_log_template", opts.template)
+  vim.api.nvim_buf_set_var(bufnr, "jj_log_template", effective_template)
   local rev_lines = set_rev_lines(bufnr, line_rev_ids, #header)
 
   setup_keymaps(bufnr)

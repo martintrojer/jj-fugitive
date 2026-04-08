@@ -1,7 +1,5 @@
 local M = {}
 
-local init = require("jj-fugitive")
-
 -- Parse a git remote URL into a web base and repo info
 -- Supports: git@github.com:user/repo.git, https://github.com/user/repo(.git), ssh://git@github.com/user/repo.git
 function M.parse_remote_url(url)
@@ -11,8 +9,11 @@ function M.parse_remote_url(url)
 
   local host, owner, repo
 
-  -- git@host:owner/repo.git
-  host, owner, repo = url:match("^git@([^:]+):([^/]+)/([^%.]+)%.?git?$")
+  -- git@host:owner/repo.git or git@host:owner/repo
+  host, owner, repo = url:match("^git@([^:]+):([^/]+)/(.+)%.git$")
+  if not host then
+    host, owner, repo = url:match("^git@([^:]+):([^/]+)/([^%.]+)$")
+  end
   if host and owner and repo then
     return {
       host = host,
@@ -23,7 +24,10 @@ function M.parse_remote_url(url)
   end
 
   -- ssh://git@host/owner/repo(.git)
-  host, owner, repo = url:match("^ssh://git@([^/]+)/([^/]+)/([^%./]+)%.?git?/?$")
+  host, owner, repo = url:match("^ssh://git@([^/]+)/([^/]+)/(.+)%.git/?$")
+  if not host then
+    host, owner, repo = url:match("^ssh://git@([^/]+)/([^/]+)/([^%./]+)/?$")
+  end
   if host and owner and repo then
     return {
       host = host,
@@ -38,7 +42,6 @@ function M.parse_remote_url(url)
   scheme, host, owner, repo = url:match("^(https?)://([^/]+)/([^/]+)/([^/]+)$")
   if host and owner and repo then
     repo = repo:gsub("%.git$", "")
-    repo = repo:gsub("/$", "")
     return {
       host = host,
       owner = owner,
@@ -60,14 +63,7 @@ function M.build_file_url(web_base, host, path, rev, line_start, line_end)
   local encoded_path = path:gsub(" ", "%%20")
   local url
 
-  if host:match("github%.com$") then
-    url = string.format("%s/blob/%s/%s", web_base, rev, encoded_path)
-    if line_start and line_end and line_start ~= line_end then
-      url = string.format("%s#L%d-L%d", url, line_start, line_end)
-    elseif line_start then
-      url = string.format("%s#L%d", url, line_start)
-    end
-  elseif host:match("gitlab%.com$") then
+  if host:match("gitlab%.com$") then
     url = string.format("%s/-/blob/%s/%s", web_base, rev, encoded_path)
     if line_start and line_end and line_start ~= line_end then
       url = string.format("%s#L%d-%d", url, line_start, line_end)
@@ -75,7 +71,7 @@ function M.build_file_url(web_base, host, path, rev, line_start, line_end)
       url = string.format("%s#L%d", url, line_start)
     end
   else
-    -- Fallback to GitHub-style
+    -- GitHub-style (used for GitHub and unknown forges)
     url = string.format("%s/blob/%s/%s", web_base, rev, encoded_path)
     if line_start and line_end and line_start ~= line_end then
       url = string.format("%s#L%d-L%d", url, line_start, line_end)
@@ -88,6 +84,7 @@ function M.build_file_url(web_base, host, path, rev, line_start, line_end)
 end
 
 local function get_origin_url()
+  local init = require("jj-fugitive")
   local out = init.run_jj({ "git", "remote", "list" })
   if not out then
     return nil, "Failed to list git remotes"
@@ -104,6 +101,7 @@ local function get_origin_url()
 end
 
 local function get_default_rev()
+  local init = require("jj-fugitive")
   -- Prefer 'main' bookmark if it exists
   local bl = init.run_jj({ "bookmark", "list" })
   if bl and (bl:match("^main:") or bl:match("\nmain:")) then
@@ -122,6 +120,7 @@ local function get_default_rev()
 end
 
 local function get_relative_path()
+  local init = require("jj-fugitive")
   local file = vim.api.nvim_buf_get_name(0)
   if file == "" then
     return nil
@@ -161,19 +160,12 @@ local function get_line_range()
   return start_line, end_line
 end
 
--- Open URL using OS default handler; fallback to echo and yank to clipboard
+-- Open URL using Neovim's built-in handler; fallback to clipboard
 local function open_url(url)
   if not url then
     return false
   end
-  local ok = false
-  if vim.fn.has("mac") == 1 then
-    ok = (vim.fn.system({ "open", url }) ~= nil)
-  elseif vim.fn.executable("xdg-open") == 1 then
-    ok = (vim.fn.system({ "xdg-open", url }) ~= nil)
-  elseif vim.fn.has("win32") == 1 then
-    ok = (vim.fn.system({ "cmd", "/c", "start", url }) ~= nil)
-  end
+  local ok = vim.ui.open(url)
   if not ok then
     vim.fn.setreg("+", url)
     vim.notify("URL copied to clipboard: " .. url, vim.log.levels.INFO)

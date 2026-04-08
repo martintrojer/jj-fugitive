@@ -2,7 +2,6 @@ local M = {}
 
 -- Dedicated namespace for jj-fugitive ANSI highlights to avoid clearing others
 local ns = vim.api.nvim_create_namespace("jj_fugitive_ansi")
-M.ns = ns
 
 -- ANSI color code constants
 local ANSI_CODES = {
@@ -316,9 +315,6 @@ function M.update_colored_buffer(bufnr, content, header_lines, opts)
 
   -- Make buffer modifiable temporarily
   vim.bo[bufnr].modifiable = true
-
-  -- Clear existing content
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {})
 
   -- Clear existing highlights
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
