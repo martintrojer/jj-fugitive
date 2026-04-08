@@ -10,6 +10,7 @@ M.config = {
 --- Setup function for user configuration.
 function M.setup(opts)
   M.config = vim.tbl_extend("force", M.config, opts or {})
+  require("fugitive-core").setup(nil, M.config)
 
   local has_redline, redline = pcall(require, "redline")
   if has_redline then
