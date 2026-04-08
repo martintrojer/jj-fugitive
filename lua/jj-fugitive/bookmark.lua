@@ -49,9 +49,9 @@ local function setup_keymaps(bufnr)
 
   -- Create bookmark
   ui.map(bufnr, "n", "c", function()
-    vim.ui.input({ prompt = "New bookmark name" }, function(name)
+    vim.ui.input({ prompt = "New bookmark name: " }, function(name)
       if name and name ~= "" then
-        vim.ui.input({ prompt = "At revision (default @)" }, function(rev)
+        vim.ui.input({ prompt = "At revision (default @): " }, function(rev)
           if not rev or rev == "" then
             rev = "@"
           end
@@ -75,7 +75,7 @@ local function setup_keymaps(bufnr)
     if not name then
       return
     end
-    vim.ui.input({ prompt = "Move '" .. name .. "' to revision" }, function(rev)
+    vim.ui.input({ prompt = "Move '" .. name .. "' to revision: " }, function(rev)
       if rev and rev ~= "" then
         run_and_refresh(
           { "bookmark", "set", name, "-r", rev, "--allow-backwards" },
