@@ -1,25 +1,15 @@
 local M = {}
 
---- Show blame/annotate for the current file.
---- Opens a vertical split with annotations aligned to the source buffer.
---- rev: optional revision to annotate at (defaults to working copy)
+local core_annotate = require("fugitive-core.views.annotate")
+
 function M.show(filename, rev)
   local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
 
-  -- Use current buffer's file if none specified
-  if not filename or filename == "" then
-    local buf_name = vim.api.nvim_buf_get_name(0)
-    if buf_name == "" or vim.bo.buftype ~= "" then
-      ui.err("No file to annotate")
-      return
-    end
-    local root = init.repo_root()
-    if root and buf_name:find(root, 1, true) == 1 then
-      filename = buf_name:sub(#root + 2)
-    else
-      filename = buf_name
-    end
+  filename = core_annotate.resolve_filename(filename, init.repo_root())
+  if not filename then
+    ui.err("No file to annotate")
+    return false
   end
 
   local annotate_args = { "file", "annotate", filename }
@@ -32,74 +22,52 @@ function M.show(filename, rev)
     return false
   end
 
-  -- Parse annotations: separate the annotation prefix from the file content
   local annotations = {}
   for line in output:gmatch("[^\n]+") do
-    -- Format: "changeid author date    N: content"
-    -- Strip the line number and content, keep the annotation prefix
     local prefix = line:match("^(.-)%s+%d+:")
     table.insert(annotations, prefix or line)
   end
 
-  -- Create the annotation buffer
-  local rev_suffix = rev and (" @ " .. rev) or ""
-  local ann_buf = ui.create_scratch_buffer({
-    name = "jj-annotate: " .. filename .. rev_suffix,
-  })
-
-  vim.bo[ann_buf].modifiable = true
-  vim.api.nvim_buf_set_lines(ann_buf, 0, -1, false, annotations)
-  vim.bo[ann_buf].modifiable = false
-  vim.bo[ann_buf].modified = false
-
-  -- Highlighting
-  vim.api.nvim_buf_call(ann_buf, function()
-    vim.cmd("syntax match JjAnnotateChangeId '^\\S\\+'")
-    vim.cmd("syntax match JjAnnotateAuthor '\\s\\S\\+\\s\\d'")
-    vim.cmd("highlight default link JjAnnotateChangeId Identifier")
-    vim.cmd("highlight default link JjAnnotateAuthor Comment")
-  end)
-
   -- When viewing a historical revision, show file content at that revision
+  local source_lines
   if rev then
     local file_content = ui.file_at_rev(filename, rev)
-    local source_buf = ui.create_scratch_buffer({
-      name = filename .. " @ " .. rev,
-      modifiable = true,
-    })
-    vim.api.nvim_buf_set_lines(source_buf, 0, -1, false, vim.split(file_content, "\n"))
-    vim.bo[source_buf].modifiable = false
-    vim.bo[source_buf].modified = false
-    local ft = vim.filetype.match({ filename = filename })
-    if ft then
-      vim.bo[source_buf].filetype = ft
-    end
-    vim.api.nvim_buf_set_var(source_buf, "jj_annotate_source", true)
-    vim.api.nvim_set_current_buf(source_buf)
-  end
-
-  -- Open annotation as a left vsplit
-  vim.cmd("vsplit")
-  vim.cmd("wincmd H")
-  vim.api.nvim_set_current_buf(ann_buf)
-
-  -- Size the annotation window to fit content
-  local max_width = 0
-  for _, ann in ipairs(annotations) do
-    if #ann > max_width then
-      max_width = #ann
+    source_lines = vim.split(file_content, "\n")
+  else
+    -- For working copy, read the current file
+    local buf_name = vim.api.nvim_buf_get_name(0)
+    if buf_name ~= "" and vim.bo.buftype == "" then
+      local ok, lines = pcall(vim.fn.readfile, buf_name)
+      source_lines = ok and lines or {}
+    else
+      source_lines = {}
     end
   end
-  vim.api.nvim_win_set_width(0, math.min(max_width + 1, 60))
 
-  -- Lock scrolling between the two windows
-  vim.cmd("setlocal scrollbind nowrap nonumber norelativenumber")
-  vim.cmd("wincmd l")
-  vim.cmd("setlocal scrollbind")
-  vim.cmd("syncbind")
-  vim.cmd("wincmd h")
+  local rev_suffix = rev and (" @ " .. rev) or ""
 
-  -- Keymaps
+  local ann_buf, src_buf, close = core_annotate.open_split({
+    ann_name = "jj-annotate: " .. filename .. rev_suffix,
+    src_name = filename .. rev_suffix,
+    annotations = annotations,
+    source_lines = source_lines,
+    filename = filename,
+    ann_syntax = function(bufnr)
+      vim.api.nvim_buf_call(bufnr, function()
+        vim.cmd("syntax match JjAnnotateChangeId '^\\S\\+'")
+        vim.cmd("syntax match JjAnnotateAuthor '\\s\\S\\+\\s\\d'")
+        vim.cmd("highlight default link JjAnnotateChangeId Identifier")
+        vim.cmd("highlight default link JjAnnotateAuthor Comment")
+      end)
+    end,
+    statusline_ann = "jj-annotate: " .. filename .. rev_suffix,
+    statusline_src = filename .. rev_suffix,
+  })
+
+  if rev then
+    pcall(vim.api.nvim_buf_set_var, src_buf, "jj_annotate_source", true)
+  end
+
   ui.map(ann_buf, "n", "<CR>", function()
     local ann_line = vim.api.nvim_get_current_line()
     local change_id = ann_line:match("^(%S+)")
@@ -117,54 +85,55 @@ function M.show(filename, rev)
       prefix = "JjShow",
     })
 
-    -- botright split spans full width across annotate + source panes
     ui.open_pane({ split_cmd = "botright split" })
     vim.api.nvim_set_current_buf(show_buf)
     require("jj-fugitive.log").setup_detail_keymaps(show_buf, "Show", change_id)
     ui.set_statusline(show_buf, "jj-show: " .. change_id)
   end)
 
-  local function close_annotate()
-    vim.cmd("close")
-    -- Restore the source window's scrollbind
-    vim.cmd("setlocal noscrollbind")
-    -- Clean up scratch source buffer if we created one for a historical revision
-    local source_buf = vim.api.nvim_get_current_buf()
-    if ui.buf_var(source_buf, "jj_annotate_source", false) then
-      vim.api.nvim_buf_delete(source_buf, { force = true })
-    end
-  end
-
-  -- Re-annotate at parent of change under cursor
   ui.map(ann_buf, "n", "~", function()
     local ann_line = vim.api.nvim_get_current_line()
     local change_id = ann_line:match("^(%S+)")
     if not change_id or #change_id < 8 then
       return
     end
-    close_annotate()
-    -- File may not exist at parent revision (e.g. first commit that added it)
+    -- close uses the core close function which restores orig_buf
+    -- but we need to also clean up the source buffer if historical
+    local src_win = vim.fn.bufwinid(src_buf)
+    if src_win ~= -1 then
+      pcall(vim.api.nvim_win_close, vim.fn.bufwinid(ann_buf), true)
+      vim.api.nvim_win_call(src_win, function()
+        vim.cmd("setlocal noscrollbind")
+      end)
+      if ui.buf_var(src_buf, "jj_annotate_source", false) then
+        vim.api.nvim_buf_delete(src_buf, { force = true })
+      end
+    end
     local ok = M.show(filename, change_id .. "-")
     if not ok then
-      -- Re-open at current revision
       M.show(filename, rev)
     end
   end)
 
-  ui.map(ann_buf, "n", "q", close_annotate)
+  ui.map(ann_buf, "n", "q", function()
+    close()
+    if ui.buf_var(src_buf, "jj_annotate_source", false) and vim.api.nvim_buf_is_valid(src_buf) then
+      pcall(vim.api.nvim_buf_delete, src_buf, { force = true })
+    end
+  end)
 
   ui.map(ann_buf, "n", "gl", function()
-    close_annotate()
+    close()
     require("jj-fugitive.log").show()
   end)
 
   ui.map(ann_buf, "n", "gs", function()
-    close_annotate()
+    close()
     require("jj-fugitive.status").show()
   end)
 
   ui.map(ann_buf, "n", "gb", function()
-    close_annotate()
+    close()
     require("jj-fugitive.bookmark").show()
   end)
 
@@ -186,8 +155,6 @@ function M.show(filename, rev)
       "  g?      This help",
     })
   end)
-
-  ui.set_statusline(ann_buf, "jj-annotate: " .. filename .. rev_suffix)
 
   if rev then
     ui.info("Annotate: " .. filename .. " @ " .. rev)

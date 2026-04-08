@@ -1,48 +1,27 @@
 local M = {}
 
+local core_list = require("fugitive-core.views.list")
+
 local BUF_PATTERN = "jj%-status"
 local BUF_NAME = "jj-status"
+local INLINE_VAR = "jj_status_inline_diffs"
 
---- Get jj status output.
 local function get_status()
-  local init = require("jj-fugitive")
-  return init.run_jj({ "status" })
+  return require("jj-fugitive").run_jj({ "status" })
 end
 
---- Extract filename from a status line like "M file1.txt" or "A file2.txt".
 local function file_from_line(line)
   if not line or line == "" or line:match("^%s*#") or line:match("^%s*$") then
     return nil
   end
-  -- Match status lines: "M file.txt", "A file.txt", "D file.txt", "R old -> new"
   local filename = line:match("^%s*[MADR]%s+(.+)")
   if filename then
-    -- Handle renames: "old -> new"
     local new_name = filename:match("^.+%s+->%s+(.+)")
     return new_name or filename
   end
   return nil
 end
 
-local function inline_diff_state(bufnr)
-  return require("jj-fugitive.ui").buf_var(bufnr, "jj_status_inline_diffs", {})
-end
-
-local function set_inline_diff_state(bufnr, state)
-  pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_inline_diffs", state)
-end
-
-local function shift_inline_ranges(state, from_line, delta)
-  for _, item in ipairs(state) do
-    if item.start_line > from_line then
-      item.start_line = item.start_line + delta
-      item.end_line = item.end_line + delta
-    end
-  end
-end
-
---- Toggle inline diff for the file on the current line.
---- Inserts/removes diff lines below the status line.
 local function toggle_inline_diff(bufnr)
   local cursor = vim.api.nvim_win_get_cursor(0)
   local line_nr = cursor[1]
@@ -52,7 +31,7 @@ local function toggle_inline_diff(bufnr)
     return
   end
 
-  local state = inline_diff_state(bufnr)
+  local state = core_list.get_inline_state(bufnr, INLINE_VAR)
   for i, item in ipairs(state) do
     if item.start_line == line_nr + 1 then
       vim.bo[bufnr].modifiable = true
@@ -62,15 +41,13 @@ local function toggle_inline_diff(bufnr)
 
       local removed = item.end_line - item.start_line + 1
       table.remove(state, i)
-      shift_inline_ranges(state, item.start_line - 1, -removed)
-      set_inline_diff_state(bufnr, state)
+      core_list.shift_inline_ranges(state, item.start_line - 1, -removed)
+      core_list.set_inline_state(bufnr, INLINE_VAR, state)
       return
     end
   end
 
-  -- Expand: get diff and insert below
-  local init = require("jj-fugitive")
-  local diff_output = init.run_jj({ "diff", "--git", file })
+  local diff_output = require("jj-fugitive").run_jj({ "diff", "--git", file })
   if not diff_output or diff_output:match("^%s*$") then
     return
   end
@@ -87,16 +64,15 @@ local function toggle_inline_diff(bufnr)
   vim.bo[bufnr].modifiable = false
   vim.bo[bufnr].modified = false
 
-  shift_inline_ranges(state, line_nr, #diff_lines)
+  core_list.shift_inline_ranges(state, line_nr, #diff_lines)
   table.insert(state, {
     start_line = line_nr + 1,
     end_line = line_nr + #diff_lines,
     file = file,
     rev = "@",
   })
-  set_inline_diff_state(bufnr, state)
+  core_list.set_inline_state(bufnr, INLINE_VAR, state)
 
-  -- Add inline diff highlighting
   for i = line_nr, line_nr + #diff_lines - 1 do
     local dl = diff_lines[i - line_nr + 1]
     local hl
@@ -119,13 +95,12 @@ local function comment_inline_diff(bufnr)
     require("jj-fugitive.ui").warn("Review not available (redline.nvim not installed)")
     return
   end
-  local ranges = inline_diff_state(bufnr)
+  local ranges = core_list.get_inline_state(bufnr, INLINE_VAR)
   require("redline").comment(init.review_config, bufnr, function(b)
     return require("redline").extract_inline_diff_entry(b, ranges)
   end)
 end
 
---- Setup keymaps for the status buffer.
 local function setup_keymaps(bufnr)
   local ui = require("jj-fugitive.ui")
   if ui.buf_var(bufnr, "jj_status_keymaps_set", false) then
@@ -133,7 +108,6 @@ local function setup_keymaps(bufnr)
   end
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_keymaps_set", true)
 
-  -- Open file
   ui.map(bufnr, "n", "<CR>", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file then
@@ -150,7 +124,6 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Toggle inline diff (fugitive's = key)
   ui.map(bufnr, "n", "=", function()
     toggle_inline_diff(bufnr)
   end)
@@ -166,7 +139,6 @@ local function setup_keymaps(bufnr)
     end)
   end
 
-  -- Diff file
   ui.map(bufnr, "n", "d", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file then
@@ -174,7 +146,6 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Side-by-side diff
   ui.map(bufnr, "n", "D", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file then
@@ -182,20 +153,16 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Block c so Neovim waits for cc
   ui.map(bufnr, "n", "c", function() end)
 
-  -- Describe working copy
   ui.map(bufnr, "n", "cc", function()
     require("jj-fugitive.describe").describe("@")
   end)
 
-  -- Split working copy (TUI)
   ui.map(bufnr, "n", "S", function()
     require("jj-fugitive").run_jj_terminal("split")
   end)
 
-  -- Restore file from parent
   ui.map(bufnr, "n", "x", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file and ui.confirm("Restore " .. file .. " from parent?") then
@@ -207,7 +174,6 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  -- Refresh
   ui.map(bufnr, "n", "R", function()
     M.refresh()
   end)
@@ -216,12 +182,10 @@ local function setup_keymaps(bufnr)
     require("jj-fugitive").undo()
   end)
 
-  -- Show aliases
   ui.map(bufnr, "n", "ga", function()
     ui.show_aliases()
   end)
 
-  -- Switch views
   ui.map(bufnr, "n", "gb", function()
     vim.cmd(ui.close_cmd())
     require("jj-fugitive.bookmark").show()
@@ -232,12 +196,10 @@ local function setup_keymaps(bufnr)
     require("jj-fugitive.log").show()
   end)
 
-  -- Close
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
   end)
 
-  -- Help
   ui.map(bufnr, "n", "g?", function()
     ui.help_popup("jj-fugitive Status", {
       "Status view",
@@ -268,7 +230,6 @@ local function setup_keymaps(bufnr)
   end)
 end
 
---- Format status output into display lines.
 local function format_lines(output)
   local lines = {
     "",
@@ -284,79 +245,43 @@ local function format_lines(output)
   return lines
 end
 
---- Refresh the status buffer if open.
 function M.refresh()
-  local ui = require("jj-fugitive.ui")
-  local bufnr = ui.find_buf(BUF_PATTERN)
-  if not bufnr then
-    return
-  end
-
-  local output = get_status()
-  if not output then
-    return
-  end
-
-  ui.set_buf_lines(bufnr, format_lines(output))
+  core_list.refresh({
+    get_data = get_status,
+    format_lines = format_lines,
+    buf_pattern = BUF_PATTERN,
+  })
 end
 
---- Show the status view.
 function M.show()
-  local output = get_status()
-  if not output then
-    return
-  end
-
-  local lines = format_lines(output)
-
-  local ui = require("jj-fugitive.ui")
-  local existing = ui.find_buf(BUF_PATTERN)
-  local bufnr
-
-  if existing then
-    bufnr = existing
-    ui.set_buf_lines(bufnr, lines)
-  else
-    bufnr = ui.create_scratch_buffer({ name = BUF_NAME })
-    ui.set_buf_lines(bufnr, lines)
-  end
-
-  set_inline_diff_state(bufnr, {})
-
-  -- Highlighting (only once per buffer)
-  if not ui.buf_var(bufnr, "jj_status_syntax_set", false) then
-    pcall(vim.api.nvim_buf_set_var, bufnr, "jj_status_syntax_set", true)
-    vim.api.nvim_buf_call(bufnr, function()
-      vim.cmd("syntax match JjStatusHeader '^#.*'")
-      vim.cmd("syntax match JjStatusModified '^M .*'")
-      vim.cmd("syntax match JjStatusAdded '^A .*'")
-      vim.cmd("syntax match JjStatusDeleted '^D .*'")
-      vim.cmd("syntax match JjStatusRenamed '^R .*'")
-      vim.cmd("syntax match JjStatusSection '^Working copy.*\\|^Parent commit.*'")
-      vim.cmd("highlight default link JjStatusHeader Comment")
-      vim.cmd("highlight default link JjStatusModified DiffChange")
-      vim.cmd("highlight default link JjStatusAdded DiffAdd")
-      vim.cmd("highlight default link JjStatusDeleted DiffDelete")
-      vim.cmd("highlight default link JjStatusRenamed DiffText")
-      vim.cmd("highlight default link JjStatusSection Title")
-    end)
-  end
-
-  setup_keymaps(bufnr)
-
-  if not existing then
-    ui.ensure_visible(bufnr)
-  end
-
-  -- Position cursor on first file line (skip headers)
-  for i, line in ipairs(lines) do
-    if file_from_line(line) then
-      pcall(vim.api.nvim_win_set_cursor, 0, { i, 0 })
-      break
-    end
-  end
-
-  ui.set_statusline(bufnr, "jj-status")
+  core_list.show({
+    get_data = get_status,
+    format_lines = format_lines,
+    buf_pattern = BUF_PATTERN,
+    buf_name = BUF_NAME,
+    statusline = "jj-status",
+    first_item = file_from_line,
+    setup = function(bufnr, is_new)
+      core_list.set_inline_state(bufnr, INLINE_VAR, {})
+      if is_new then
+        vim.api.nvim_buf_call(bufnr, function()
+          vim.cmd("syntax match JjStatusHeader '^#.*'")
+          vim.cmd("syntax match JjStatusModified '^M .*'")
+          vim.cmd("syntax match JjStatusAdded '^A .*'")
+          vim.cmd("syntax match JjStatusDeleted '^D .*'")
+          vim.cmd("syntax match JjStatusRenamed '^R .*'")
+          vim.cmd("syntax match JjStatusSection '^Working copy.*\\|^Parent commit.*'")
+          vim.cmd("highlight default link JjStatusHeader Comment")
+          vim.cmd("highlight default link JjStatusModified DiffChange")
+          vim.cmd("highlight default link JjStatusAdded DiffAdd")
+          vim.cmd("highlight default link JjStatusDeleted DiffDelete")
+          vim.cmd("highlight default link JjStatusRenamed DiffText")
+          vim.cmd("highlight default link JjStatusSection Title")
+        end)
+      end
+      setup_keymaps(bufnr)
+    end,
+  })
 end
 
 return M
