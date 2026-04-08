@@ -88,7 +88,7 @@ function M.complete(arglead, cmdline, _)
 
   if #parts == 0 or (#parts == 1 and not cmdline:match("%s$")) then
     local commands = parse_commands({ "jj", "--help" })
-    local custom = { "status", "diff", "log", "browse", "bookmark", "push", "fetch" }
+    local custom = { "status", "diff", "log", "browse", "bookmark", "push", "fetch", "annotate", "blame", "describe", "commit" }
     for _, c in ipairs(custom) do
       if not vim.tbl_contains(commands, c) then
         table.insert(commands, c)
