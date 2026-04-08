@@ -228,7 +228,7 @@ function M.setup_detail_keymaps(bufnr, kind, id)
       return
     end
 
-    vim.ui.select(files, { prompt = "Side-by-side diff for:" }, function(choice)
+    ui.select(files, "Side-by-side diff for", function(choice)
       if choice then
         sidebyside_at_rev(choice, id)
       end
@@ -369,7 +369,7 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    if ui.confirm("Squash " .. source .. " into " .. label .. "?") then
+    if ui.confirm("Squash " .. source .. " into " .. label) then
       run_and_refresh(
         { "squash", "-r", source, "--into", id },
         "Squashed " .. source .. " into " .. label
@@ -384,9 +384,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Squash into " .. label .. " from: " }, function(source)
+    ui.input("Squash into " .. label .. " from", function(source)
       if source and source ~= "" then
-        if ui.confirm("Squash " .. source .. " into " .. label .. "?") then
+        if ui.confirm("Squash " .. source .. " into " .. label) then
           run_and_refresh(
             { "squash", "-r", source, "--into", id },
             "Squashed " .. source .. " into " .. label
@@ -403,9 +403,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Squash " .. label .. " into: " }, function(into)
+    ui.input("Squash " .. label .. " into", function(into)
       if into and into ~= "" then
-        if ui.confirm("Squash " .. label .. " into " .. into .. "?") then
+        if ui.confirm("Squash " .. label .. " into " .. into) then
           run_and_refresh(
             { "squash", "-r", id, "--into", into },
             "Squashed " .. label .. " into " .. into
@@ -418,7 +418,7 @@ local function setup_keymaps(bufnr)
   -- Abandon commit
   ui.map(bufnr, "n", "A", function()
     local id = get_rev_id()
-    if id and ui.confirm("Abandon " .. rev_label(id) .. "?") then
+    if id and ui.confirm("Abandon " .. rev_label(id)) then
       run_and_refresh({ "abandon", id }, "Abandoned " .. id)
     end
   end)
@@ -429,7 +429,7 @@ local function setup_keymaps(bufnr)
     if not id or warn_divergent(id) then
       return
     end
-    vim.ui.input({ prompt = "Bookmark name (create/move to " .. id .. "): " }, function(name)
+    ui.input("Bookmark name (create/move to " .. id .. ")", function(name)
       if name and name ~= "" then
         -- Try set first (moves existing), fall back to create
         local init = require("jj-fugitive")
@@ -456,7 +456,7 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
+    if ui.confirm("Rebase " .. source .. " onto " .. label) then
       run_and_refresh(
         { "rebase", "-r", source, "-d", id },
         "Rebased " .. source .. " onto " .. label
@@ -470,9 +470,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Rebase onto " .. label .. " from: " }, function(source)
+    ui.input("Rebase onto " .. label .. " from", function(source)
       if source and source ~= "" then
-        if ui.confirm("Rebase " .. source .. " onto " .. label .. "?") then
+        if ui.confirm("Rebase " .. source .. " onto " .. label) then
           run_and_refresh(
             { "rebase", "-s", source, "-d", id },
             "Rebased " .. source .. " onto " .. label
@@ -488,9 +488,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Rebase " .. label .. " onto: " }, function(dest)
+    ui.input("Rebase " .. label .. " onto", function(dest)
       if dest and dest ~= "" then
-        if ui.confirm("Rebase " .. label .. " and descendants onto " .. dest .. "?") then
+        if ui.confirm("Rebase " .. label .. " and descendants onto " .. dest) then
           run_and_refresh(
             { "rebase", "-s", id, "-d", dest },
             "Rebased " .. label .. " and descendants onto " .. dest
@@ -506,9 +506,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Rebase branch onto " .. label .. " from: " }, function(branch)
+    ui.input("Rebase branch onto " .. label .. " from", function(branch)
       if branch and branch ~= "" then
-        if ui.confirm("Rebase branch " .. branch .. " onto " .. label .. "?") then
+        if ui.confirm("Rebase branch " .. branch .. " onto " .. label) then
           run_and_refresh(
             { "rebase", "-b", branch, "-d", id },
             "Rebased branch " .. branch .. " onto " .. label
@@ -525,9 +525,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Rebase branch of " .. label .. " onto: " }, function(dest)
+    ui.input("Rebase branch of " .. label .. " onto", function(dest)
       if dest and dest ~= "" then
-        if ui.confirm("Rebase branch of " .. label .. " onto " .. dest .. "?") then
+        if ui.confirm("Rebase branch of " .. label .. " onto " .. dest) then
           run_and_refresh(
             { "rebase", "-b", id, "-d", dest },
             "Rebased branch of " .. label .. " onto " .. dest
@@ -544,9 +544,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Rebase onto " .. label .. " rev: " }, function(rev)
+    ui.input("Rebase onto " .. label .. " rev", function(rev)
       if rev and rev ~= "" then
-        if ui.confirm("Rebase " .. rev .. " onto " .. label .. "?") then
+        if ui.confirm("Rebase " .. rev .. " onto " .. label) then
           run_and_refresh({ "rebase", "-r", rev, "-d", id }, "Rebased " .. rev .. " onto " .. label)
         end
       end
@@ -560,9 +560,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Extract " .. label .. " onto: " }, function(dest)
+    ui.input("Extract " .. label .. " onto", function(dest)
       if dest and dest ~= "" then
-        if ui.confirm("Extract " .. label .. " onto " .. dest .. "?") then
+        if ui.confirm("Extract " .. label .. " onto " .. dest) then
           run_and_refresh(
             { "rebase", "-r", id, "-d", dest },
             "Extracted " .. label .. " onto " .. dest
@@ -579,9 +579,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Insert after " .. label .. " rev: " }, function(rev)
+    ui.input("Insert after " .. label .. " rev", function(rev)
       if rev and rev ~= "" then
-        if ui.confirm("Insert " .. rev .. " after " .. label .. "?") then
+        if ui.confirm("Insert " .. rev .. " after " .. label) then
           run_and_refresh(
             { "rebase", "-r", rev, "--after", id },
             "Inserted " .. rev .. " after " .. label
@@ -598,9 +598,9 @@ local function setup_keymaps(bufnr)
       return
     end
     local label = rev_label(id)
-    vim.ui.input({ prompt = "Insert " .. label .. " after: " }, function(dest)
+    ui.input("Insert " .. label .. " after", function(dest)
       if dest and dest ~= "" then
-        if ui.confirm("Insert " .. label .. " after " .. dest .. "?") then
+        if ui.confirm("Insert " .. label .. " after " .. dest) then
           run_and_refresh(
             { "rebase", "-r", id, "--after", dest },
             "Inserted " .. label .. " after " .. dest

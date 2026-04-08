@@ -40,9 +40,9 @@ local function setup_keymaps(bufnr)
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_bookmark_keymaps_set", true)
 
   ui.map(bufnr, "n", "c", function()
-    vim.ui.input({ prompt = "New bookmark name: " }, function(name)
+    ui.input("New bookmark name", function(name)
       if name and name ~= "" then
-        vim.ui.input({ prompt = "At revision (default @): " }, function(rev)
+        ui.input("At revision (default @)", function(rev)
           if not rev or rev == "" then
             rev = "@"
           end
@@ -54,7 +54,7 @@ local function setup_keymaps(bufnr)
 
   ui.map(bufnr, "n", "d", function()
     local name = bookmark_from_line(vim.api.nvim_get_current_line())
-    if name and ui.confirm("Delete bookmark '" .. name .. "'?") then
+    if name and ui.confirm("Delete bookmark '" .. name .. "'") then
       run_and_refresh({ "bookmark", "delete", name }, "Deleted bookmark: " .. name)
     end
   end)
@@ -64,7 +64,7 @@ local function setup_keymaps(bufnr)
     if not name then
       return
     end
-    vim.ui.input({ prompt = "Move '" .. name .. "' to revision: " }, function(rev)
+    ui.input("Move '" .. name .. "' to revision", function(rev)
       if rev and rev ~= "" then
         run_and_refresh(
           { "bookmark", "set", name, "-r", rev, "--allow-backwards" },

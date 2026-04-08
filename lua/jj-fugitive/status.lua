@@ -168,7 +168,7 @@ local function setup_keymaps(bufnr)
 
   ui.map(bufnr, "n", "x", function()
     local file = file_at_cursor(bufnr)
-    if file and ui.confirm("Restore " .. file .. " from parent?") then
+    if file and ui.confirm("Restore " .. file .. " from parent") then
       local result = require("jj-fugitive").run_jj({ "restore", "--from", "@-", file })
       if result then
         ui.info("Restored: " .. file)
