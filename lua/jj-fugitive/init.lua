@@ -95,19 +95,12 @@ local function find_jj_root()
   return nil
 end
 
---- Run a command with timeout feedback.
+--- Run a command with feedback.
 local function run_with_feedback(cmd, opts)
-  local proc = vim.system(cmd, opts)
-
-  -- Only show feedback if command takes longer than 200ms
-  local result = proc:wait(200)
-  if not result then
-    vim.api.nvim_echo({ { "jj: running...", "Comment" } }, false, {})
-    vim.cmd("redraw")
-    result = proc:wait()
-    vim.api.nvim_echo({ { "" } }, false, {})
-  end
-
+  vim.api.nvim_echo({ { "jj: running...", "Comment" } }, false, {})
+  vim.cmd("redraw")
+  local result = vim.system(cmd, opts):wait()
+  vim.api.nvim_echo({ { "" } }, false, {})
   return result
 end
 
