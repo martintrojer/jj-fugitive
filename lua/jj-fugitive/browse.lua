@@ -60,26 +60,33 @@ function M.browse()
     ui.err(err or "No git remote found")
     return
   end
-  local remote, perr = core_browse.parse_remote_url(remote_url)
-  if not remote then
-    ui.err(perr)
-    return
-  end
-
   local rel = get_relative_path()
   if not rel then
     ui.err("No file in current buffer or not inside repository")
     return
   end
 
-  local rev = get_default_rev()
-  if not rev then
-    ui.err("Unable to determine revision (no 'main' and no current commit)")
-    return
+  local s, e = core_browse.line_range()
+
+  -- Try custom forges first
+  local url = core_browse.build_custom_file_url(remote_url, rel, s, e)
+
+  if not url then
+    local remote, perr = core_browse.parse_remote_url(remote_url)
+    if not remote then
+      ui.err(perr)
+      return
+    end
+
+    local rev = get_default_rev()
+    if not rev then
+      ui.err("Unable to determine revision (no 'main' and no current commit)")
+      return
+    end
+
+    url = core_browse.build_file_url(remote, rel, rev, s, e)
   end
 
-  local s, e = core_browse.line_range()
-  local url = core_browse.build_file_url(remote, rel, rev, s, e)
   if not url then
     ui.err("Failed to build browse URL")
     return
