@@ -86,6 +86,16 @@ local function get_log(opts)
     .. ")"
 
   local marked_output = init.run_jj(build_log_args(opts, marked_template))
+  if not marked_output and effective_template ~= DEFAULT_LOG_TEMPLATE then
+    -- User template may be invalid — fall back to builtin
+    effective_template = DEFAULT_LOG_TEMPLATE
+    marked_template = '"'
+      .. LOG_REV_MARKER
+      .. '" ++ stringify(commit_id.short()) ++ ">" ++ ('
+      .. effective_template
+      .. ")"
+    marked_output = init.run_jj(build_log_args(opts, marked_template))
+  end
   if not marked_output then
     return nil
   end

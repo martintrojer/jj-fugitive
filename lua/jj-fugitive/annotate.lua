@@ -2,6 +2,9 @@ local M = {}
 
 local core_annotate = require("fugitive-core.views.annotate")
 
+-- History stack for blame drill-down (~ to go deeper, <BS> to go back)
+local history_stack = {}
+
 function M.show(filename, rev)
   local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
@@ -28,13 +31,11 @@ function M.show(filename, rev)
     table.insert(annotations, prefix or line)
   end
 
-  -- When viewing a historical revision, show file content at that revision
   local source_lines
   if rev then
     local file_content = ui.file_at_rev(filename, rev)
     source_lines = vim.split(file_content, "\n")
   else
-    -- For working copy, read the current file
     local buf_name = vim.api.nvim_buf_get_name(0)
     if buf_name ~= "" and vim.bo.buftype == "" then
       local ok, lines = pcall(vim.fn.readfile, buf_name)
@@ -91,40 +92,56 @@ function M.show(filename, rev)
     ui.set_statusline(show_buf, "jj-show: " .. change_id)
   end)
 
-  ui.map(ann_buf, "n", "~", function()
-    local ann_line = vim.api.nvim_get_current_line()
-    local change_id = ann_line:match("^(%S+)")
-    if not change_id or #change_id < 8 then
-      return
-    end
-    close()
-    if ui.buf_var(src_buf, "jj_annotate_source", false) and vim.api.nvim_buf_is_valid(src_buf) then
-      pcall(vim.api.nvim_buf_delete, src_buf, { force = true })
-    end
-    local ok = M.show(filename, change_id .. "-")
-    if not ok then
-      M.show(filename, rev)
-    end
-  end)
-
-  local function close_annotate()
+  local function close_and_cleanup()
     close()
     if ui.buf_var(src_buf, "jj_annotate_source", false) and vim.api.nvim_buf_is_valid(src_buf) then
       pcall(vim.api.nvim_buf_delete, src_buf, { force = true })
     end
   end
 
+  -- Drill into parent revision
+  ui.map(ann_buf, "n", "~", function()
+    local ann_line = vim.api.nvim_get_current_line()
+    local change_id = ann_line:match("^(%S+)")
+    if not change_id or #change_id < 8 then
+      return
+    end
+    table.insert(history_stack, rev)
+    close_and_cleanup()
+    local ok = M.show(filename, change_id .. "-")
+    if not ok then
+      table.remove(history_stack)
+      M.show(filename, rev)
+    end
+  end)
+
+  -- Go back to child revision
+  ui.map(ann_buf, "n", "<BS>", function()
+    if #history_stack == 0 then
+      return
+    end
+    local prev_rev = table.remove(history_stack)
+    close_and_cleanup()
+    M.show(filename, prev_rev)
+  end)
+
   ui.setup_view_keymaps(ann_buf, {
-    close = close_annotate,
+    close = function()
+      history_stack = {}
+      close_and_cleanup()
+    end,
     log = function()
+      history_stack = {}
       close()
       require("jj-fugitive.log").show()
     end,
     status = function()
+      history_stack = {}
       close()
       require("jj-fugitive.status").show()
     end,
     bookmark = function()
+      history_stack = {}
       close()
       require("jj-fugitive.bookmark").show()
     end,
@@ -135,6 +152,7 @@ function M.show(filename, rev)
         "Actions:",
         "  <CR>    Show commit for this line",
         "  ~       Re-annotate at parent of this line's change",
+        "  <BS>    Go back to previous revision",
         "",
         "Views:",
         "  gb      Switch to bookmark view",
@@ -149,7 +167,9 @@ function M.show(filename, rev)
   })
 
   if rev then
-    ui.info("Annotate: " .. filename .. " @ " .. rev)
+    local depth = #history_stack
+    local depth_info = depth > 0 and (" [depth " .. depth .. ", <BS> to go back]") or ""
+    ui.info("Annotate: " .. filename .. " @ " .. rev .. depth_info)
   end
 
   return true
