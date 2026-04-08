@@ -800,9 +800,7 @@ function M.show(opts)
 
   setup_keymaps(bufnr)
 
-  if not existing then
-    ui.ensure_visible(bufnr)
-  end
+  ui.ensure_visible(bufnr)
 
   -- Position cursor on first commit line
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
