@@ -96,8 +96,18 @@ function M.open_pane(opts)
 end
 
 --- Close command appropriate for open_mode (close split or tab).
+--- Falls back to opening a blank buffer when it's the last tab or window.
 function M.close_cmd()
-  return M.get_config().open_mode == "tab" and "tabclose" or "close"
+  if M.get_config().open_mode == "tab" then
+    if #vim.api.nvim_list_tabpages() > 1 then
+      return "tabclose"
+    end
+  else
+    if #vim.api.nvim_tabpage_list_wins(0) > 1 then
+      return "close"
+    end
+  end
+  return "enew"
 end
 
 --- Ensure a buffer is visible. Jump to its window if already displayed
