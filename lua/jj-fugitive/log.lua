@@ -185,9 +185,6 @@ end
 --- Setup keymaps for a detail buffer (show/diff opened from log).
 function M.setup_detail_keymaps(bufnr, kind, id)
   local ui = require("jj-fugitive.ui")
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd(ui.close_cmd())
-  end)
 
   local init = require("jj-fugitive")
   if init.review_config then
@@ -195,25 +192,7 @@ function M.setup_detail_keymaps(bufnr, kind, id)
     ui.map(bufnr, "n", "cR", function()
       require("redline").comment_unified_diff(init.review_config, bufnr, review_ctx)
     end)
-    ui.map(bufnr, "n", "gR", function()
-      require("redline").show(init.review_config)
-    end)
   end
-
-  ui.map(bufnr, "n", "gb", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.bookmark").show()
-  end)
-
-  ui.map(bufnr, "n", "gl", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.log").show()
-  end)
-
-  ui.map(bufnr, "n", "gs", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.status").show()
-  end)
 
   -- Side-by-side diff (available in both show and diff views)
   ui.map(bufnr, "n", "D", function()
@@ -246,25 +225,42 @@ function M.setup_detail_keymaps(bufnr, kind, id)
     end)
   end)
 
-  ui.map(bufnr, "n", "g?", function()
-    ui.help_popup("jj-fugitive " .. kind, {
-      kind .. " for commit " .. id,
-      "",
-      "Actions:",
-      "  cR      Add review comment",
-      "  gR      Open review buffer",
-      "  D       Side-by-side diff (pick file)",
-      "",
-      "Views:",
-      "  gb      Switch to bookmark view",
-      "  gl      Switch to log view",
-      "  gs      Switch to status view",
-      "",
-      "Other:",
-      "  q       Close",
-      "  g?      This help",
-    })
-  end)
+  ui.setup_view_keymaps(bufnr, {
+    log = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.log").show()
+    end,
+    status = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.status").show()
+    end,
+    bookmark = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.bookmark").show()
+    end,
+    review = init.review_config and function()
+      require("redline").show(init.review_config)
+    end,
+    help = function()
+      ui.help_popup("jj-fugitive " .. kind, {
+        kind .. " for commit " .. id,
+        "",
+        "Actions:",
+        "  cR      Add review comment",
+        "  gR      Open review buffer",
+        "  D       Side-by-side diff (pick file)",
+        "",
+        "Views:",
+        "  gb      Switch to bookmark view",
+        "  gl      Switch to log view",
+        "  gs      Switch to status view",
+        "",
+        "Other:",
+        "  q       Close",
+        "  g?      This help",
+      })
+    end,
+  })
 end
 
 --- Setup keymaps for the log buffer (idempotent — safe to call on refresh).
@@ -628,11 +624,6 @@ local function setup_keymaps(bufnr)
   ui.map(bufnr, "n", "=", expand)
   ui.map(bufnr, "n", "gC", toggle_comfortable)
 
-  -- Refresh
-  ui.map(bufnr, "n", "R", function()
-    M.refresh()
-  end)
-
   ui.map(bufnr, "n", "gu", function()
     require("jj-fugitive").undo()
   end)
@@ -643,74 +634,67 @@ local function setup_keymaps(bufnr)
   end)
 
   local init = require("jj-fugitive")
-  if init.review_config then
-    ui.map(bufnr, "n", "gR", function()
+  ui.setup_view_keymaps(bufnr, {
+    status = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.status").show()
+    end,
+    bookmark = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.bookmark").show()
+    end,
+    review = init.review_config and function()
       require("redline").show(init.review_config)
-    end)
-  end
-
-  -- Switch views
-  ui.map(bufnr, "n", "gb", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.bookmark").show()
-  end)
-
-  ui.map(bufnr, "n", "gs", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.status").show()
-  end)
-
-  -- Close
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd(ui.close_cmd())
-  end)
-
-  -- Help
-  ui.map(bufnr, "n", "g?", function()
-    ui.help_popup("jj-fugitive Log", {
-      "Navigation:",
-      "  j/k       Move through commits",
-      "  +/=       Show more commits",
-      "",
-      "Commit actions:",
-      "  <CR>      Show commit details",
-      "  d         Show diff for commit",
-      "  cc        Describe (edit commit message)",
-      "  e         Edit at commit (jj edit)",
-      "  n         New change after commit (jj new)",
-      "  b         Create/move bookmark to commit",
-      "  A         Abandon commit (jj abandon)",
-      "",
-      "Rebase:",
-      "  rw        Rebase @/@- onto cursor (children stay)",
-      "  rs        Rebase prompted source+desc onto cursor",
-      "  rS        Rebase cursor+desc onto prompted destination",
-      "  rr        Rebase prompted revision onto cursor (children stay)",
-      "  rR        Rebase cursor onto prompted destination (children stay)",
-      "  rb        Rebase prompted branch onto cursor",
-      "  rB        Rebase cursor branch onto prompted destination",
-      "  ra        Insert prompted revision after cursor",
-      "  rA        Insert cursor after prompted destination",
-      "",
-      "Squash:",
-      "  gqw       Squash @/@- into cursor",
-      "  gqs       Squash prompted revision into cursor",
-      "  gqS       Squash cursor into prompted revision",
-      "",
-      "Views:",
-      "  gb        Switch to bookmark view",
-      "  gC        Toggle compact/comfortable log layout",
-      "  gR        Open review buffer",
-      "  gs        Switch to status view",
-      "",
-      "Other:",
-      "  ga        Show jj aliases",
-      "  gu        Undo last jj operation",
-      "  R         Refresh",
-      "  q         Close",
-      "  g?        This help",
-    }, { width = 68 })
-  end)
+    end,
+    refresh = function()
+      M.refresh()
+    end,
+    help = function()
+      ui.help_popup("jj-fugitive Log", {
+        "Navigation:",
+        "  j/k       Move through commits",
+        "  +/=       Show more commits",
+        "",
+        "Commit actions:",
+        "  <CR>      Show commit details",
+        "  d         Show diff for commit",
+        "  cc        Describe (edit commit message)",
+        "  e         Edit at commit (jj edit)",
+        "  n         New change after commit (jj new)",
+        "  b         Create/move bookmark to commit",
+        "  A         Abandon commit (jj abandon)",
+        "",
+        "Rebase:",
+        "  rw        Rebase @/@- onto cursor (children stay)",
+        "  rs        Rebase prompted source+desc onto cursor",
+        "  rS        Rebase cursor+desc onto prompted destination",
+        "  rr        Rebase prompted revision onto cursor (children stay)",
+        "  rR        Rebase cursor onto prompted destination (children stay)",
+        "  rb        Rebase prompted branch onto cursor",
+        "  rB        Rebase cursor branch onto prompted destination",
+        "  ra        Insert prompted revision after cursor",
+        "  rA        Insert cursor after prompted destination",
+        "",
+        "Squash:",
+        "  gqw       Squash @/@- into cursor",
+        "  gqs       Squash prompted revision into cursor",
+        "  gqS       Squash cursor into prompted revision",
+        "",
+        "Views:",
+        "  gb        Switch to bookmark view",
+        "  gC        Toggle compact/comfortable log layout",
+        "  gR        Open review buffer",
+        "  gs        Switch to status view",
+        "",
+        "Other:",
+        "  ga        Show jj aliases",
+        "  gu        Undo last jj operation",
+        "  R         Refresh",
+        "  q         Close",
+        "  g?        This help",
+      }, { width = 68 })
+    end,
+  })
 end
 
 --- Check if a log buffer exists.

@@ -297,6 +297,7 @@ function M.refresh_views()
     end
     require("jj-fugitive.status").refresh()
     require("jj-fugitive.bookmark").refresh()
+    require("jj-fugitive.completion").invalidate_cache()
   end)
 end
 

@@ -132,13 +132,6 @@ local function setup_keymaps(bufnr)
     comment_inline_diff(bufnr)
   end)
 
-  local init = require("jj-fugitive")
-  if init.review_config then
-    ui.map(bufnr, "n", "gR", function()
-      require("redline").show(init.review_config)
-    end)
-  end
-
   ui.map(bufnr, "n", "d", function()
     local file = file_from_line(vim.api.nvim_get_current_line())
     if file then
@@ -174,10 +167,6 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  ui.map(bufnr, "n", "R", function()
-    M.refresh()
-  end)
-
   ui.map(bufnr, "n", "gu", function()
     require("jj-fugitive").undo()
   end)
@@ -186,48 +175,51 @@ local function setup_keymaps(bufnr)
     ui.show_aliases()
   end)
 
-  ui.map(bufnr, "n", "gb", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.bookmark").show()
-  end)
-
-  ui.map(bufnr, "n", "gl", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.log").show()
-  end)
-
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd(ui.close_cmd())
-  end)
-
-  ui.map(bufnr, "n", "g?", function()
-    ui.help_popup("jj-fugitive Status", {
-      "Status view",
-      "",
-      "Actions:",
-      "  <CR>     Open file",
-      "  o        Open file in split",
-      "  =        Toggle inline diff",
-      "  cR       Add review comment from inline diff",
-      "  gR       Open review buffer",
-      "  d        Show diff for file",
-      "  D        Side-by-side diff",
-      "  cc       Describe working copy",
-      "  S        Split working copy (jj split TUI)",
-      "  x        Restore file from parent (@-)",
-      "",
-      "Views:",
-      "  gb       Switch to bookmark view",
-      "  gl       Switch to log view",
-      "",
-      "Other:",
-      "  ga       Show jj aliases",
-      "  gu       Undo last jj operation",
-      "  R        Refresh",
-      "  q        Close",
-      "  g?       This help",
-    })
-  end)
+  local init = require("jj-fugitive")
+  ui.setup_view_keymaps(bufnr, {
+    log = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.log").show()
+    end,
+    bookmark = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.bookmark").show()
+    end,
+    review = init.review_config and function()
+      require("redline").show(init.review_config)
+    end,
+    refresh = function()
+      M.refresh()
+    end,
+    help = function()
+      ui.help_popup("jj-fugitive Status", {
+        "Status view",
+        "",
+        "Actions:",
+        "  <CR>     Open file",
+        "  o        Open file in split",
+        "  =        Toggle inline diff",
+        "  cR       Add review comment from inline diff",
+        "  gR       Open review buffer",
+        "  d        Show diff for file",
+        "  D        Side-by-side diff",
+        "  cc       Describe working copy",
+        "  S        Split working copy (jj split TUI)",
+        "  x        Restore file from parent (@-)",
+        "",
+        "Views:",
+        "  gb       Switch to bookmark view",
+        "  gl       Switch to log view",
+        "",
+        "Other:",
+        "  ga       Show jj aliases",
+        "  gu       Undo last jj operation",
+        "  R        Refresh",
+        "  q        Close",
+        "  g?       This help",
+      })
+    end,
+  })
 end
 
 local function format_lines(output)

@@ -25,10 +25,6 @@ local function setup_diff_keymaps(bufnr, filename, review_ctx)
   end
   pcall(vim.api.nvim_buf_set_var, bufnr, "jj_diff_keymaps_set", true)
 
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd(ui.close_cmd())
-  end)
-
   local init = require("jj-fugitive")
   if init.review_config then
     ui.map(bufnr, "n", "cR", function()
@@ -38,21 +34,6 @@ local function setup_diff_keymaps(bufnr, filename, review_ctx)
       require("redline").show(init.review_config)
     end)
   end
-
-  ui.map(bufnr, "n", "gb", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.bookmark").show()
-  end)
-
-  ui.map(bufnr, "n", "gl", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.log").show()
-  end)
-
-  ui.map(bufnr, "n", "gs", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.status").show()
-  end)
 
   if filename then
     ui.map(bufnr, "n", "o", function()
@@ -64,30 +45,44 @@ local function setup_diff_keymaps(bufnr, filename, review_ctx)
     end)
   end
 
-  ui.map(bufnr, "n", "g?", function()
-    ui.help_popup("jj-fugitive Diff", {
-      "Diff view",
-      "",
-      "Navigation:",
-      "  [c      Previous change",
-      "  ]c      Next change",
-      "",
-      "Actions:",
-      "  cR      Add review comment",
-      "  gR      Open review buffer",
-      "  o       Open file in editor",
-      "  D       Side-by-side diff",
-      "",
-      "Views:",
-      "  gb      Switch to bookmark view",
-      "  gl      Switch to log view",
-      "  gs      Switch to status view",
-      "",
-      "Other:",
-      "  q       Close",
-      "  g?      This help",
-    })
-  end)
+  ui.setup_view_keymaps(bufnr, {
+    log = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.log").show()
+    end,
+    status = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.status").show()
+    end,
+    bookmark = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.bookmark").show()
+    end,
+    help = function()
+      ui.help_popup("jj-fugitive Diff", {
+        "Diff view",
+        "",
+        "Navigation:",
+        "  [c      Previous change",
+        "  ]c      Next change",
+        "",
+        "Actions:",
+        "  cR      Add review comment",
+        "  gR      Open review buffer",
+        "  o       Open file in editor",
+        "  D       Side-by-side diff",
+        "",
+        "Views:",
+        "  gb      Switch to bookmark view",
+        "  gl      Switch to log view",
+        "  gs      Switch to status view",
+        "",
+        "Other:",
+        "  q       Close",
+        "  g?      This help",
+      })
+    end,
+  })
 end
 
 function M.show(opts)

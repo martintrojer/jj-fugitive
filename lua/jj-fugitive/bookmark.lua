@@ -106,22 +106,8 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  ui.map(bufnr, "n", "R", function()
-    M.refresh()
-  end)
-
   ui.map(bufnr, "n", "gu", function()
     require("jj-fugitive").undo()
-  end)
-
-  ui.map(bufnr, "n", "gl", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.log").show()
-  end)
-
-  ui.map(bufnr, "n", "gs", function()
-    vim.cmd(ui.close_cmd())
-    require("jj-fugitive.status").show()
   end)
 
   ui.map(bufnr, "n", "ga", function()
@@ -129,45 +115,51 @@ local function setup_keymaps(bufnr)
   end)
 
   local init = require("jj-fugitive")
-  if init.review_config then
-    ui.map(bufnr, "n", "gR", function()
+  ui.setup_view_keymaps(bufnr, {
+    log = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.log").show()
+    end,
+    status = function()
+      vim.cmd(ui.close_cmd())
+      require("jj-fugitive.status").show()
+    end,
+    review = init.review_config and function()
       require("redline").show(init.review_config)
-    end)
-  end
-
-  ui.map(bufnr, "n", "q", function()
-    vim.cmd(ui.close_cmd())
-  end)
-
-  ui.map(bufnr, "n", "g?", function()
-    ui.help_popup("jj-fugitive Bookmarks", {
-      "Bookmarks view",
-      "",
-      "Actions:",
-      "  c       Create bookmark",
-      "  d       Delete bookmark under cursor",
-      "  go      Edit at bookmark's revision",
-      "  m       Move bookmark to prompted revision",
-      "",
-      "Remote:",
-      "  t       Track remote bookmark (origin)",
-      "  u       Untrack remote bookmark",
-      "  p       Push bookmark to remote",
-      "  f       Fetch from remote",
-      "",
-      "Views:",
-      "  gl      Switch to log view",
-      "  gs      Switch to status view",
-      "  gR      Open review buffer",
-      "",
-      "Other:",
-      "  ga      Show jj aliases",
-      "  gu      Undo last jj operation",
-      "  R       Refresh",
-      "  q       Close",
-      "  g?      This help",
-    })
-  end)
+    end,
+    refresh = function()
+      M.refresh()
+    end,
+    help = function()
+      ui.help_popup("jj-fugitive Bookmarks", {
+        "Bookmarks view",
+        "",
+        "Actions:",
+        "  c       Create bookmark",
+        "  d       Delete bookmark under cursor",
+        "  go      Edit at bookmark's revision",
+        "  m       Move bookmark to prompted revision",
+        "",
+        "Remote:",
+        "  t       Track remote bookmark (origin)",
+        "  u       Untrack remote bookmark",
+        "  p       Push bookmark to remote",
+        "  f       Fetch from remote",
+        "",
+        "Views:",
+        "  gl      Switch to log view",
+        "  gs      Switch to status view",
+        "  gR      Open review buffer",
+        "",
+        "Other:",
+        "  ga      Show jj aliases",
+        "  gu      Undo last jj operation",
+        "  R       Refresh",
+        "  q       Close",
+        "  g?      This help",
+      })
+    end,
+  })
 end
 
 local function format_lines(output)

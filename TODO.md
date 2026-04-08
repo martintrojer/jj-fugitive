@@ -3,8 +3,6 @@
 ## UX
 
 - [ ] Blame history stack — `~` goes to parent but no way to go back to child
-- [ ] Revision completion in `completion.lua` is uncached and synchronous — can freeze in large repos
-- [ ] Alias cache in `completion.lua` never invalidated within a session
 
 ## Known issues
 

@@ -3,6 +3,7 @@ local M = {}
 local parse_commands = require("fugitive-core.completion").parse_commands
 
 local cached_aliases = nil
+
 local function get_aliases()
   if cached_aliases then
     return cached_aliases
@@ -17,7 +18,21 @@ local function get_aliases()
   return cached_aliases
 end
 
+local cached_revisions = nil
+local revisions_time = 0
+local REVISIONS_TTL = 5
+
+function M.invalidate_cache()
+  cached_aliases = nil
+  cached_revisions = nil
+end
+
 local function get_revisions()
+  local now = vim.uv.now() / 1000
+  if cached_revisions and (now - revisions_time) < REVISIONS_TTL then
+    return cached_revisions
+  end
+
   local revisions = { "@", "@-", "@+", "root()" }
   local init = require("jj-fugitive")
 
@@ -40,6 +55,8 @@ local function get_revisions()
     end
   end
 
+  cached_revisions = revisions
+  revisions_time = now
   return revisions
 end
 

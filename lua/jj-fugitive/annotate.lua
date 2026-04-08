@@ -107,46 +107,46 @@ function M.show(filename, rev)
     end
   end)
 
-  ui.map(ann_buf, "n", "q", function()
+  local function close_annotate()
     close()
     if ui.buf_var(src_buf, "jj_annotate_source", false) and vim.api.nvim_buf_is_valid(src_buf) then
       pcall(vim.api.nvim_buf_delete, src_buf, { force = true })
     end
-  end)
+  end
 
-  ui.map(ann_buf, "n", "gl", function()
-    close()
-    require("jj-fugitive.log").show()
-  end)
-
-  ui.map(ann_buf, "n", "gs", function()
-    close()
-    require("jj-fugitive.status").show()
-  end)
-
-  ui.map(ann_buf, "n", "gb", function()
-    close()
-    require("jj-fugitive.bookmark").show()
-  end)
-
-  ui.map(ann_buf, "n", "g?", function()
-    ui.help_popup("jj-fugitive Annotate", {
-      "Annotate view for " .. filename .. rev_suffix,
-      "",
-      "Actions:",
-      "  <CR>    Show commit for this line",
-      "  ~       Re-annotate at parent of this line's change",
-      "",
-      "Views:",
-      "  gb      Switch to bookmark view",
-      "  gl      Switch to log view",
-      "  gs      Switch to status view",
-      "",
-      "Other:",
-      "  q       Close annotation",
-      "  g?      This help",
-    })
-  end)
+  ui.setup_view_keymaps(ann_buf, {
+    close = close_annotate,
+    log = function()
+      close()
+      require("jj-fugitive.log").show()
+    end,
+    status = function()
+      close()
+      require("jj-fugitive.status").show()
+    end,
+    bookmark = function()
+      close()
+      require("jj-fugitive.bookmark").show()
+    end,
+    help = function()
+      ui.help_popup("jj-fugitive Annotate", {
+        "Annotate view for " .. filename .. rev_suffix,
+        "",
+        "Actions:",
+        "  <CR>    Show commit for this line",
+        "  ~       Re-annotate at parent of this line's change",
+        "",
+        "Views:",
+        "  gb      Switch to bookmark view",
+        "  gl      Switch to log view",
+        "  gs      Switch to status view",
+        "",
+        "Other:",
+        "  q       Close annotation",
+        "  g?      This help",
+      })
+    end,
+  })
 
   if rev then
     ui.info("Annotate: " .. filename .. " @ " .. rev)

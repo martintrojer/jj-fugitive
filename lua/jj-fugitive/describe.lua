@@ -11,38 +11,38 @@ end
 local function setup_keymaps(bufnr, discard_and_close)
   local ui = require("jj-fugitive.ui")
 
-  ui.map(bufnr, "n", "gl", function()
-    discard_and_close()
-    require("jj-fugitive.log").show()
-  end)
-
-  ui.map(bufnr, "n", "gs", function()
-    discard_and_close()
-    require("jj-fugitive.status").show()
-  end)
-
-  ui.map(bufnr, "n", "gb", function()
-    discard_and_close()
-    require("jj-fugitive.bookmark").show()
-  end)
-
-  ui.map(bufnr, "n", "g?", function()
-    ui.help_popup("jj-fugitive Describe", {
-      "Editing commit description",
-      "",
-      "Actions:",
-      "  :w      Save description",
-      "",
-      "Views:",
-      "  gb      Switch to bookmark view",
-      "  gl      Switch to log view",
-      "  gs      Switch to status view",
-      "",
-      "Other:",
-      "  q       Abort (close without saving)",
-      "  g?      This help",
-    })
-  end)
+  ui.setup_view_keymaps(bufnr, {
+    close = discard_and_close,
+    log = function()
+      discard_and_close()
+      require("jj-fugitive.log").show()
+    end,
+    status = function()
+      discard_and_close()
+      require("jj-fugitive.status").show()
+    end,
+    bookmark = function()
+      discard_and_close()
+      require("jj-fugitive.bookmark").show()
+    end,
+    help = function()
+      ui.help_popup("jj-fugitive Describe", {
+        "Editing commit description",
+        "",
+        "Actions:",
+        "  :w      Save description",
+        "",
+        "Views:",
+        "  gb      Switch to bookmark view",
+        "  gl      Switch to log view",
+        "  gs      Switch to status view",
+        "",
+        "Other:",
+        "  q       Abort (close without saving)",
+        "  g?      This help",
+      })
+    end,
+  })
 end
 
 function M.describe(rev)
