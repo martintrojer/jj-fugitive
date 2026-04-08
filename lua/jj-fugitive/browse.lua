@@ -1,87 +1,9 @@
 local M = {}
 
--- Parse a git remote URL into a web base and repo info
--- Supports: git@github.com:user/repo.git, https://github.com/user/repo(.git), ssh://git@github.com/user/repo.git
-function M.parse_remote_url(url)
-  if not url or url == "" then
-    return nil, "Empty remote URL"
-  end
+local core_browse = require("fugitive-core.views.browse")
 
-  local host, owner, repo
-
-  -- git@host:owner/repo.git or git@host:owner/repo
-  host, owner, repo = url:match("^git@([^:]+):([^/]+)/(.+)%.git$")
-  if not host then
-    host, owner, repo = url:match("^git@([^:]+):([^/]+)/([^%.]+)$")
-  end
-  if host and owner and repo then
-    return {
-      host = host,
-      owner = owner,
-      repo = repo,
-      web_base = string.format("https://%s/%s/%s", host, owner, repo),
-    }
-  end
-
-  -- ssh://git@host/owner/repo(.git)
-  host, owner, repo = url:match("^ssh://git@([^/]+)/([^/]+)/(.+)%.git/?$")
-  if not host then
-    host, owner, repo = url:match("^ssh://git@([^/]+)/([^/]+)/([^%./]+)/?$")
-  end
-  if host and owner and repo then
-    return {
-      host = host,
-      owner = owner,
-      repo = repo,
-      web_base = string.format("https://%s/%s/%s", host, owner, repo),
-    }
-  end
-
-  -- http(s)://host/owner/repo(.git)
-  local scheme
-  scheme, host, owner, repo = url:match("^(https?)://([^/]+)/([^/]+)/([^/]+)$")
-  if host and owner and repo then
-    repo = repo:gsub("%.git$", "")
-    return {
-      host = host,
-      owner = owner,
-      repo = repo,
-      web_base = string.format("%s://%s/%s/%s", scheme, host, owner, repo),
-    }
-  end
-
-  return nil, "Unsupported or unrecognized remote URL: " .. url
-end
-
--- Build a web URL for a file on common forges (GitHub/GitLab-like)
--- provider is inferred from host; for GitHub: /blob/<rev>/<path>#Lstart-Lend
-function M.build_file_url(web_base, host, path, rev, line_start, line_end)
-  if not web_base or not host or not path or not rev then
-    return nil, "Missing parameters to build URL"
-  end
-
-  local encoded_path = path:gsub(" ", "%%20")
-  local url
-
-  if host:match("gitlab%.com$") then
-    url = string.format("%s/-/blob/%s/%s", web_base, rev, encoded_path)
-    if line_start and line_end and line_start ~= line_end then
-      url = string.format("%s#L%d-%d", url, line_start, line_end)
-    elseif line_start then
-      url = string.format("%s#L%d", url, line_start)
-    end
-  else
-    -- GitHub-style (used for GitHub and unknown forges)
-    url = string.format("%s/blob/%s/%s", web_base, rev, encoded_path)
-    if line_start and line_end and line_start ~= line_end then
-      url = string.format("%s#L%d-L%d", url, line_start, line_end)
-    elseif line_start then
-      url = string.format("%s#L%d", url, line_start)
-    end
-  end
-
-  return url
-end
+M.parse_remote_url = core_browse.parse_remote_url
+M.build_file_url = core_browse.build_file_url
 
 local function get_origin_url()
   local init = require("jj-fugitive")
@@ -102,13 +24,11 @@ end
 
 local function get_default_rev()
   local init = require("jj-fugitive")
-  -- Prefer 'main' bookmark if it exists
   local bl = init.run_jj({ "bookmark", "list" })
   if bl and (bl:match("^main:") or bl:match("\nmain:")) then
     return "main"
   end
 
-  -- Fallback to current git commit id (short) of @
   local log = init.run_jj({ "log", "-r", "@", "--no-graph", "--limit", "1" })
   if log then
     local hash = log:match("([a-f0-9]+)%s*$")
@@ -136,44 +56,6 @@ local function get_relative_path()
   return rel
 end
 
-local function get_line_range()
-  local start_line = nil
-  local end_line = nil
-  local mode = vim.fn.mode()
-
-  if mode:match("^[vV\22]") then
-    -- Visual selection
-    local s = vim.fn.getpos("<")[2]
-    local e = vim.fn.getpos(">")[2]
-    if s and e then
-      if s <= e then
-        start_line, end_line = s, e
-      else
-        start_line, end_line = e, s
-      end
-    end
-  else
-    -- Current cursor line
-    start_line = vim.fn.line(".")
-  end
-
-  return start_line, end_line
-end
-
--- Open URL using Neovim's built-in handler; fallback to clipboard
-local function open_url(url)
-  if not url then
-    return false
-  end
-  local ok = vim.ui.open(url)
-  if not ok then
-    vim.fn.setreg("+", url)
-    vim.notify("URL copied to clipboard: " .. url, vim.log.levels.INFO)
-  end
-  return true
-end
-
--- Main entrypoint: open current file/lines at remote
 function M.browse()
   local ui = require("jj-fugitive.ui")
   local remote_url, err = get_origin_url()
@@ -181,7 +63,7 @@ function M.browse()
     ui.err(err or "No git remote found")
     return
   end
-  local remote, perr = M.parse_remote_url(remote_url)
+  local remote, perr = core_browse.parse_remote_url(remote_url)
   if not remote then
     ui.err(perr)
     return
@@ -199,14 +81,14 @@ function M.browse()
     return
   end
 
-  local s, e = get_line_range()
-  local url = M.build_file_url(remote.web_base, remote.host, rel, rev, s, e)
+  local s, e = core_browse.line_range()
+  local url = core_browse.build_file_url(remote, rel, rev, s, e)
   if not url then
     ui.err("Failed to build browse URL")
     return
   end
 
-  open_url(url)
+  core_browse.open_url(url)
 end
 
 return M

@@ -3,7 +3,8 @@ local M = {}
 local open_editor = require("fugitive-core.views.describe").open_editor
 
 local function get_description(rev)
-  local result = require("jj-fugitive").run_jj({ "log", "-r", rev, "--no-graph", "-T", "description" })
+  local result =
+    require("jj-fugitive").run_jj({ "log", "-r", rev, "--no-graph", "-T", "description" })
   return result and result:gsub("%s+$", "") or ""
 end
 

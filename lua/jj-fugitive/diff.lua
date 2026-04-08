@@ -1,10 +1,7 @@
 local M = {}
 
-local ansi = require("jj-fugitive.ansi")
+local core_diff = require("fugitive-core.views.diff")
 
---- Get diff output from jj with ANSI colors.
---- file: optional filename to restrict diff
---- rev: optional revision (defaults to working copy)
 local function get_diff(file, rev)
   local init = require("jj-fugitive")
   local args = { "diff", "--color", "always", "--git" }
@@ -21,7 +18,6 @@ local function get_diff(file, rev)
   return init.run_jj(args)
 end
 
---- Setup keymaps for a unified diff buffer.
 local function setup_diff_keymaps(bufnr, filename, review_ctx)
   local ui = require("jj-fugitive.ui")
   if ui.buf_var(bufnr, "jj_diff_keymaps_set", false) then
@@ -94,8 +90,6 @@ local function setup_diff_keymaps(bufnr, filename, review_ctx)
   end)
 end
 
---- Show unified diff view.
---- opts: filename string, or { file = "...", rev = "..." }, or nil for all changes
 function M.show(opts)
   if type(opts) ~= "table" then
     opts = { file = opts }
@@ -107,7 +101,6 @@ function M.show(opts)
   if opts.file and opts.file ~= "" then
     filename = vim.fn.expand(opts.file:match("^%s*(.-)%s*$"))
   else
-    -- If in a real file buffer, diff that file
     local buf_name = vim.api.nvim_buf_get_name(0)
     if buf_name ~= "" and vim.bo.buftype == "" then
       local cwd = vim.fn.getcwd()
@@ -119,45 +112,28 @@ function M.show(opts)
     end
   end
 
-  local output = get_diff(filename, rev)
-  if not output then
-    return
-  end
-
-  if output:match("^%s*$") then
-    require("jj-fugitive.ui").warn("No changes in " .. (filename or rev or "working copy"))
-    return
-  end
-
   local file_desc = filename or rev or "all changes"
-  local header = {
-    "",
-    "# Diff: " .. file_desc,
-    "# Press g? for help, q to close",
-    "",
-  }
-
-  local ui = require("jj-fugitive.ui")
   local bufname = "jj-diff: " .. file_desc
-  local existing = ui.find_buf(vim.pesc(bufname))
-  local bufnr
-
-  if existing then
-    bufnr = existing
-    ansi.update_colored_buffer(bufnr, output, header, { prefix = "JjDiff" })
-  else
-    bufnr = ansi.create_colored_buffer(output, bufname, header, { prefix = "JjDiff" })
-  end
-
   local review_ctx = { file = filename, rev = rev or "@" }
-  setup_diff_keymaps(bufnr, filename, review_ctx)
 
-  ui.ensure_visible(bufnr)
-
-  ui.set_statusline(bufnr, "jj-diff: " .. file_desc)
+  core_diff.show({
+    get_diff = function()
+      return get_diff(filename, rev)
+    end,
+    on_empty = function()
+      require("jj-fugitive.ui").warn("No changes in " .. file_desc)
+    end,
+    buf_name = bufname,
+    buf_pattern = vim.pesc(bufname),
+    ansi_prefix = "JjDiff",
+    header = { "", "# Diff: " .. file_desc, "# Press g? for help, q to close", "" },
+    statusline = "jj-diff: " .. file_desc,
+    setup = function(bufnr)
+      setup_diff_keymaps(bufnr, filename, review_ctx)
+    end,
+  })
 end
 
---- Show side-by-side diff using Neovim's built-in diffthis.
 function M.show_sidebyside(filename)
   if not filename then
     require("jj-fugitive.ui").err("Side-by-side diff requires a filename")
@@ -169,7 +145,6 @@ function M.show_sidebyside(filename)
   local original = ui.file_at_rev(filename, "@-")
   local current = ui.file_at_rev(filename, "@")
 
-  -- Create side-by-side layout in a new tab
   local left, right = ui.open_sidebyside(
     original,
     filename .. " (parent @-)",
@@ -178,7 +153,6 @@ function M.show_sidebyside(filename)
     filename
   )
 
-  -- Additional keymaps for working copy diff
   for _, buf in ipairs({ left, right }) do
     ui.map(buf, "n", "o", function()
       vim.cmd(ui.close_cmd())
