@@ -67,8 +67,19 @@ require("jj-fugitive").setup({
   default_command = "log",     -- "log" or "status": what :J opens
   open_mode = "split",         -- "split" or "tab": how views open
   ignore_immutable = false,    -- allow rewriting immutable commits
+  forges = {                   -- custom browse URL templates (optional)
+    { match = "myrepo", url = "https://code.example.com/myrepo/{path}?lines={lines}" },
+  },
 })
 ```
+
+### Custom Forges
+
+The `forges` option lets `:JBrowse` work with any code hosting service.
+Each entry has a `match` pattern tested against the remote URL,
+and a `url` template with `{path}`, `{rev}`, and `{lines}` placeholders.
+If no lines are selected, `?lines={lines}` is stripped automatically.
+Custom forges are tried first — standard GitHub/GitLab parsing is the fallback.
 
 ## Commands
 

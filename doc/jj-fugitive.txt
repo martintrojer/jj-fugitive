@@ -187,6 +187,7 @@ Keybindings:
 
   <CR>          Show commit for this line
   ~             Re-annotate at parent of this line's change
+  <BS>          Go back to previous revision (after ~)
   gb            Switch to bookmark view
   gl            Switch to log view
   gs            Switch to status view
@@ -215,6 +216,21 @@ BROWSE                                          *jj-fugitive-browse*
 |:JBrowse| opens the current file (and line or visual selection) on
 the remote host. Supports GitHub and GitLab SSH/HTTPS remotes.
 Prefers the `main` bookmark for the revision.
+
+                                                *jj-fugitive-forges*
+Custom Forges ~
+
+The `forges` config option lets |:JBrowse| work with any code hosting
+service. Each entry has a `match` pattern tested against the remote URL,
+and a `url` template with `{path}`, `{rev}`, and `{lines}` placeholders.
+If no lines are selected, `?lines={lines}` is stripped automatically.
+Custom forges are tried first; standard GitHub/GitLab parsing is the
+fallback.
+>lua
+  forges = {
+    { match = "myrepo", url = "https://code.example.com/myrepo/{path}?lines={lines}" },
+  }
+<
 
 REQUIREMENTS                                    *jj-fugitive-requirements*
 
