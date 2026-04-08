@@ -723,6 +723,8 @@ function M.refresh()
     return
   end
 
+  local view = ui.save_view(bufnr)
+
   -- Preserve limit
   local limit = ui.buf_var(bufnr, "jj_log_limit", 0)
   local template = ui.buf_var(bufnr, "jj_log_template", DEFAULT_LOG_TEMPLATE)
@@ -752,6 +754,8 @@ function M.refresh()
   set_rev_lines(bufnr, line_rev_ids, #header)
 
   setup_keymaps(bufnr)
+
+  ui.restore_view(bufnr, view)
 end
 
 --- Show the log view.
