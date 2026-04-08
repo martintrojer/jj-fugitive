@@ -52,10 +52,45 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
     end,
   })
 
-  -- q to abort (close without saving)
-  ui.map(bufnr, "n", "q", function()
+  local function discard_and_close()
     vim.bo[bufnr].modified = false
     vim.cmd(ui.close_cmd())
+  end
+
+  -- q to abort (close without saving)
+  ui.map(bufnr, "n", "q", discard_and_close)
+
+  ui.map(bufnr, "n", "gl", function()
+    discard_and_close()
+    require("jj-fugitive.log").show()
+  end)
+
+  ui.map(bufnr, "n", "gs", function()
+    discard_and_close()
+    require("jj-fugitive.status").show()
+  end)
+
+  ui.map(bufnr, "n", "gb", function()
+    discard_and_close()
+    require("jj-fugitive.bookmark").show()
+  end)
+
+  ui.map(bufnr, "n", "g?", function()
+    ui.help_popup("jj-fugitive Describe", {
+      "Editing commit description",
+      "",
+      "Actions:",
+      "  :w      Save description",
+      "",
+      "Views:",
+      "  gb      Switch to bookmark view",
+      "  gl      Switch to log view",
+      "  gs      Switch to status view",
+      "",
+      "Other:",
+      "  q       Abort (close without saving)",
+      "  g?      This help",
+    })
   end)
 
   -- Open in a new pane

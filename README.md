@@ -125,15 +125,15 @@ Commit actions:
   A         Abandon commit (jj abandon)
 
 Rebase:
-  grw       Rebase @/@- onto cursor (children stay)
-  grs       Rebase prompted source+desc onto cursor
-  grS       Rebase cursor+desc onto prompted destination
-  grr       Rebase prompted revision onto cursor (children stay)
-  grR       Rebase cursor onto prompted destination (children stay)
-  grb       Rebase prompted branch onto cursor
-  grB       Rebase cursor branch onto prompted destination
-  gra       Insert prompted revision after cursor
-  grA       Insert cursor after prompted destination
+  rw        Rebase @/@- onto cursor (children stay)
+  rs        Rebase prompted source+desc onto cursor
+  rS        Rebase cursor+desc onto prompted destination
+  rr        Rebase prompted revision onto cursor (children stay)
+  rR        Rebase cursor onto prompted destination (children stay)
+  rb        Rebase prompted branch onto cursor
+  rB        Rebase cursor branch onto prompted destination
+  ra        Insert prompted revision after cursor
+  rA        Insert cursor after prompted destination
 
 Squash:
   gqw       Squash @/@- into cursor
@@ -186,6 +186,7 @@ Open with `:J bookmark`.
 ```
   c         Create bookmark (prompts for name and revision)
   d         Delete bookmark under cursor
+  go        Edit at bookmark's revision
   m         Move bookmark to revision
   t         Track remote bookmark
   u         Untrack remote bookmark
@@ -231,6 +232,9 @@ scroll-locked split alongside the source file.
 ```
   <CR>      Show commit for this line
   ~         Re-annotate at parent of this line's change
+  gb        Switch to bookmark view
+  gl        Switch to log view
+  gs        Switch to status view
   q         Close annotation
   g?        Help
 ```
@@ -238,6 +242,15 @@ scroll-locked split alongside the source file.
 ## Describe & Commit
 
 `:J describe [rev]` opens an editor buffer for the commit message. `:J commit` does the same but also creates a new change after saving. Lines starting with `#` are ignored. Save with `:w`.
+
+```
+  :w        Save description
+  gb        Switch to bookmark view
+  gl        Switch to log view
+  gs        Switch to status view
+  q         Abort (close without saving)
+  g?        Help
+```
 
 ## License
 

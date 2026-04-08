@@ -153,6 +153,21 @@ function M.show(filename, rev)
 
   ui.map(ann_buf, "n", "q", close_annotate)
 
+  ui.map(ann_buf, "n", "gl", function()
+    close_annotate()
+    require("jj-fugitive.log").show()
+  end)
+
+  ui.map(ann_buf, "n", "gs", function()
+    close_annotate()
+    require("jj-fugitive.status").show()
+  end)
+
+  ui.map(ann_buf, "n", "gb", function()
+    close_annotate()
+    require("jj-fugitive.bookmark").show()
+  end)
+
   ui.map(ann_buf, "n", "g?", function()
     ui.help_popup("jj-fugitive Annotate", {
       "Annotate view for " .. filename .. rev_suffix,
@@ -160,6 +175,11 @@ function M.show(filename, rev)
       "Actions:",
       "  <CR>    Show commit for this line",
       "  ~       Re-annotate at parent of this line's change",
+      "",
+      "Views:",
+      "  gb      Switch to bookmark view",
+      "  gl      Switch to log view",
+      "  gs      Switch to status view",
       "",
       "Other:",
       "  q       Close annotation",

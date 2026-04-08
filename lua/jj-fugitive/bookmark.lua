@@ -114,6 +114,14 @@ local function setup_keymaps(bufnr)
     run_and_refresh({ "git", "fetch" }, "Fetched from remote")
   end)
 
+  -- Edit at bookmark's revision
+  ui.map(bufnr, "n", "go", function()
+    local name = bookmark_from_line(vim.api.nvim_get_current_line())
+    if name then
+      run_and_refresh({ "edit", name }, "Editing at " .. name)
+    end
+  end)
+
   -- Refresh
   ui.map(bufnr, "n", "R", function()
     M.refresh()
@@ -158,6 +166,7 @@ local function setup_keymaps(bufnr)
       "Actions:",
       "  c       Create bookmark",
       "  d       Delete bookmark under cursor",
+      "  go      Edit at bookmark's revision",
       "  m       Move bookmark to prompted revision",
       "",
       "Remote:",

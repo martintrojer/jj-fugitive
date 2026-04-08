@@ -55,15 +55,15 @@ Rebase: ~
   Lowercase prompts for source, cursor is destination.
   Uppercase uses cursor as source, prompts for destination.
 
-  grw           Rebase @/@- onto cursor (children stay)
-  grs           Rebase prompted source+desc onto cursor
-  grS           Rebase cursor+desc onto prompted destination
-  grr           Rebase prompted revision onto cursor (children stay)
-  grR           Rebase cursor onto prompted destination (children stay)
-  grb           Rebase prompted branch onto cursor
-  grB           Rebase cursor branch onto prompted destination
-  gra           Insert prompted revision after cursor
-  grA           Insert cursor after prompted destination
+  rw            Rebase @/@- onto cursor (children stay)
+  rs            Rebase prompted source+desc onto cursor
+  rS            Rebase cursor+desc onto prompted destination
+  rr            Rebase prompted revision onto cursor (children stay)
+  rR            Rebase cursor onto prompted destination (children stay)
+  rb            Rebase prompted branch onto cursor
+  rB            Rebase cursor branch onto prompted destination
+  ra            Insert prompted revision after cursor
+  rA            Insert cursor after prompted destination
 
 Squash: ~
 
@@ -160,6 +160,7 @@ Keybindings:
 
   c             Create bookmark (prompts for name and revision)
   d             Delete bookmark under cursor
+  go            Edit at bookmark's revision
   m             Move bookmark to revision (prompts)
   t             Track remote bookmark (origin)
   u             Untrack remote bookmark
@@ -186,6 +187,9 @@ Keybindings:
 
   <CR>          Show commit for this line
   ~             Re-annotate at parent of this line's change
+  gb            Switch to bookmark view
+  gl            Switch to log view
+  gs            Switch to status view
   q             Close annotation
   g?            Help
 
@@ -196,6 +200,15 @@ DESCRIBE AND COMMIT                             *jj-fugitive-describe*
 
 Lines starting with # are ignored. Save with `:w` to apply.
 Press `q` to abort without saving.
+
+Keybindings:
+
+  :w            Save description
+  gb            Switch to bookmark view
+  gl            Switch to log view
+  gs            Switch to status view
+  q             Abort (close without saving)
+  g?            Help
 
 BROWSE                                          *jj-fugitive-browse*
 

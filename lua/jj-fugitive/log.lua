@@ -437,7 +437,7 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Rebase helpers: lowercase prompts source, uppercase uses cursor as source.
-  ui.map(bufnr, "n", "grw", function()
+  ui.map(bufnr, "n", "rw", function()
     local id = get_rev_id()
     if not id then
       return
@@ -455,7 +455,7 @@ local function setup_keymaps(bufnr)
     end
   end)
 
-  ui.map(bufnr, "n", "grs", function()
+  ui.map(bufnr, "n", "rs", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -473,7 +473,7 @@ local function setup_keymaps(bufnr)
     end)
   end)
 
-  ui.map(bufnr, "n", "grS", function()
+  ui.map(bufnr, "n", "rS", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -491,7 +491,7 @@ local function setup_keymaps(bufnr)
     end)
   end)
 
-  ui.map(bufnr, "n", "grb", function()
+  ui.map(bufnr, "n", "rb", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -510,7 +510,7 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Rebase cursor's branch onto prompted destination
-  ui.map(bufnr, "n", "grB", function()
+  ui.map(bufnr, "n", "rB", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -529,7 +529,7 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Rebase single revision (children stay) onto cursor
-  ui.map(bufnr, "n", "grr", function()
+  ui.map(bufnr, "n", "rr", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -545,7 +545,7 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Extract cursor revision and move it elsewhere
-  ui.map(bufnr, "n", "grR", function()
+  ui.map(bufnr, "n", "rR", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -564,7 +564,7 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Insert revision after cursor in stack
-  ui.map(bufnr, "n", "gra", function()
+  ui.map(bufnr, "n", "ra", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -583,7 +583,7 @@ local function setup_keymaps(bufnr)
   end)
 
   -- Move cursor revision after another revision in stack
-  ui.map(bufnr, "n", "grA", function()
+  ui.map(bufnr, "n", "rA", function()
     local id = get_rev_id()
     if not id or warn_divergent(id) then
       return
@@ -604,7 +604,6 @@ local function setup_keymaps(bufnr)
   -- Block built-in keys that error on read-only buffer
   -- Mapping to a function (not <Nop>) lets Neovim still wait for multi-key sequences
   ui.map(bufnr, "n", "c", function() end)
-  ui.map(bufnr, "n", "r", function() end)
 
   -- Describe (cc like fugitive's commit)
   ui.map(bufnr, "n", "cc", function()
@@ -680,15 +679,15 @@ local function setup_keymaps(bufnr)
       "  A         Abandon commit (jj abandon)",
       "",
       "Rebase:",
-      "  grw       Rebase @/@- onto cursor (children stay)",
-      "  grs       Rebase prompted source+desc onto cursor",
-      "  grS       Rebase cursor+desc onto prompted destination",
-      "  grr       Rebase prompted revision onto cursor (children stay)",
-      "  grR       Rebase cursor onto prompted destination (children stay)",
-      "  grb       Rebase prompted branch onto cursor",
-      "  grB       Rebase cursor branch onto prompted destination",
-      "  gra       Insert prompted revision after cursor",
-      "  grA       Insert cursor after prompted destination",
+      "  rw        Rebase @/@- onto cursor (children stay)",
+      "  rs        Rebase prompted source+desc onto cursor",
+      "  rS        Rebase cursor+desc onto prompted destination",
+      "  rr        Rebase prompted revision onto cursor (children stay)",
+      "  rR        Rebase cursor onto prompted destination (children stay)",
+      "  rb        Rebase prompted branch onto cursor",
+      "  rB        Rebase cursor branch onto prompted destination",
+      "  ra        Insert prompted revision after cursor",
+      "  rA        Insert cursor after prompted destination",
       "",
       "Squash:",
       "  gqw       Squash @/@- into cursor",
