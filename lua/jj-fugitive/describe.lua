@@ -1,64 +1,14 @@
 local M = {}
 
---- Get the description text for a revision using jj's template engine.
-local function get_description(init, rev)
-  local result = init.run_jj({ "log", "-r", rev, "--no-graph", "-T", "description" })
+local open_editor = require("fugitive-core.views.describe").open_editor
+
+local function get_description(rev)
+  local result = require("jj-fugitive").run_jj({ "log", "-r", rev, "--no-graph", "-T", "description" })
   return result and result:gsub("%s+$", "") or ""
 end
 
---- Open a scratch buffer for editing a commit message.
---- On :w, runs the given save_fn with the buffer contents.
---- Returns the buffer number.
-local function open_editor(buffer_name, initial_text, help_lines, save_fn)
+local function setup_keymaps(bufnr, discard_and_close)
   local ui = require("jj-fugitive.ui")
-
-  local bufnr = ui.create_scratch_buffer({
-    name = buffer_name,
-    buftype = "acwrite",
-    filetype = "gitcommit",
-    modifiable = true,
-  })
-
-  -- Set initial content: help comments + text
-  local lines = {}
-  for _, h in ipairs(help_lines) do
-    table.insert(lines, h)
-  end
-  table.insert(lines, "")
-  for _, l in ipairs(vim.split(initial_text, "\n")) do
-    table.insert(lines, l)
-  end
-
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-
-  -- BufWriteCmd: filter comments, call save_fn
-  vim.api.nvim_create_autocmd("BufWriteCmd", {
-    buffer = bufnr,
-    callback = function()
-      local buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-      local filtered = {}
-      for _, line in ipairs(buf_lines) do
-        if not line:match("^%s*#") then
-          table.insert(filtered, line)
-        end
-      end
-
-      local text = table.concat(filtered, "\n"):gsub("^%s+", ""):gsub("%s+$", "")
-
-      if save_fn(text) then
-        vim.bo[bufnr].modified = false
-        vim.cmd(ui.close_cmd())
-      end
-    end,
-  })
-
-  local function discard_and_close()
-    vim.bo[bufnr].modified = false
-    vim.cmd(ui.close_cmd())
-  end
-
-  -- q to abort (close without saving)
-  ui.map(bufnr, "n", "q", discard_and_close)
 
   ui.map(bufnr, "n", "gl", function()
     discard_and_close()
@@ -92,23 +42,13 @@ local function open_editor(buffer_name, initial_text, help_lines, save_fn)
       "  g?      This help",
     })
   end)
-
-  -- Open in a new pane
-  ui.open_pane()
-  vim.api.nvim_win_set_buf(0, bufnr)
-
-  -- Position cursor after help comments
-  vim.api.nvim_win_set_cursor(0, { #help_lines + 2, 0 })
-
-  return bufnr
 end
 
---- Open a describe buffer for the given revision.
 function M.describe(rev)
   rev = rev or "@"
   local init = require("jj-fugitive")
 
-  local description = get_description(init, rev)
+  local description = get_description(rev)
 
   open_editor("jj-describe-" .. rev, description, {
     "# Describe revision " .. rev,
@@ -123,14 +63,13 @@ function M.describe(rev)
       return true
     end
     return false
-  end)
+  end, { setup_keymaps = setup_keymaps })
 end
 
---- Open a commit buffer (describe + new).
 function M.commit()
   local init = require("jj-fugitive")
 
-  local description = get_description(init, "@")
+  local description = get_description("@")
 
   open_editor("jj-commit", description, {
     "# Commit message (describe @ then create new change)",
@@ -144,7 +83,7 @@ function M.commit()
       return true
     end
     return false
-  end)
+  end, { setup_keymaps = setup_keymaps })
 end
 
 return M

@@ -21,6 +21,7 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 
 - Neovim 0.10+
 - [Jujutsu](https://github.com/martinvonz/jj) installed and available in PATH
+- [fugitive-core.nvim](https://github.com/martintrojer/fugitive-core.nvim)
 
 ### Optional
 
@@ -33,20 +34,28 @@ A Neovim plugin for [Jujutsu (jj)](https://github.com/martinvonz/jj) version con
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-{ "martintrojer/jj-fugitive" }
+{ "martintrojer/jj-fugitive", dependencies = { "martintrojer/fugitive-core.nvim" } }
 -- For AI review support:
--- { "martintrojer/jj-fugitive", dependencies = { "martintrojer/redline.nvim" } }
+-- { "martintrojer/jj-fugitive", dependencies = { "martintrojer/fugitive-core.nvim", "martintrojer/redline.nvim" } }
+```
+
+### vim.pack (Neovim 0.12+)
+
+```lua
+vim.pack.add("martintrojer/fugitive-core.nvim")
+vim.pack.add("martintrojer/jj-fugitive")
 ```
 
 ### [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
-use "martintrojer/jj-fugitive"
+use { "martintrojer/jj-fugitive", requires = { "martintrojer/fugitive-core.nvim" } }
 ```
 
 ### Manual
 
 ```bash
+git clone https://github.com/martintrojer/fugitive-core.nvim ~/.local/share/nvim/site/pack/plugins/start/fugitive-core.nvim
 git clone https://github.com/martintrojer/jj-fugitive ~/.local/share/nvim/site/pack/plugins/start/jj-fugitive
 ```
 
