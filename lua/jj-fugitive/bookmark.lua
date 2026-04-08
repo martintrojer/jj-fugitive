@@ -190,9 +190,6 @@ function M.refresh()
     get_data = get_bookmarks,
     format_lines = format_lines,
     buf_pattern = BUF_PATTERN,
-    on_refresh = function(bufnr)
-      setup_keymaps(bufnr)
-    end,
   })
 end
 

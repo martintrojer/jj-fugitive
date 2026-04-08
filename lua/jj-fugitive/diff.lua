@@ -103,9 +103,9 @@ function M.show(opts)
   else
     local buf_name = vim.api.nvim_buf_get_name(0)
     if buf_name ~= "" and vim.bo.buftype == "" then
-      local cwd = vim.fn.getcwd()
-      if buf_name:find(cwd, 1, true) == 1 then
-        filename = buf_name:sub(#cwd + 2)
+      local repo_root = require("jj-fugitive").repo_root()
+      if repo_root and buf_name:find(repo_root, 1, true) == 1 then
+        filename = buf_name:sub(#repo_root + 2)
       else
         filename = buf_name
       end

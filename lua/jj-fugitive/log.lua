@@ -1,8 +1,5 @@
 local M = {}
 
-local ansi = require("jj-fugitive.ansi")
-local ui = require("jj-fugitive.ui")
-
 local BUF_PATTERN = "jj%-log"
 local BUF_NAME = "jj-log"
 local LOG_REV_MARKER = "JJREV<"
@@ -106,7 +103,9 @@ end
 
 local function warn_divergent(rev)
   if is_divergent(rev) then
-    ui.warn("Revision " .. rev .. " is divergent — resolve divergence first")
+    require("jj-fugitive.ui").warn(
+      "Revision " .. rev .. " is divergent — resolve divergence first"
+    )
     return true
   end
   return false
@@ -135,7 +134,7 @@ local function run_and_refresh(args, msg)
   local result = init.run_jj(args)
   if result then
     if msg then
-      ui.info(msg)
+      require("jj-fugitive.ui").info(msg)
     end
     init.refresh_views()
   end
@@ -170,6 +169,7 @@ end
 
 --- Open side-by-side diff for a specific file at a revision.
 local function sidebyside_at_rev(filename, rev)
+  local ui = require("jj-fugitive.ui")
   local current = ui.file_at_rev(filename, rev)
   local parent = ui.file_at_rev(filename, rev .. "-")
 
@@ -184,6 +184,7 @@ end
 
 --- Setup keymaps for a detail buffer (show/diff opened from log).
 function M.setup_detail_keymaps(bufnr, kind, id)
+  local ui = require("jj-fugitive.ui")
   ui.map(bufnr, "n", "q", function()
     vim.cmd(ui.close_cmd())
   end)
@@ -268,6 +269,7 @@ end
 
 --- Setup keymaps for the log buffer (idempotent — safe to call on refresh).
 local function setup_keymaps(bufnr)
+  local ui = require("jj-fugitive.ui")
   -- Guard: only set keymaps once per buffer
   if ui.buf_var(bufnr, "jj_log_keymaps_set", false) then
     return
@@ -315,6 +317,7 @@ local function setup_keymaps(bufnr)
 
     local header = { "", "# Commit: " .. id, "# Press g? for help, q to close", "" }
     local bufname = "jj-show: " .. id
+    local ansi = require("fugitive-core.ansi")
     local show_buf = ansi.create_colored_buffer(result, bufname, header, {
       prefix = "JjShow",
     })
@@ -712,12 +715,14 @@ end
 
 --- Check if a log buffer exists.
 function M.is_open()
-  return ui.find_buf(BUF_PATTERN) ~= nil
+  return require("jj-fugitive.ui").find_buf(BUF_PATTERN) ~= nil
 end
 
 --- Refresh the current log view.
 function M.refresh()
   rev_label_cache = {}
+  local ui = require("jj-fugitive.ui")
+  local ansi = require("fugitive-core.ansi")
   local bufnr = ui.find_buf(BUF_PATTERN)
   if not bufnr then
     return
@@ -761,6 +766,10 @@ end
 --- Show the log view.
 function M.show(opts)
   opts = opts or {}
+  rev_label_cache = {}
+
+  local ui = require("jj-fugitive.ui")
+  local ansi = require("fugitive-core.ansi")
 
   local output, line_rev_ids, effective_template = get_log(opts)
   if not output then

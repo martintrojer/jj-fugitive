@@ -75,7 +75,7 @@ function M.show(filename, rev)
       return
     end
 
-    local ansi = require("jj-fugitive.ansi")
+    local ansi = require("fugitive-core.ansi")
     local result = init.run_jj({ "show", "--color", "always", "--git", change_id })
     if not result then
       return
@@ -97,17 +97,9 @@ function M.show(filename, rev)
     if not change_id or #change_id < 8 then
       return
     end
-    -- close uses the core close function which restores orig_buf
-    -- but we need to also clean up the source buffer if historical
-    local src_win = vim.fn.bufwinid(src_buf)
-    if src_win ~= -1 then
-      pcall(vim.api.nvim_win_close, vim.fn.bufwinid(ann_buf), true)
-      vim.api.nvim_win_call(src_win, function()
-        vim.cmd("setlocal noscrollbind")
-      end)
-      if ui.buf_var(src_buf, "jj_annotate_source", false) then
-        vim.api.nvim_buf_delete(src_buf, { force = true })
-      end
+    close()
+    if ui.buf_var(src_buf, "jj_annotate_source", false) and vim.api.nvim_buf_is_valid(src_buf) then
+      pcall(vim.api.nvim_buf_delete, src_buf, { force = true })
     end
     local ok = M.show(filename, change_id .. "-")
     if not ok then
