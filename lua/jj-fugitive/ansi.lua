@@ -32,18 +32,66 @@ local ANSI_COLORS = {
   ["97"] = "White",
 }
 
--- Map 256-color palette indices to reasonable colors for diff
-local COLOR_256_MAP = {
-  ["1"] = "Red", -- red for deletions
-  ["2"] = "Green", -- green for additions
-  ["3"] = "Yellow", -- yellow for changes
-  ["4"] = "Blue", -- blue
-  ["5"] = "Magenta", -- magenta
-  ["6"] = "Cyan", -- cyan
-  ["9"] = "LightRed", -- bright red
-  ["10"] = "LightGreen", -- bright green
-  ["11"] = "LightYellow", -- bright yellow
-}
+-- Map 256-color palette index to a color name.
+-- Covers the 16 basic colors plus common extended palette entries jj uses.
+local function color_256_lookup(idx)
+  local n = tonumber(idx)
+  if not n then
+    return nil
+  end
+  -- Basic 16 colors (0-15)
+  local basic = {
+    [0] = "Black",
+    [1] = "Red",
+    [2] = "Green",
+    [3] = "Yellow",
+    [4] = "Blue",
+    [5] = "Magenta",
+    [6] = "Cyan",
+    [7] = "White",
+    [8] = "DarkGray",
+    [9] = "LightRed",
+    [10] = "LightGreen",
+    [11] = "LightYellow",
+    [12] = "LightBlue",
+    [13] = "LightMagenta",
+    [14] = "LightCyan",
+    [15] = "White",
+  }
+  if n <= 15 then
+    return basic[n]
+  end
+  -- Extended 256-color palette (16-231): map to nearest basic color
+  if n <= 231 then
+    local idx6 = n - 16
+    local r = math.floor(idx6 / 36) % 6
+    local g = math.floor(idx6 / 6) % 6
+    local b = idx6 % 6
+    if r == g and g == b then
+      if r == 0 then
+        return "Black"
+      elseif r <= 2 then
+        return "DarkGray"
+      end
+      return "White"
+    elseif g > r and g > b then
+      return "Green"
+    elseif r > g and r > b then
+      return "Red"
+    elseif b > r and b > g then
+      return "Blue"
+    elseif r > 0 and g > 0 and b == 0 then
+      return "Yellow"
+    elseif r > 0 and b > 0 and g == 0 then
+      return "Magenta"
+    elseif g > 0 and b > 0 and r == 0 then
+      return "Cyan"
+    end
+    return "White"
+  end
+  -- Grayscale (232-255)
+  return "White"
+end
 
 -- Parse ANSI escape sequences and convert to Neovim highlighting
 function M.parse_ansi_colors(text)
@@ -115,7 +163,7 @@ function M.parse_ansi_colors(text)
           if code == "38" and codes_list[i + 1] == "5" and codes_list[i + 2] then
             -- 256-color foreground: 38;5;n
             local color_index = codes_list[i + 2]
-            local color = COLOR_256_MAP[color_index]
+            local color = color_256_lookup(color_index)
             if color then
               current_style.color = color
               current_style.group = current_style.bold and ("Bold" .. color) or color
@@ -203,11 +251,11 @@ function M.setup_diff_highlighting(bufnr, highlights, opts)
     vim.cmd("setlocal filetype=diff")
     vim.cmd("setlocal conceallevel=0")
 
-    -- Define highlight groups for diff colors
-    vim.cmd(string.format("highlight %sAdd guifg=#00ff00 ctermfg=green", prefix))
-    vim.cmd(string.format("highlight %sDelete guifg=#ff0000 ctermfg=red", prefix))
-    vim.cmd(string.format("highlight %sChange guifg=#ffff00 ctermfg=yellow", prefix))
-    vim.cmd(string.format("highlight %sBold gui=bold cterm=bold", prefix))
+    -- Link highlight groups to theme colors
+    vim.cmd(string.format("highlight default link %sAdd DiffAdd", prefix))
+    vim.cmd(string.format("highlight default link %sDelete DiffDelete", prefix))
+    vim.cmd(string.format("highlight default link %sChange DiffChange", prefix))
+    vim.cmd(string.format("highlight default %sBold gui=bold cterm=bold", prefix))
 
     -- Add custom highlighting based on options
     if opts.custom_syntax then
@@ -222,7 +270,26 @@ function M.setup_diff_highlighting(bufnr, highlights, opts)
     end
   end)
 
-  -- Track which bold+color groups we've already defined
+  -- Map color names to theme highlight groups
+  local color_to_theme = {
+    Red = "DiagnosticError",
+    Green = "DiagnosticOk",
+    Yellow = "DiagnosticWarn",
+    Blue = "Function",
+    Magenta = "Keyword",
+    Cyan = "Type",
+    White = "Normal",
+    Black = "Comment",
+    DarkGray = "Comment",
+    LightRed = "DiagnosticError",
+    LightGreen = "DiagnosticOk",
+    LightYellow = "DiagnosticWarn",
+    LightBlue = "Function",
+    LightMagenta = "Keyword",
+    LightCyan = "Type",
+  }
+
+  -- Track which dynamic groups we've already defined
   local defined_groups = {}
 
   -- Apply highlights from parsed ANSI codes
@@ -239,36 +306,25 @@ function M.setup_diff_highlighting(bufnr, highlights, opts)
       elseif group == "Bold" then
         group = prefix .. "Bold"
       elseif group:match("^Bold") then
-        -- Bold+color combo: link to a standard highlight group + bold
+        -- Bold+color combo: resolve fg from theme group and add bold
         if not defined_groups[group] then
-          local color_name = group:sub(5) -- strip "Bold" prefix
-          -- Map our color names to standard Neovim highlight groups
-          local hl_link_map = {
-            Red = "DiagnosticError",
-            Green = "DiagnosticOk",
-            Yellow = "DiagnosticWarn",
-            Blue = "Function",
-            Magenta = "Keyword",
-            Cyan = "Type",
-            White = "Normal",
-            Gray = "Comment",
-            LightRed = "DiagnosticError",
-            LightGreen = "DiagnosticOk",
-            LightYellow = "DiagnosticWarn",
-            LightBlue = "Function",
-            LightMagenta = "Keyword",
-            LightCyan = "Type",
-          }
-          local link = hl_link_map[color_name]
+          local color_name = group:sub(5)
+          local link = color_to_theme[color_name]
           if link then
-            -- Get the fg color from the theme's highlight group and add bold
             local theme_hl = vim.api.nvim_get_hl(0, { name = link, link = false })
             if theme_hl.fg then
               pcall(vim.api.nvim_set_hl, 0, group, { fg = theme_hl.fg, bold = true })
             else
-              pcall(vim.api.nvim_set_hl, 0, group, { link = link, bold = true })
+              pcall(vim.api.nvim_set_hl, 0, group, { link = link })
             end
           end
+          defined_groups[group] = true
+        end
+      else
+        -- Plain color: link to theme group
+        local link = color_to_theme[group]
+        if link and not defined_groups[group] then
+          pcall(vim.api.nvim_set_hl, 0, group, { link = link })
           defined_groups[group] = true
         end
       end
