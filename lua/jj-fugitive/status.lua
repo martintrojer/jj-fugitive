@@ -26,11 +26,16 @@ local function toggle_inline_diff(bufnr)
   local cursor = vim.api.nvim_win_get_cursor(0)
   local line_nr = cursor[1]
   local line = vim.api.nvim_buf_get_lines(bufnr, line_nr - 1, line_nr, false)[1]
+  if core_list.collapse_inline_at_cursor(bufnr, INLINE_VAR) then
+    return
+  end
+
   local file = file_from_line(line)
   if not file then
     return
   end
 
+  -- Check if this filename already has an expanded diff — collapse it
   local state = core_list.get_inline_state(bufnr, INLINE_VAR)
   for i, item in ipairs(state) do
     if item.start_line == line_nr + 1 then
