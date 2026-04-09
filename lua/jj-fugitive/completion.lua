@@ -2,6 +2,7 @@ local M = {}
 
 local parse_commands = require("fugitive-core.completion").parse_commands
 
+local cached_commands = nil
 local cached_aliases = nil
 
 local function get_aliases()
@@ -87,7 +88,10 @@ function M.complete(arglead, cmdline, _)
   local completions = {}
 
   if #parts == 0 or (#parts == 1 and not cmdline:match("%s$")) then
-    local commands = parse_commands({ "jj", "--help" })
+    if not cached_commands then
+      cached_commands = parse_commands({ "jj", "--help" })
+    end
+    local commands = vim.list_extend({}, cached_commands)
     local custom = {
       "status",
       "diff",

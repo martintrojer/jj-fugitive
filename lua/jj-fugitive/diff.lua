@@ -30,9 +30,6 @@ local function setup_diff_keymaps(bufnr, filename, review_ctx)
     ui.map(bufnr, "n", "cR", function()
       require("redline").comment_unified_diff(init.review_config, bufnr, review_ctx)
     end)
-    ui.map(bufnr, "n", "gR", function()
-      require("redline").show(init.review_config)
-    end)
   end
 
   if filename then
@@ -46,6 +43,9 @@ local function setup_diff_keymaps(bufnr, filename, review_ctx)
   end
 
   ui.setup_view_keymaps(bufnr, {
+    review = init.review_config and function()
+      require("redline").show(init.review_config)
+    end,
     log = function()
       vim.cmd(ui.close_cmd())
       require("jj-fugitive.log").show()

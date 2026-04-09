@@ -5,8 +5,8 @@ local core_annotate = require("fugitive-core.views.annotate")
 -- History stack for blame drill-down (~ to go deeper, <BS> to go back)
 local history_stack = {}
 
-function M.show(filename, rev, _keep_stack)
-  if not _keep_stack then
+function M.show(filename, rev, keep_stack)
+  if not keep_stack then
     history_stack = {}
   end
   local init = require("jj-fugitive")

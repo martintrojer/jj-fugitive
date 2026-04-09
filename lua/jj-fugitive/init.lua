@@ -288,6 +288,18 @@ function M.jj(args)
   end
 end
 
+--- Run a jj command and refresh views on success.
+function M.run_and_refresh(args, msg)
+  local result = M.run_jj(args)
+  if result then
+    if msg then
+      require("jj-fugitive.ui").info(msg)
+    end
+    M.refresh_views()
+  end
+  return result
+end
+
 --- Refresh open plugin views after state changes.
 function M.refresh_views()
   vim.schedule(function()

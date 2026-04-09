@@ -138,16 +138,8 @@ local function set_rev_lines(bufnr, line_rev_ids, header_size)
   return rev_lines
 end
 
---- Run a jj command and refresh log on success.
 local function run_and_refresh(args, msg)
-  local init = require("jj-fugitive")
-  local result = init.run_jj(args)
-  if result then
-    if msg then
-      require("jj-fugitive.ui").info(msg)
-    end
-    init.refresh_views()
-  end
+  return require("jj-fugitive").run_and_refresh(args, msg)
 end
 
 --- Format a revision as "change_id (commit_id)" for prompts.

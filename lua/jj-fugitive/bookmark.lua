@@ -22,14 +22,7 @@ local function bookmark_from_line(line)
 end
 
 local function run_and_refresh(args, msg)
-  local init = require("jj-fugitive")
-  local result = init.run_jj(args)
-  if result then
-    if msg then
-      require("jj-fugitive.ui").info(msg)
-    end
-    init.refresh_views()
-  end
+  return require("jj-fugitive").run_and_refresh(args, msg)
 end
 
 local function setup_keymaps(bufnr)
