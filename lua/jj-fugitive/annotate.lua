@@ -5,7 +5,10 @@ local core_annotate = require("fugitive-core.views.annotate")
 -- History stack for blame drill-down (~ to go deeper, <BS> to go back)
 local history_stack = {}
 
-function M.show(filename, rev)
+function M.show(filename, rev, _keep_stack)
+  if not _keep_stack then
+    history_stack = {}
+  end
   local init = require("jj-fugitive")
   local ui = require("jj-fugitive.ui")
 
@@ -108,10 +111,10 @@ function M.show(filename, rev)
     end
     table.insert(history_stack, rev)
     close_and_cleanup()
-    local ok = M.show(filename, change_id .. "-")
+    local ok = M.show(filename, change_id .. "-", true)
     if not ok then
       table.remove(history_stack)
-      M.show(filename, rev)
+      M.show(filename, rev, true)
     end
   end)
 
@@ -122,7 +125,7 @@ function M.show(filename, rev)
     end
     local prev_rev = table.remove(history_stack)
     close_and_cleanup()
-    M.show(filename, prev_rev)
+    M.show(filename, prev_rev, true)
   end)
 
   ui.setup_view_keymaps(ann_buf, {

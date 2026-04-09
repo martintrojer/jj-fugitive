@@ -26,10 +26,10 @@ local function get_default_rev()
     return "main"
   end
 
-  local log = init.run_jj({ "log", "-r", "@", "--no-graph", "--limit", "1" })
+  local log = init.run_jj({ "log", "-r", "@", "--no-graph", "-T", "commit_id.short()" })
   if log then
-    local hash = log:match("([a-f0-9]+)%s*$")
-    if hash then
+    local hash = log:gsub("%s+$", "")
+    if hash ~= "" then
       return hash
     end
   end
