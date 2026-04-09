@@ -1,39 +1,39 @@
 name: CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Install Lua
-      uses: leafo/gh-actions-lua@v10
-      with:
-        luaVersion: "5.1"
-
-    - name: Install LuaRocks
-      uses: leafo/gh-actions-luarocks@v4
-
-    - name: Install luacheck
-      run: luarocks install luacheck
-
-    - name: Run luacheck
-      run: luacheck .
+      - uses: actions/checkout@v4
+      - uses: luarocks/gh-actions-lua@v10
+        with:
+          luaVersion: "luajit-2.1"
+      - uses: luarocks/gh-actions-luarocks@v4
+      - run: luarocks install luacheck
+      - run: luacheck lua/ plugin/
 
   format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: JohnnyMorganz/stylua-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
+          args: --check lua/ plugin/
 
-    - name: Install stylua
-      uses: JohnnyMorganz/stylua-action@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        version: latest
-        args: --check .
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+      - run: |
+          git clone --depth 1 https://github.com/echasnovski/mini.nvim \
+            ~/.local/share/nvim/site/pack/deps/opt/mini.nvim
+          git clone --depth 1 https://github.com/martintrojer/fugitive-core.nvim \
+            ~/.local/share/nvim/site/pack/deps/start/fugitive-core.nvim
+      - run: nvim --headless -u tests/init.lua
