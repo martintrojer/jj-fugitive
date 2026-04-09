@@ -168,12 +168,29 @@ local function setup_keymaps(bufnr)
 
   ui.map(bufnr, "n", "x", function()
     local file = file_at_cursor(bufnr)
-    if file and ui.confirm("Restore " .. file .. " from parent") then
+    if not file then
+      return
+    end
+    local line = vim.api.nvim_get_current_line()
+    if line:match("^%s*A%s") then
+      if ui.delete_file(file, require("jj-fugitive").repo_root()) then
+        M.refresh()
+      end
+      return
+    end
+    if ui.confirm("Restore " .. file .. " from parent") then
       local result = require("jj-fugitive").run_jj({ "restore", "--from", "@-", file })
       if result then
         ui.info("Restored: " .. file)
         M.refresh()
       end
+    end
+  end)
+
+  ui.map(bufnr, "n", "dd", function()
+    local file = file_at_cursor(bufnr)
+    if file and ui.delete_file(file, require("jj-fugitive").repo_root()) then
+      M.refresh()
     end
   end)
 
@@ -215,7 +232,8 @@ local function setup_keymaps(bufnr)
         "  D        Side-by-side diff",
         "  cc       Describe working copy",
         "  S        Split working copy (jj split TUI)",
-        "  x        Restore file from parent (@-)",
+        "  x        Restore file (or delete if added)",
+        "  dd       Delete file from filesystem",
         "",
         "Views:",
         "  gb       Switch to bookmark view",
