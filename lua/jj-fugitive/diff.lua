@@ -37,7 +37,7 @@ local function setup_diff_keymaps(bufnr, filename, review_ctx)
 
   if filename then
     ui.map(bufnr, "n", "o", function()
-      vim.cmd("edit " .. vim.fn.fnameescape(filename))
+      ui.open_file(filename, require("jj-fugitive").repo_root())
     end)
 
     ui.map(bufnr, "n", "D", function()
@@ -140,20 +140,14 @@ function M.show_sidebyside(filename)
   local original = ui.file_at_rev(filename, "@-")
   local current = ui.file_at_rev(filename, "@")
 
-  local left, right = ui.open_sidebyside(
+  ui.open_sidebyside(
     original,
     filename .. " (parent @-)",
     current,
     filename .. " (working copy @)",
-    filename
+    filename,
+    { repo_root = require("jj-fugitive").repo_root() }
   )
-
-  for _, buf in ipairs({ left, right }) do
-    ui.map(buf, "n", "o", function()
-      vim.cmd(ui.close_cmd())
-      vim.cmd("edit " .. vim.fn.fnameescape(filename))
-    end)
-  end
 end
 
 return M

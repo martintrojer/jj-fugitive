@@ -188,7 +188,8 @@ local function sidebyside_at_rev(filename, rev)
     filename .. " (" .. rev .. "-)",
     current,
     filename .. " (" .. rev .. ")",
-    filename
+    filename,
+    { repo_root = require("jj-fugitive").repo_root() }
   )
 end
 
