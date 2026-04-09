@@ -251,18 +251,7 @@ local function setup_keymaps(bufnr)
 end
 
 local function format_lines(output)
-  local lines = {
-    "",
-    "# jj Status",
-    "# Press g? for help",
-    "",
-  }
-  for _, line in ipairs(vim.split(output, "\n")) do
-    if line ~= "" then
-      table.insert(lines, line)
-    end
-  end
-  return lines
+  return core_list.format_lines("jj Status", output)
 end
 
 function M.refresh()

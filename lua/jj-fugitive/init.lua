@@ -258,14 +258,18 @@ function M.jj(args)
   elseif command == "browse" then
     require("jj-fugitive.browse").browse()
   elseif command == "push" then
-    local result = M.run_jj({ "git", "push", unpack(parts, 2) })
+    local cmd = { "git", "push" }
+    vim.list_extend(cmd, parts, 2)
+    local result = M.run_jj(cmd)
     if result then
       local msg = result:gsub("%s+$", "")
       vim.notify(msg ~= "" and msg or "Pushed to remote", vim.log.levels.INFO)
       M.refresh_views()
     end
   elseif command == "fetch" then
-    local result = M.run_jj({ "git", "fetch", unpack(parts, 2) })
+    local cmd = { "git", "fetch" }
+    vim.list_extend(cmd, parts, 2)
+    local result = M.run_jj(cmd)
     if result then
       local msg = result:gsub("%s+$", "")
       vim.notify(msg ~= "" and msg or "Fetched from remote", vim.log.levels.INFO)
